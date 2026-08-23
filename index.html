@@ -160,7 +160,7 @@
             width: 38px;
             height: 38px;
             border-radius: 8px;
-            object-fit: cover;
+            object-fit: contain;
             background: #0f172a;
             flex-shrink: 0;
             display: flex;
@@ -239,7 +239,7 @@
         .rec-card:active { transform: scale(0.96); }
         .rec-img-box {
             width: 100%;
-            height: 75px;
+            height: 90px;
             background: #0f172a;
             display: flex;
             align-items: center;
@@ -249,7 +249,7 @@
         .rec-img-box img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain;
         }
         .rec-body {
             padding: 6px;
@@ -334,7 +334,7 @@
 
         .cust-img-container {
             width: 100%;
-            height: 105px;
+            height: 125px;
             background: #0f172a;
             display: flex;
             align-items: center;
@@ -342,10 +342,12 @@
             position: relative;
             overflow: hidden;
         }
+        /* 🌟 ปรับให้แสดงภาพครบถ้วนไม่โดนตัดขอบ (contain) และมีพื้นหลังกลมกลืน */
         .cust-menu-img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain;
+            background: #0f172a;
         }
         .cust-img-fallback {
             font-size: 2.2rem;
@@ -1136,7 +1138,7 @@
 
     const STORAGE_KEY = 'FLUKCHAFE_SHARED_DB_V5';
     const MENU_PRICES_KEY = 'FLUKCHAFE_SHARED_PRICES_V5';
-    const MENU_IMAGES_KEY = 'FLUKCHAFE_SHARED_IMAGES_V6'; // อัปเกรดเวอร์ชันคีย์รูปภาพเพื่อป้องกันข้อมูลเก่าตีกัน
+    const MENU_IMAGES_KEY = 'FLUKCHAFE_SHARED_IMAGES_V6';
     const EXPENSES_KEY = 'FLUKCHAFE_SHARED_EXP_V5';
     const ADMIN_AUTH_KEY = 'FLUKCHAFE_AUTH_STATUS';
     
@@ -1835,7 +1837,6 @@
                 priceBook = { ...DEFAULT_PRESET_PRICES, ...data.prices };
                 localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
             }
-            // 🌟 ป้องกันไม่ให้ภาพที่ตั้งเองถูก Cloud ลบหาย (แยกการซิงค์รูปภาพเฉพาะในเครื่อง)
             if (data && data.images && Object.keys(imageBook).length === 0) {
                 imageBook = { ...data.images };
                 localStorage.setItem(MENU_IMAGES_KEY, JSON.stringify(imageBook));
@@ -2266,7 +2267,6 @@
             } else {
                 delete imageBook[name];
             }
-            // 🌟 ล็อกเซฟเก็บลง LocalStorage ของเครื่องทันทีอย่างถาวร
             localStorage.setItem(MENU_IMAGES_KEY, JSON.stringify(imageBook));
 
             saveToCloud({ action: "update_price", name, price, imageUrl });
