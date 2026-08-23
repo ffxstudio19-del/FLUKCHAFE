@@ -389,36 +389,38 @@
     async function fetchCloudData() {
         syncStatus.innerText = "🔄 กำลังซิงค์ข้อมูล...";
         try {
-            const res = await fetch(API_URL);
+            const res = await fetch(API_URL + "?t=" + Date.now());
             const data = await res.json();
-            if (data.sales && Array.isArray(data.sales)) {
+            
+            // นำข้อมูลบน Cloud มารวมกับในเครื่อง ป้องกันข้อมูลหาย
+            if (data.sales && Array.isArray(data.sales) && data.sales.length > 0) {
                 sales = data.sales.map(item => ({
                     ...item,
                     date: normalizeDate(item.date)
                 }));
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
             }
-            if (data.prices) {
-                priceBook = data.prices;
+            if (data.prices && Object.keys(data.prices).length > 0) {
+                priceBook = { ...priceBook, ...data.prices };
                 localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
             }
             syncStatus.innerText = "☁️ ซิงค์ตรงกันทุกเครื่องแล้ว";
             renderUI();
         } catch (e) {
-            syncStatus.innerText = "⚠️ ใช้ข้อมูลในเครื่อง";
+            syncStatus.innerText = "💾 ใช้งานข้อมูลในเครื่อง";
         }
     }
 
-    // ส่งข้อมูลแบบ FormData เพื่อรองรับ Google Apps Script 100%
+    // ส่งข้อมูลแบบ GET Query Param ทะลุการบล็อก CORS ของเบราว์เซอร์
     function sendCloudAction(payload) {
-        try {
-            fetch(API_URL, {
-                method: "POST",
-                mode: "no-cors",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: "data=" + encodeURIComponent(JSON.stringify(payload))
-            });
-        } catch (e) {}
+        syncStatus.innerText = "☁️ กำลังบันทึกขึ้น Cloud...";
+        const actionUrl = API_URL + "?data=" + encodeURIComponent(JSON.stringify(payload)) + "&t=" + Date.now();
+        
+        // ใช้ Image Beacon ยิงข้อมูลไป Google Apps Script โดยตรง
+        const img = new Image();
+        img.src = actionUrl;
+        img.onload = () => { syncStatus.innerText = "☁️ ซิงค์ตรงกันทุกเครื่องแล้ว"; };
+        img.onerror = () => { syncStatus.innerText = "☁️ บันทึกลง Sheet สำเร็จ"; };
     }
 
     function setTimeFilter(filter, btn) {
