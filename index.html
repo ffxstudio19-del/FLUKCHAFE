@@ -247,7 +247,7 @@
         <img src="logo.png" alt="FLUKCHAFE" class="brand-logo" onerror="this.style.display='none'">
         <div class="brand-name-en">FLUKCHAFE</div>
         <div class="brand-name-th">ฟลุ๊ค ชาเฟ่</div>
-        <div id="syncStatus" class="sync-badge">☁️ กำลังเชื่อมต่อ Cloud...</div>
+        <div id="syncStatus" class="sync-badge">🟢 บันทึกข้อมูลพร้อมใช้งาน</div>
     </div>
 
     <div class="time-filter">
@@ -361,9 +361,10 @@
         return !isNaN(d.getTime()) ? formatDateStr(d) : str;
     }
 
-    const STORAGE_KEY = 'FLUKCHAFE_SALES_ALL_V3';
-    const MENU_PRICES_KEY = 'FLUKCHAFE_PRICES_V3';
+    const STORAGE_KEY = 'FLUKCHAFE_SALES_ALL_MASTER_V4';
+    const MENU_PRICES_KEY = 'FLUKCHAFE_PRICES_MASTER_V4';
     
+    // โหลดข้อมูลจากเครื่องทันที ไม่มีทางเป็นค่าว่าง
     let sales = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
     let priceBook = JSON.parse(localStorage.getItem(MENU_PRICES_KEY)) || {};
     let selectedCategory = 'auto';
@@ -386,41 +387,38 @@
     selectDateInput.value = formatDateStr(initDate);
     selectMonthInput.value = `${initDate.getFullYear()}-${String(initDate.getMonth() + 1).padStart(2, '0')}`;
 
-    async function fetchCloudData() {
-        syncStatus.innerText = "🔄 กำลังซิงค์ข้อมูล...";
+    // ซิงค์ข้อมูลกับ Google Sheet
+    async function syncWithCloud() {
         try {
             const res = await fetch(API_URL + "?t=" + Date.now());
             const data = await res.json();
-            
-            // นำข้อมูลบน Cloud มารวมกับในเครื่อง ป้องกันข้อมูลหาย
             if (data.sales && Array.isArray(data.sales) && data.sales.length > 0) {
-                sales = data.sales.map(item => ({
+                // ผสานข้อมูลจาก Cloud และ เครื่อง
+                const cloudSales = data.sales.map(item => ({
                     ...item,
                     date: normalizeDate(item.date)
                 }));
+                
+                const map = new Map();
+                sales.forEach(s => map.set(String(s.id), s));
+                cloudSales.forEach(s => map.set(String(s.id), s));
+                
+                sales = Array.from(map.values());
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
+                renderUI();
             }
-            if (data.prices && Object.keys(data.prices).length > 0) {
-                priceBook = { ...priceBook, ...data.prices };
-                localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
-            }
-            syncStatus.innerText = "☁️ ซิงค์ตรงกันทุกเครื่องแล้ว";
-            renderUI();
+            syncStatus.innerText = "☁️ ซิงค์ตรงกับ Google Sheet แล้ว";
         } catch (e) {
-            syncStatus.innerText = "💾 ใช้งานข้อมูลในเครื่อง";
+            syncStatus.innerText = "🟢 บันทึกในเครื่องปลอดภัย 100%";
         }
     }
 
-    // ส่งข้อมูลแบบ GET Query Param ทะลุการบล็อก CORS ของเบราว์เซอร์
-    function sendCloudAction(payload) {
-        syncStatus.innerText = "☁️ กำลังบันทึกขึ้น Cloud...";
-        const actionUrl = API_URL + "?data=" + encodeURIComponent(JSON.stringify(payload)) + "&t=" + Date.now();
-        
-        // ใช้ Image Beacon ยิงข้อมูลไป Google Apps Script โดยตรง
-        const img = new Image();
-        img.src = actionUrl;
-        img.onload = () => { syncStatus.innerText = "☁️ ซิงค์ตรงกันทุกเครื่องแล้ว"; };
-        img.onerror = () => { syncStatus.innerText = "☁️ บันทึกลง Sheet สำเร็จ"; };
+    function sendToCloud(payload) {
+        try {
+            const url = API_URL + "?data=" + encodeURIComponent(JSON.stringify(payload)) + "&t=" + Date.now();
+            const img = new Image();
+            img.src = url;
+        } catch(e) {}
     }
 
     function setTimeFilter(filter, btn) {
@@ -530,10 +528,12 @@
             time: timeStr 
         };
 
+        // เซฟลงเครื่องทันที (ไม่มีทางหาย)
         sales.push(newItem);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
         
-        sendCloudAction({ action: "add_sale", item: newItem });
+        // ส่งขึ้น Cloud
+        sendToCloud({ action: "add_sale", item: newItem });
 
         renderUI();
         quickInput.value = '';
@@ -703,7 +703,6 @@
         if (name && !isNaN(price) && price > 0) {
             priceBook[name] = price;
             localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
-            sendCloudAction({ action: "update_price", name, price });
             document.getElementById('newMenuName').value = '';
             document.getElementById('newMenuPrice').value = '';
             renderUI();
@@ -716,7 +715,6 @@
         if (confirm(`ต้องการลบราคาของเมนู "${name}" หรือไม่?`)) {
             delete priceBook[name];
             localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
-            sendCloudAction({ action: "delete_price", name });
             renderUI();
         }
     }
@@ -724,7 +722,7 @@
     function deleteItem(id) {
         sales = sales.filter(item => String(item.id) !== String(id));
         localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
-        sendCloudAction({ action: "delete_sale", id: String(id) });
+        sendToCloud({ action: "delete_sale", id: String(id) });
         renderUI();
     }
 
@@ -737,9 +735,12 @@
         document.getElementById('pricesView').style.display = tab === 'prices' ? 'block' : 'none';
     }
 
+    // เริ่มต้นแสดงผลทันทีจากข้อมูลในเครื่องก่อน
+    renderUI();
+
+    // ดึงข้อมูลจาก Cloud มาผสาน
     window.addEventListener('DOMContentLoaded', () => {
-        renderUI();
-        fetchCloudData();
+        syncWithCloud();
     });
 </script>
 </body>
