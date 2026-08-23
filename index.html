@@ -1043,7 +1043,7 @@
             <button type="button" class="tab-btn active" id="tabHistory" onclick="switchTab('history')">ประวัติการขาย</button>
             <button type="button" class="tab-btn" id="tabSummary" onclick="switchTab('summary')">สรุปรายเมนู</button>
             <button type="button" class="tab-btn" id="tabExpenses" onclick="switchTab('expenses')">💸 บันทึกต้นทุน</button>
-            <button type="button" class="tab-btn" id="tabPrices" onclick="switchTab('prices')">⚙️ ตั้งราคา & รูป</button>
+            <button type="button" class="tab-btn" id="tabPrices" onclick="switchTab('prices')">⚙️ ตั้งราคาเมนู</button>
         </div>
 
         <div class="list-container" id="historyView"><div id="itemList"></div></div>
@@ -1058,17 +1058,17 @@
             </div>
             <div id="expenseList"></div>
         </div>
+        <!-- 🌟 เอาช่องกรอกรูปภาพในหลังบ้านออก เหลือไว้เฉพาะตั้งชื่อและราคาเมนู -->
         <div class="list-container" id="pricesView" style="display: none;">
             <div class="price-mgr-form-grid">
                 <div class="row-inputs">
                     <input type="text" id="newMenuName" placeholder="ชื่อเมนู เช่น ชาไทย ปั่น" style="flex:2;">
                     <input type="number" id="newMenuPrice" placeholder="ราคา" style="flex:1;">
                 </div>
-                <input type="text" id="newMenuImage" placeholder="🔗 ลิงก์รูปภาพเมนู (Direct Link)">
-                <button type="button" onclick="addOrUpdatePrice()">💾 บันทึกเมนู & รูปภาพ</button>
+                <button type="button" onclick="addOrUpdatePrice()">💾 บันทึกราคาเมนู</button>
             </div>
             <div class="price-search-box">
-                <input type="text" id="priceSearchInput" placeholder="🔍 ค้นหาเมนูเพื่อแก้ไขราคา/รูปภาพ..." oninput="renderPriceSettingList()">
+                <input type="text" id="priceSearchInput" placeholder="🔍 ค้นหาเมนูเพื่อแก้ไขราคา..." oninput="renderPriceSettingList()">
             </div>
             <div id="priceSettingList"></div>
             <div class="export-section">
@@ -1137,7 +1137,6 @@
 
     const STORAGE_KEY = 'FLUKCHAFE_SHARED_DB_V5';
     const MENU_PRICES_KEY = 'FLUKCHAFE_SHARED_PRICES_V5';
-    const MENU_IMAGES_KEY = 'FLUKCHAFE_SHARED_IMAGES_V7';
     const EXPENSES_KEY = 'FLUKCHAFE_SHARED_EXP_V5';
     const ADMIN_AUTH_KEY = 'FLUKCHAFE_AUTH_STATUS';
     
@@ -1218,12 +1217,16 @@
         "ข้าวเหนียว 10": 10
     };
 
+    // 🌟 ระบบฝังรูปภาพถาวร (เปิดเครื่องไหนก็เจอรูปตรงกันแน่นอน 100% ไม่ต้องตั้งค่าในหลังบ้าน)
+    const DEFAULT_PRESET_IMAGES = {
+        "สตรอว์เบอร์รีโซดา เย็น": "https://i.ibb.co/xxxxx/strawberry-soda.png" // <--- นำลิงก์รูปภาพมาใส่ไว้ตรงนี้ได้เลยครับ
+    };
+
     let sales = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
     let expenses = JSON.parse(localStorage.getItem(EXPENSES_KEY)) || [];
     let savedPrices = JSON.parse(localStorage.getItem(MENU_PRICES_KEY)) || {};
-    let savedImages = JSON.parse(localStorage.getItem(MENU_IMAGES_KEY)) || {};
     let priceBook = { ...DEFAULT_PRESET_PRICES, ...savedPrices };
-    let imageBook = { ...savedImages };
+    let imageBook = { ...DEFAULT_PRESET_IMAGES };
     
     let currentMode = localStorage.getItem(ADMIN_AUTH_KEY) === 'true' ? 'admin' : 'customer';
     let cart = [];
@@ -1410,10 +1413,7 @@
 
     function getMenuImage(name) {
         const cleanName = (name || '').trim();
-        if (imageBook[cleanName] && imageBook[cleanName].trim() !== '') {
-            return imageBook[cleanName].trim();
-        }
-        return '';
+        return imageBook[cleanName] || DEFAULT_PRESET_IMAGES[cleanName] || '';
     }
 
     function handleCustomerSearchInput(val) {
@@ -1836,11 +1836,6 @@
                 priceBook = { ...DEFAULT_PRESET_PRICES, ...data.prices };
                 localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
             }
-            // 🌟 ซิงค์รูปภาพจาก Google Sheets มาแสดงผลตรงกันทุกเครื่อง
-            if (data && data.images) {
-                imageBook = { ...data.images };
-                localStorage.setItem(MENU_IMAGES_KEY, JSON.stringify(imageBook));
-            }
             syncStatus.innerText = "☁️ ซิงค์ตรงกันทุกเครื่องแล้ว";
             if (currentMode === 'admin') renderUI();
             if (currentMode === 'customer') renderCustomerMenu();
@@ -2234,11 +2229,10 @@
         keys.sort().forEach(name => {
             const row = document.createElement('div');
             row.className = 'summary-row price-list-row';
-            const hasImg = imageBook[name] ? '🖼️' : '📝';
             row.innerHTML = `
-                <span onclick="fillEditPrice('${name}', ${priceBook[name]}, '${imageBook[name] || ''}')" style="flex:1;">${hasImg} ${name}</span>
+                <span onclick="fillEditPrice('${name}', ${priceBook[name]})" style="flex:1;">📝 ${name}</span>
                 <div style="display:flex; align-items:center; gap:8px;">
-                    <b onclick="fillEditPrice('${name}', ${priceBook[name]}, '${imageBook[name] || ''}')" style="color:#38bdf8;">฿${priceBook[name]}</b>
+                    <b onclick="fillEditPrice('${name}', ${priceBook[name]})" style="color:#38bdf8;">฿${priceBook[name]}</b>
                     <button class="btn-del" onclick="deletePrice('${name}')">✕</button>
                 </div>
             `;
@@ -2246,38 +2240,27 @@
         });
     }
 
-    function fillEditPrice(name, price, imgUrl) {
+    function fillEditPrice(name, price) {
         document.getElementById('newMenuName').value = name;
         document.getElementById('newMenuPrice').value = price;
-        document.getElementById('newMenuImage').value = imgUrl || '';
         document.getElementById('newMenuPrice').focus();
     }
 
     function addOrUpdatePrice() {
         const name = document.getElementById('newMenuName').value.trim();
         const price = parseFloat(document.getElementById('newMenuPrice').value);
-        const imageUrl = document.getElementById('newMenuImage').value.trim();
 
         if (name && !isNaN(price) && price > 0) {
             priceBook[name] = price;
             localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
 
-            if (imageUrl) {
-                imageBook[name] = imageUrl;
-            } else {
-                delete imageBook[name];
-            }
-            localStorage.setItem(MENU_IMAGES_KEY, JSON.stringify(imageBook));
-
-            // 🌟 บันทึกรูปภาพขึ้นไปบน Google Sheets ทันที
-            saveToCloud({ action: "update_price", name, price, imageUrl });
+            saveToCloud({ action: "update_price", name, price });
             
             document.getElementById('newMenuName').value = '';
             document.getElementById('newMenuPrice').value = '';
-            document.getElementById('newMenuImage').value = '';
             renderUI();
             renderCustomerMenu();
-            alert('บันทึกรูปภาพและราคาสำเร็จแล้วครับ!');
+            alert('บันทึกราคาเมนูสำเร็จแล้วครับ!');
         } else {
             alert('กรุณากรอกชื่อเมนูและราคาให้ถูกต้อง');
         }
@@ -2286,9 +2269,7 @@
     function deletePrice(name) {
         if (confirm(`ต้องการลบเมนู "${name}" หรือไม่?`)) {
             delete priceBook[name];
-            delete imageBook[name];
             localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
-            localStorage.setItem(MENU_IMAGES_KEY, JSON.stringify(imageBook));
             saveToCloud({ action: "delete_price", name });
             renderUI();
             renderCustomerMenu();
