@@ -89,7 +89,6 @@
             color: #0f172a;
         }
 
-        /* กล่องยอดขายรวม */
         .total-banner {
             background: #0f172a;
             color: #fff;
@@ -196,7 +195,6 @@
         }
         .btn-order-submit:active { background: #0369a1; transform: scale(0.98); }
 
-        /* แถบควบคุมโหมดลงย้อนหลัง */
         .backdate-control {
             display: flex;
             align-items: center;
@@ -391,6 +389,43 @@
             border-color: #0284c7;
             background: #fff;
         }
+
+        .btn-telegram {
+            width: 100%;
+            background: #229ED9;
+            color: #fff;
+            border: none;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .btn-telegram:active { background: #1c82b3; }
+
+        .export-section {
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 1.5px dashed #cbd5e1;
+        }
+        .btn-export {
+            width: 100%;
+            background: #10b981;
+            color: #fff;
+            border: none;
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-bottom: 6px;
+            cursor: pointer;
+        }
+        .btn-export:active { background: #059669; }
     </style>
 </head>
 <body>
@@ -419,7 +454,6 @@
         <input type="month" id="selectMonthInput" onchange="renderUI()">
     </div>
 
-    <!-- กล่องยอดขายรวม พร้อมปุ่มซ่อน/แสดง สรุปผลประกอบการ -->
     <div class="total-banner">
         <div class="amount" id="totalSales">฿0</div>
         <div class="sub" id="totalSalesSub">ยอดขายรวม</div>
@@ -472,7 +506,6 @@
         <button type="button" class="cat-btn" onclick="setCategory('ขนมปังปิ้ง', this)">🍞 ปังปิ้ง</button>
     </div>
 
-    <!-- ช่องพิมพ์รับออเดอร์ -->
     <form id="quickForm" class="quick-input-box" onsubmit="return handleAdd(event)">
         <div class="input-btn-group">
             <input 
@@ -487,7 +520,6 @@
         </div>
         <div id="suggestBox" class="suggest-box"></div>
 
-        <!-- แถบปุ่มเปิด/ปิด โหมดลงออเดอร์ย้อนหลัง -->
         <div class="backdate-control">
             <span style="font-size:0.72rem; color:#64748b;">💡 พิมพ์ค้นหาแล้วแตะเลือกได้ทันที</span>
             <button type="button" class="btn-toggle-backdate" id="btnToggleBackdate" onclick="toggleBackdateMode()">
@@ -495,7 +527,6 @@
             </button>
         </div>
 
-        <!-- กล่องเลือกวัน-เวลาย้อนหลัง -->
         <div class="backdate-box" id="backdateBox">
             <div class="backdate-box-title">⚠️ โหมดลงออเดอร์ย้อนหลัง (ระบุวันและเวลา)</div>
             <div class="backdate-inputs">
@@ -517,10 +548,12 @@
     </div>
 
     <div class="list-container" id="summaryView" style="display: none;">
-        <div id="menuSummaryList"></div>
+        <button type="button" class="btn-telegram" onclick="sendTelegramReport()">
+            📲 ส่งสรุปยอดขายเข้า Telegram
+        </button>
+        <div id="menuSummaryList" style="margin-top: 8px;"></div>
     </div>
 
-    <!-- หน้าบันทึกต้นทุนซื้อของเข้าร้าน -->
     <div class="list-container" id="expensesView" style="display: none;">
         <div class="price-mgr-form">
             <input type="text" id="newExpenseName" placeholder="รายการซื้อของ เช่น ชา/นม/ของทอด" style="flex:2;">
@@ -530,7 +563,6 @@
         <div id="expenseList"></div>
     </div>
 
-    <!-- หน้าจัดการราคาเมนู -->
     <div class="list-container" id="pricesView" style="display: none;">
         <div class="price-mgr-form">
             <input type="text" id="newMenuName" placeholder="ชื่อเมนู เช่น ชาไทย ปั่น" style="flex:2;">
@@ -541,6 +573,12 @@
             <input type="text" id="priceSearchInput" placeholder="🔍 ค้นหาเมนูเพื่อแก้ไขราคา..." oninput="renderPriceSettingList()">
         </div>
         <div id="priceSettingList"></div>
+
+        <div class="export-section">
+            <div style="font-size: 0.75rem; color: #64748b; font-weight: 600; margin-bottom: 6px;">📊 ส่งออกรายงานข้อมูล (Excel / CSV)</div>
+            <button type="button" class="btn-export" onclick="exportSalesToCSV()">📥 ดาวน์โหลดรายงานยอดขาย (CSV)</button>
+            <button type="button" class="btn-export" style="background:#6366f1;" onclick="exportExpensesToCSV()">📥 ดาวน์โหลดรายงานต้นทุน (CSV)</button>
+        </div>
     </div>
 </div>
 
@@ -550,8 +588,11 @@
     const MENU_PRICES_KEY = 'FLUKCHAFE_SHARED_PRICES_V5';
     const EXPENSES_KEY = 'FLUKCHAFE_SHARED_EXP_V5';
     
+    // ตั้งค่า Telegram Bot สำหรับร้านฟลุ๊ค ชาเฟ่
+    const TELEGRAM_BOT_TOKEN = "8920066362:AAEY2Edhk6cqNV7tl-QDiHqmToPwjsK0ckM"; 
+    const TELEGRAM_CHAT_ID = "8941619759";
+
     const DEFAULT_PRESET_PRICES = {
-        // --- กาแฟ ---
         "เอสเพรสโซ่ เย็น": 30, "เอสเพรสโซ่ ปั่น": 35,
         "คาปูชิโน่ เย็น": 30, "คาปูชิโน่ ปั่น": 35,
         "ลาเต้ เย็น": 30, "ลาเต้ ปั่น": 35,
@@ -563,7 +604,6 @@
         "อเมริกาโน่น้ำผึ้งมะนาว เย็น": 40, "อเมริกาโน่น้ำผึ้งมะนาว ปั่น": 45,
         "อเมริกาโน่ลิ้นจี่ เย็น": 40, "อเมริกาโน่ลิ้นจี่ ปั่น": 45,
 
-        // --- ชา & นม & เมนูประจำร้าน ---
         "ชาไทย เย็น": 25, "ชาไทย ปั่น": 30,
         "ชาเขียว เย็น": 25, "ชาเขียว ปั่น": 30,
         "ชานม เย็น": 25, "ชานม ปั่น": 30,
@@ -587,7 +627,6 @@
         "มะพร้าวนมสด เย็น": 25, "มะพร้าวนมสด ปั่น": 30,
         "โอริโอ้ ปั่น": 30,
 
-        // --- สตรอว์เบอร์รี (Strawberry Menu) ---
         "นมสดสตรอว์เบอร์รี เย็น": 30, "นมสดสตรอว์เบอร์รี ปั่น": 35,
         "นมสดสตอเบอรี่ เย็น": 30, "นมสดสตอเบอรี่ ปั่น": 35,
         "สตรอว์เบอร์รี เย็น": 25, "สตรอว์เบอร์รี ปั่น": 30,
@@ -596,11 +635,9 @@
         "สตอเบอรี่โซดา เย็น": 25, "สตอเบอรี่โซดา ปั่น": 30,
         "สตรอว์เบอร์รีโยเกิร์ต ปั่น": 35, "สตอเบอรี่โยเกิร์ต ปั่น": 35,
 
-        // --- สมูทตี้ผลไม้ปั่น ---
         "แอปเปิ้ล ปั่น": 30, "บลูฮาวาย ปั่น": 30, "ลิ้นจี่ ปั่น": 30, "กีวี่ ปั่น": 30,
         "ส้ม ปั่น": 30, "องุ่น ปั่น": 30, "บลูเบอร์รี่ ปั่น": 30,
 
-        // --- อิตาเลียนโซดา ---
         "แดงโซดา เย็น": 25, "แดงโซดา ปั่น": 30,
         "แดงมะนาวโซดา เย็น": 25, "แดงมะนาวโซดา ปั่น": 30,
         "เขียวโซดา เย็น": 25, "เขียวโซดา ปั่น": 30,
@@ -615,7 +652,6 @@
         "บลูเบอร์รี่โซดา เย็น": 25, "บลูเบอร์รี่โซดา ปั่น": 30,
         "น้ำผึ้งมะนาวโซดา เย็น": 25, "น้ำผึ้งมะนาวโซดา ปั่น": 30,
 
-        // --- เมนูโอริโอ้ปั่น ---
         "นมสดโอริโอ้ ปั่น": 35,
         "ชาไทยโอริโอ้ ปั่น": 35,
         "ชาเขียวโอริโอ้ ปั่น": 35,
@@ -626,11 +662,9 @@
         "นมเผือกโอริโอ้ ปั่น": 30,
         "นมสดโอริโอ้คาราเมล ปั่น": 35,
 
-        // --- ขนมปังปิ้ง ---
         "ปังเนยนมน้ำตาล": 20, "ปังเนยนม": 20,
         "ปังโอวัลติน": 25, "ปังโอริโอ้": 30,
 
-        // --- ของทอด / ทานเล่น ---
         "เฟรนช์ฟรายส์": 29,
         "ชีสบอล": 39,
         "ไก่ป๊อบ": 39,
@@ -639,7 +673,6 @@
         "ไส้กรอกแดง 25": 25,
         "ไส้กรอกแดง 30": 30,
 
-        // --- ข้าวกะเพรา / ข้าวเหนียวปิ้งย่าง ---
         "ข้าวกะเพรา 35": 35,
         "ข้าวกะเพรา 40": 40,
         "ข้าวกะเพรา 45": 45,
@@ -696,7 +729,6 @@
     backdateDateInput.value = formatDateYMD(initD);
     backdateTimeInput.value = initD.toTimeString().substring(0, 5);
 
-    // เปิด/ปิด แผงสรุปผลประกอบการ
     function toggleProfitPanel() {
         isProfitShown = !isProfitShown;
         if (isProfitShown) {
@@ -708,7 +740,6 @@
         }
     }
 
-    // เปิด/ปิด โหมดบันทึกออเดอร์ย้อนหลัง
     function toggleBackdateMode() {
         isBackdateActive = !isBackdateActive;
         if (isBackdateActive) {
@@ -1066,7 +1097,6 @@
             });
         }
 
-        // แสดงรายการต้นทุน
         expenseList.innerHTML = '';
         if (displayExpenses.length === 0) {
             expenseList.innerHTML = '<div class="empty-text">ยังไม่มีรายการต้นทุนในช่วงนี้</div>';
@@ -1211,6 +1241,66 @@
         document.getElementById('summaryView').style.display = tab === 'summary' ? 'block' : 'none';
         document.getElementById('expensesView').style.display = tab === 'expenses' ? 'block' : 'none';
         document.getElementById('pricesView').style.display = tab === 'prices' ? 'block' : 'none';
+    }
+
+    // ฟังก์ชันส่งรายงานสรุปยอดขายเข้า Telegram Bot
+    async function sendTelegramReport() {
+        const data = getFilteredData();
+        let totalS = 0, totalC = 0, totalP = 0;
+        data.sales.forEach(s => { totalS += Number(s.totalPrice); totalP += Number(s.qty); });
+        data.expenses.forEach(e => { totalC += Number(e.cost); });
+        const profit = totalS - totalC;
+
+        const dateTxt = (currentFilter === 'today') ? 'ประจำวันนี้' : selectDateInput.value;
+        const msg = `📊 *รายงานยอดขาย ฟลุ๊ค ชาเฟ่* (${dateTxt})\n` +
+                    `----------------------------\n` +
+                    `💰 *ยอดขายรวม:* ฿${totalS.toLocaleString()} (${totalP} รายการ)\n` +
+                    `💸 *ต้นทุนซื้อของ:* ฿${totalC.toLocaleString()}\n` +
+                    `📈 *กำไรสุทธิ:* ฿${profit.toLocaleString()}\n` +
+                    `----------------------------\n` +
+                    `🧋 เครื่องดื่ม: ${document.getElementById('catDrinkCount').innerText} (${document.getElementById('catDrinkSum').innerText})\n` +
+                    `🍟 ของทอด: ${document.getElementById('catSnackCount').innerText}\n` +
+                    `🍞 ขนมปัง: ${document.getElementById('catBreadCount').innerText}\n` +
+                    `🍳 อาหาร: ${document.getElementById('catFoodCount').innerText}`;
+
+        try {
+            const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage?chat_id=${TELEGRAM_CHAT_ID}&text=${encodeURIComponent(msg)}&parse_mode=Markdown`;
+            await fetch(url);
+            alert('ส่งรายงานเข้า Telegram เรียบร้อยแล้วครับ ✅');
+        } catch (e) {
+            alert('ไม่สามารถส่งข้อความได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต');
+        }
+    }
+
+    // ฟังก์ชัน Export ยอดขายเป็น Excel/CSV
+    function exportSalesToCSV() {
+        if (sales.length === 0) { alert('ไม่มีข้อมูลยอดขายสำหรับดาวน์โหลด'); return; }
+        let csv = '\uFEFFวันที่,เวลา,ชื่อเมนู,หมวดหมู่,ราคาต่อหน่วย,จำนวน,ราคารวม\n';
+        sales.forEach(s => {
+            csv += `"${s.date}","${s.time}","${s.name}","${s.category}",${s.unitPrice},${s.qty},${s.totalPrice}\n`;
+        });
+        downloadBlob(csv, `FLUKCHAFE_Sales_${formatDateYMD(new Date())}.csv`);
+    }
+
+    // ฟังก์ชัน Export ต้นทุนเป็น Excel/CSV
+    function exportExpensesToCSV() {
+        if (expenses.length === 0) { alert('ไม่มีข้อมูลต้นทุนสำหรับดาวน์โหลด'); return; }
+        let csv = '\uFEFFวันที่,เวลา,รายการซื้อของ,จำนวนเงินต้นทุน\n';
+        expenses.forEach(e => {
+            csv += `"${e.date}","${e.time}","${e.name}",${e.cost}\n`;
+        });
+        downloadBlob(csv, `FLUKCHAFE_Expenses_${formatDateYMD(new Date())}.csv`);
+    }
+
+    function downloadBlob(content, filename) {
+        const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', filename);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
 
     renderUI();
