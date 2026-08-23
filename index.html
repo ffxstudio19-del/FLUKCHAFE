@@ -503,7 +503,7 @@
         </div>
     </div>
 
-    <!-- กล่องยอดขายรวม และสรุปผลประกอบการ แยกรับเงินสด/สแกนจ่าย -->
+    <!-- กล่องยอดขายรวม และสรุปผลประกอบการ -->
     <div class="total-banner">
         <div class="amount" id="totalSales">฿0</div>
         <div class="sub" id="totalSalesSub">ยอดขายรวม</div>
@@ -782,6 +782,21 @@
 
     function formatThaiDateTime(dateStr, timeStr) {
         if (!dateStr) return timeStr ? `${timeStr} น.` : '';
+        
+        const now = new Date();
+        const todayStr = formatDateYMD(now);
+        
+        const yesterday = new Date();
+        yesterday.setDate(now.getDate() - 1);
+        const yesterdayStr = formatDateYMD(yesterday);
+
+        // ถ้าเป็นวันนี้ หรือเมื่อวานนี้ ให้แสดงเป็นคำพูดเข้าใจง่าย
+        if (dateStr === todayStr) {
+            return `วันนี้ • ${timeStr} น.`;
+        } else if (dateStr === yesterdayStr) {
+            return `เมื่อวานนี้ • ${timeStr} น.`;
+        }
+
         const parts = dateStr.split('-');
         if (parts.length === 3) {
             const year = parseInt(parts[0], 10);
@@ -791,7 +806,7 @@
             const monthName = THAI_MONTHS_SHORT[monthIdx] || parts[1];
             return `${day} ${monthName} ${thaiYearShort} • ${timeStr} น.`;
         }
-        return `${dateStr} ${timeStr} น.`;
+        return `${dateStr} • ${timeStr} น.`;
     }
 
     function formatDateYMD(d) {
