@@ -3,13 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>บันทึกยอดขายหน้าร้าน</title>
+    <title>FLUKCHAFE POS</title>
+    
+    <!-- โลโก้ไอคอนสำหรับเปิดบนเบราว์เซอร์และหน้าจอโฮมมือถือ -->
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
+    
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; font-family: 'Kanit', sans-serif; margin: 0; padding: 0; }
         body { background-color: #f1f5f9; padding: 12px; color: #1e293b; }
         .container { max-width: 480px; margin: 0 auto; background: #fff; border-radius: 16px; padding: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         
+        /* ส่วนหัวโลโก้ร้าน */
+        .brand-header {
+            text-align: center;
+            margin-bottom: 14px;
+        }
+        .brand-logo {
+            width: 75px;
+            height: 75px;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+            border: 2px solid #0284c7;
+        }
+        .brand-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin-top: 4px;
+        }
+
         .total-banner {
             background: #0f172a;
             color: #fff;
@@ -153,12 +178,18 @@
 <body>
 
 <div class="container">
+    <!-- โลโก้และชื่อร้าน -->
+    <div class="brand-header">
+        <img src="logo.png" alt="FLUKCHAFE" class="brand-logo" onerror="this.style.display='none'">
+        <div class="brand-name">FLUKCHAFE</div>
+    </div>
+
     <div class="total-banner">
         <div class="amount" id="totalAmount">฿0</div>
         <div class="sub" id="totalItems">ยอดขายรวมวันนี้</div>
     </div>
 
-    <!-- กล่องสรุปแยก 4 หมวดหมู่ -->
+    <!-- สรุปแยก 4 หมวดหมู่ -->
     <div class="category-summary-grid">
         <div class="cat-box">
             <div class="cat-title">🧋 เครื่องดื่ม</div>
@@ -182,7 +213,7 @@
         </div>
     </div>
 
-    <!-- ตัวเลือกหมวดหมู่ด่วน -->
+    <!-- แป้นเลือกหมวดหมู่อัตโนมัติ/ระบุเอง -->
     <div class="cat-selector">
         <button type="button" class="cat-btn active" onclick="setCategory('auto', this)">🤖 ออโต้</button>
         <button type="button" class="cat-btn" onclick="setCategory('เครื่องดื่ม', this)">🧋 น้ำ</button>
@@ -190,7 +221,7 @@
         <button type="button" class="cat-btn" onclick="setCategory('ขนมปังปิ้ง', this)">🍞 ปังปิ้ง</button>
     </div>
 
-    <!-- ช่องพิมพ์ด่วน -->
+    <!-- ช่องกรอกรายการขาย -->
     <form id="quickForm" class="quick-input-box" onsubmit="return handleAdd(event)">
         <input 
             type="text" 
