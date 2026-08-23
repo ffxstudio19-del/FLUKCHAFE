@@ -89,7 +89,6 @@
             color: #0f172a;
         }
 
-        /* กล่องยอดขายรวม */
         .total-banner {
             background: #0f172a;
             color: #fff;
@@ -196,7 +195,6 @@
         }
         .btn-order-submit:active { background: #0369a1; transform: scale(0.98); }
 
-        /* แถบควบคุมโหมดลงย้อนหลัง */
         .backdate-control {
             display: flex;
             align-items: center;
@@ -392,7 +390,6 @@
             background: #fff;
         }
 
-        /* ส่วน Export รายงาน Excel (CSV) ซ่อนไว้ด้านล่างหน้าตั้งค่า */
         .export-section {
             margin-top: 16px;
             padding-top: 12px;
@@ -411,6 +408,23 @@
             cursor: pointer;
         }
         .btn-export:active { background: #059669; }
+        
+        .btn-sheets-link {
+            width: 100%;
+            background: #0f766e;
+            color: #fff;
+            border: none;
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-bottom: 6px;
+            cursor: pointer;
+            display: block;
+            text-align: center;
+            text-decoration: none;
+        }
+        .btn-sheets-link:active { background: #115e59; }
     </style>
 </head>
 <body>
@@ -439,7 +453,7 @@
         <input type="month" id="selectMonthInput" onchange="renderUI()">
     </div>
 
-    <!-- กล่องยอดขายรวม พร้อมปุ่มซ่อน/แสดง สรุปผลประกอบการ -->
+    <!-- กล่องยอดขายรวม -->
     <div class="total-banner">
         <div class="amount" id="totalSales">฿0</div>
         <div class="sub" id="totalSalesSub">ยอดขายรวม</div>
@@ -507,7 +521,6 @@
         </div>
         <div id="suggestBox" class="suggest-box"></div>
 
-        <!-- แถบปุ่มเปิด/ปิด โหมดลงออเดอร์ย้อนหลัง -->
         <div class="backdate-control">
             <span style="font-size:0.72rem; color:#64748b;">💡 พิมพ์ค้นหาแล้วแตะเลือกได้ทันที</span>
             <button type="button" class="btn-toggle-backdate" id="btnToggleBackdate" onclick="toggleBackdateMode()">
@@ -515,7 +528,6 @@
             </button>
         </div>
 
-        <!-- กล่องเลือกวัน-เวลาย้อนหลัง -->
         <div class="backdate-box" id="backdateBox">
             <div class="backdate-box-title">⚠️ โหมดลงออเดอร์ย้อนหลัง (ระบุวันและเวลา)</div>
             <div class="backdate-inputs">
@@ -550,7 +562,7 @@
         <div id="expenseList"></div>
     </div>
 
-    <!-- หน้าจัดการราคาเมนู + ซ่อนปุ่ม Export รายงาน Excel ไว้ด้านล่าง -->
+    <!-- หน้าจัดการราคาเมนู + ส่วนซ่อน Export Excel / Google Sheets -->
     <div class="list-container" id="pricesView" style="display: none;">
         <div class="price-mgr-form">
             <input type="text" id="newMenuName" placeholder="ชื่อเมนู เช่น ชาไทย ปั่น" style="flex:2;">
@@ -562,23 +574,27 @@
         </div>
         <div id="priceSettingList"></div>
 
-        <!-- เมนูซ่อน: Export Excel / CSV -->
+        <!-- เมนูซ่อน: Export Excel / CSV & ลิงก์ Google Sheets -->
         <div class="export-section">
-            <div style="font-size: 0.75rem; color: #64748b; font-weight: 600; margin-bottom: 6px;">📊 ส่งออกรายงานข้อมูล (Excel / CSV)</div>
-            <button type="button" class="btn-export" onclick="exportSalesToCSV()">📥 ดาวน์โหลดรายงานยอดขาย (CSV)</button>
-            <button type="button" class="btn-export" style="background:#6366f1;" onclick="exportExpensesToCSV()">📥 ดาวน์โหลดรายงานต้นทุน (CSV)</button>
+            <div style="font-size: 0.75rem; color: #64748b; font-weight: 600; margin-bottom: 6px;">📊 จัดการข้อมูล & รายงาน (Google Sheets / Excel)</div>
+            <button type="button" class="btn-sheets-link" onclick="openGoogleSheets()">🟢 เปิดดูข้อมูลบน Google Sheets</button>
+            <button type="button" class="btn-export" onclick="exportSalesToCSV()">📥 ดาวน์โหลดรายงานยอดขาย (CSV/Excel)</button>
+            <button type="button" class="btn-export" style="background:#6366f1;" onclick="exportExpensesToCSV()">📥 ดาวน์โหลดรายงานต้นทุน (CSV/Excel)</button>
         </div>
     </div>
 </div>
 
 <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbzr8lEc78rzKvRvYsgKpBkiH-E7zrpdt8oj_o9oJ6PCvMh7gcfJUrUwmMo-J1uHHVXWJQ/exec";
+    
+    // ลิงก์ Google Sheets จริงของร้าน ฟลุ๊ค ชาเฟ่
+    const GOOGLE_SHEETS_URL = "https://docs.google.com/spreadsheets/d/1EEU-LsVCzD8jbisYSVmy5jMjdTotGOgIW-4ASJlzqYU/edit";
+
     const STORAGE_KEY = 'FLUKCHAFE_SHARED_DB_V5';
     const MENU_PRICES_KEY = 'FLUKCHAFE_SHARED_PRICES_V5';
     const EXPENSES_KEY = 'FLUKCHAFE_SHARED_EXP_V5';
     
     const DEFAULT_PRESET_PRICES = {
-        // --- กาแฟ ---
         "เอสเพรสโซ่ เย็น": 30, "เอสเพรสโซ่ ปั่น": 35,
         "คาปูชิโน่ เย็น": 30, "คาปูชิโน่ ปั่น": 35,
         "ลาเต้ เย็น": 30, "ลาเต้ ปั่น": 35,
@@ -590,7 +606,6 @@
         "อเมริกาโน่น้ำผึ้งมะนาว เย็น": 40, "อเมริกาโน่น้ำผึ้งมะนาว ปั่น": 45,
         "อเมริกาโน่ลิ้นจี่ เย็น": 40, "อเมริกาโน่ลิ้นจี่ ปั่น": 45,
 
-        // --- ชา & นม & เมนูประจำร้าน ---
         "ชาไทย เย็น": 25, "ชาไทย ปั่น": 30,
         "ชาเขียว เย็น": 25, "ชาเขียว ปั่น": 30,
         "ชานม เย็น": 25, "ชานม ปั่น": 30,
@@ -614,7 +629,6 @@
         "มะพร้าวนมสด เย็น": 25, "มะพร้าวนมสด ปั่น": 30,
         "โอริโอ้ ปั่น": 30,
 
-        // --- สตรอว์เบอร์รี (Strawberry Menu) ---
         "นมสดสตรอว์เบอร์รี เย็น": 30, "นมสดสตรอว์เบอร์รี ปั่น": 35,
         "นมสดสตอเบอรี่ เย็น": 30, "นมสดสตอเบอรี่ ปั่น": 35,
         "สตรอว์เบอร์รี เย็น": 25, "สตรอว์เบอร์รี ปั่น": 30,
@@ -623,11 +637,9 @@
         "สตอเบอรี่โซดา เย็น": 25, "สตอเบอรี่โซดา ปั่น": 30,
         "สตรอว์เบอร์รีโยเกิร์ต ปั่น": 35, "สตอเบอรี่โยเกิร์ต ปั่น": 35,
 
-        // --- สมูทตี้ผลไม้ปั่น ---
         "แอปเปิ้ล ปั่น": 30, "บลูฮาวาย ปั่น": 30, "ลิ้นจี่ ปั่น": 30, "กีวี่ ปั่น": 30,
         "ส้ม ปั่น": 30, "องุ่น ปั่น": 30, "บลูเบอร์รี่ ปั่น": 30,
 
-        // --- อิตาเลียนโซดา ---
         "แดงโซดา เย็น": 25, "แดงโซดา ปั่น": 30,
         "แดงมะนาวโซดา เย็น": 25, "แดงมะนาวโซดา ปั่น": 30,
         "เขียวโซดา เย็น": 25, "เขียวโซดา ปั่น": 30,
@@ -642,7 +654,6 @@
         "บลูเบอร์รี่โซดา เย็น": 25, "บลูเบอร์รี่โซดา ปั่น": 30,
         "น้ำผึ้งมะนาวโซดา เย็น": 25, "น้ำผึ้งมะนาวโซดา ปั่น": 30,
 
-        // --- เมนูโอริโอ้ปั่น ---
         "นมสดโอริโอ้ ปั่น": 35,
         "ชาไทยโอริโอ้ ปั่น": 35,
         "ชาเขียวโอริโอ้ ปั่น": 35,
@@ -653,11 +664,9 @@
         "นมเผือกโอริโอ้ ปั่น": 30,
         "นมสดโอริโอ้คาราเมล ปั่น": 35,
 
-        // --- ขนมปังปิ้ง ---
         "ปังเนยนมน้ำตาล": 20, "ปังเนยนม": 20,
         "ปังโอวัลติน": 25, "ปังโอริโอ้": 30,
 
-        // --- ของทอด / ทานเล่น ---
         "เฟรนช์ฟรายส์": 29,
         "ชีสบอล": 39,
         "ไก่ป๊อบ": 39,
@@ -666,7 +675,6 @@
         "ไส้กรอกแดง 25": 25,
         "ไส้กรอกแดง 30": 30,
 
-        // --- ข้าวกะเพรา / ข้าวเหนียวปิ้งย่าง ---
         "ข้าวกะเพรา 35": 35,
         "ข้าวกะเพรา 40": 40,
         "ข้าวกะเพรา 45": 45,
@@ -722,6 +730,14 @@
     selectMonthInput.value = `${initD.getFullYear()}-${String(initD.getMonth() + 1).padStart(2, '0')}`;
     backdateDateInput.value = formatDateYMD(initD);
     backdateTimeInput.value = initD.toTimeString().substring(0, 5);
+
+    function openGoogleSheets() {
+        if (GOOGLE_SHEETS_URL && GOOGLE_SHEETS_URL.includes("docs.google.com")) {
+            window.open(GOOGLE_SHEETS_URL, '_blank');
+        } else {
+            alert('กรุณาระบุ URL ของ Google Sheets ในโค้ดก่อนใช้งานครับ');
+        }
+    }
 
     function toggleProfitPanel() {
         isProfitShown = !isProfitShown;
@@ -1091,7 +1107,6 @@
             });
         }
 
-        // แสดงรายการต้นทุน
         expenseList.innerHTML = '';
         if (displayExpenses.length === 0) {
             expenseList.innerHTML = '<div class="empty-text">ยังไม่มีรายการต้นทุนในช่วงนี้</div>';
@@ -1238,7 +1253,6 @@
         document.getElementById('pricesView').style.display = tab === 'prices' ? 'block' : 'none';
     }
 
-    // ฟังก์ชัน Export ยอดขายเป็น Excel/CSV
     function exportSalesToCSV() {
         if (sales.length === 0) { alert('ไม่มีข้อมูลยอดขายสำหรับดาวน์โหลด'); return; }
         let csv = '\uFEFFวันที่,เวลา,ชื่อเมนู,หมวดหมู่,ราคาต่อหน่วย,จำนวน,ราคารวม\n';
@@ -1248,7 +1262,6 @@
         downloadBlob(csv, `FLUKCHAFE_Sales_${formatDateYMD(new Date())}.csv`);
     }
 
-    // ฟังก์ชัน Export ต้นทุนเป็น Excel/CSV
     function exportExpensesToCSV() {
         if (expenses.length === 0) { alert('ไม่มีข้อมูลต้นทุนสำหรับดาวน์โหลด'); return; }
         let csv = '\uFEFFวันที่,เวลา,รายการซื้อของ,จำนวนเงินต้นทุน\n';
