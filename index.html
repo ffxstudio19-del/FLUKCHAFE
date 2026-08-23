@@ -48,18 +48,17 @@
             cursor: pointer;
         }
 
-        /* แถบเลือกช่วงเวลา 5 ช่อง */
         .time-filter {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
+            grid-template-columns: 1fr 1.25fr 1.35fr 1fr;
             gap: 3px;
             background: #e2e8f0;
             padding: 3px;
             border-radius: 10px;
-            margin-bottom: 10px;
+            margin-bottom: 6px;
         }
         .filter-btn {
-            padding: 7px 1px;
+            padding: 6px 2px;
             border: none;
             background: transparent;
             border-radius: 8px;
@@ -74,6 +73,37 @@
             color: #0284c7;
             font-weight: 600;
             box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+        }
+
+        .custom-filter-box {
+            display: none;
+            margin-bottom: 10px;
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 8px 10px;
+        }
+        .custom-filter-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .filter-input-group label {
+            display: block;
+            font-size: 0.7rem;
+            color: #475569;
+            margin-bottom: 3px;
+            font-weight: 600;
+        }
+        .filter-input-group input {
+            width: 100%;
+            padding: 5px 6px;
+            border-radius: 6px;
+            border: 1.5px solid #0284c7;
+            font-size: 0.75rem;
+            outline: none;
+            background: #fff;
+            color: #0f172a;
         }
 
         .total-banner {
@@ -424,13 +454,26 @@
         <div id="syncStatus" class="sync-badge" onclick="loadFromCloud()">🔄 ซิงค์ข้อมูล Cloud</div>
     </div>
 
-    <!-- แถบเลือกช่วงเวลา 5 ช่วงเวลา -->
+    <!-- แถบเลือกช่วงเวลา (คำมาตรฐานทางการ) -->
     <div class="time-filter">
         <button type="button" class="filter-btn active" onclick="setTimeFilter('today', this)">☀️ วันนี้</button>
         <button type="button" class="filter-btn" onclick="setTimeFilter('week', this)">📅 อาทิตย์นี้</button>
-        <button type="button" class="filter-btn" onclick="setTimeFilter('month', this)">🗓️ เดือนนี้</button>
-        <button type="button" class="filter-btn" onclick="setTimeFilter('year', this)">📆 ปีนี้</button>
-        <button type="button" class="filter-btn" onclick="setTimeFilter('all', this)">📋 ทั้งหมด</button>
+        <button type="button" class="filter-btn" onclick="setTimeFilter('custom', this)">📆 เดือน</button>
+        <button type="button" class="filter-btn" onclick="setTimeFilter('all', this)">📋 ยอดรวมทั้งหมด</button>
+    </div>
+
+    <!-- กล่องเลือกวันที่และเดือนในแถวเดียว -->
+    <div class="custom-filter-box" id="customFilterBox">
+        <div class="custom-filter-grid">
+            <div class="filter-input-group">
+                <label>📆 ระบุวันที่:</label>
+                <input type="date" id="selectDateInput" onchange="applyCustomFilter('date')">
+            </div>
+            <div class="filter-input-group">
+                <label>🗓️ ระบุประจำเดือน:</label>
+                <input type="month" id="selectMonthInput" onchange="applyCustomFilter('month')">
+            </div>
+        </div>
     </div>
 
     <!-- กล่องยอดขายรวม -->
@@ -668,6 +711,7 @@
     
     let selectedCategory = 'auto';
     let currentFilter = 'today';
+    let customFilterType = 'date';
     let isProfitShown = false;
     let isBackdateActive = false;
 
@@ -684,6 +728,9 @@
     const expenseList = document.getElementById('expenseList');
     const priceSettingList = document.getElementById('priceSettingList');
     const syncStatus = document.getElementById('syncStatus');
+    const customFilterBox = document.getElementById('customFilterBox');
+    const selectDateInput = document.getElementById('selectDateInput');
+    const selectMonthInput = document.getElementById('selectMonthInput');
     const priceSearchInput = document.getElementById('priceSearchInput');
 
     const btnToggleBackdate = document.getElementById('btnToggleBackdate');
@@ -699,6 +746,8 @@
     }
 
     const initD = new Date();
+    selectDateInput.value = formatDateYMD(initD);
+    selectMonthInput.value = `${initD.getFullYear()}-${String(initD.getMonth() + 1).padStart(2, '0')}`;
     backdateDateInput.value = formatDateYMD(initD);
     backdateTimeInput.value = initD.toTimeString().substring(0, 5);
 
@@ -818,6 +867,14 @@
         currentFilter = filter;
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
+
+        customFilterBox.style.display = (filter === 'custom') ? 'block' : 'none';
+
+        renderUI();
+    }
+
+    function applyCustomFilter(type) {
+        customFilterType = type;
         renderUI();
     }
 
@@ -985,28 +1042,31 @@
                 return itemTs >= todayStart && itemTs <= todayEnd;
             };
         } else if (currentFilter === 'week') {
-            // คำนวณวันจันทร์ต้นสัปดาห์นี้
-            const dayOfWeek = now.getDay() || 7; // 1=จันทร์ ... 7=อาทิตย์
-            const mondayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek + 1).getTime();
-            const sundayEnd = mondayStart + (7 * 24 * 60 * 60 * 1000) - 1;
+            const weekStart = todayStart - (6 * 24 * 60 * 60 * 1000);
             filterFn = item => {
                 const itemTs = Number(item.ts) || Number(item.id) || 0;
-                return itemTs >= mondayStart && itemTs <= sundayEnd;
+                return itemTs >= weekStart && itemTs <= todayEnd;
             };
-        } else if (currentFilter === 'month') {
-            const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
-            const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1).getTime() - 1;
-            filterFn = item => {
-                const itemTs = Number(item.ts) || Number(item.id) || 0;
-                return itemTs >= monthStart && itemTs <= monthEnd;
-            };
-        } else if (currentFilter === 'year') {
-            const yearStart = new Date(now.getFullYear(), 0, 1).getTime();
-            const yearEnd = new Date(now.getFullYear() + 1, 0, 1).getTime() - 1;
-            filterFn = item => {
-                const itemTs = Number(item.ts) || Number(item.id) || 0;
-                return itemTs >= yearStart && itemTs <= yearEnd;
-            };
+        } else if (currentFilter === 'custom') {
+            if (customFilterType === 'date') {
+                const selDate = selectDateInput.value;
+                const [y, m, d] = selDate.split('-').map(Number);
+                const dayStart = new Date(y, m - 1, d).getTime();
+                const dayEnd = dayStart + (24 * 60 * 60 * 1000) - 1;
+                filterFn = item => {
+                    const itemTs = Number(item.ts) || Number(item.id) || 0;
+                    return itemTs >= dayStart && itemTs <= dayEnd;
+                };
+            } else if (customFilterType === 'month') {
+                const selMonth = selectMonthInput.value;
+                const [y, m] = selMonth.split('-').map(Number);
+                const mStart = new Date(y, m - 1, 1).getTime();
+                const mEnd = new Date(y, m, 1).getTime() - 1;
+                filterFn = item => {
+                    const itemTs = Number(item.ts) || Number(item.id) || 0;
+                    return itemTs >= mStart && itemTs <= mEnd;
+                };
+            }
         }
 
         return {
