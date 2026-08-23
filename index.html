@@ -1009,7 +1009,7 @@
             <div class="cat-box"><div class="cat-title">🧋 เครื่องดื่ม</div><div class="cat-val" id="catDrinkSum">฿0</div><div class="cat-count" id="catDrinkCount">0 แก้ว</div></div>
             <div class="cat-box"><div class="cat-title">🍟 ของทอด/ทานเล่น</div><div class="cat-val" id="catSnackSum">฿0</div><div class="cat-count" id="catSnackCount">0 รายการ</div></div>
             <div class="cat-box"><div class="cat-title">🍞 ปังปิ้ง</div><div class="cat-val" id="catBreadSum">฿0</div><div class="cat-count" id="catBreadCount">0 ชิ้น</div></div>
-            <div class="cat-box"><div class="cat-title">🍳 กะเพรา/อาหาร</div><div class="cat-val" id="catFoodSum">฿0</div><div class="cat-count" id="catFoodCount">0 ชุด/จาน</div></div>
+            <div class="cat-box"><div class="cat-title">🍳 อาหาร/กะเพรา</div><div class="cat-val" id="catFoodSum">฿0</div><div class="cat-count" id="catFoodCount">0 ชุด/จาน</div></div>
         </div>
 
         <div class="cat-selector">
@@ -1217,10 +1217,9 @@
         "ข้าวเหนียว 10": 10
     };
 
-    // 🌟 ระบบจับคู่ภาพอัตโนมัติจากหมวดหมู่หรือชื่อเมนู (ไม่ต้องใส่ทีละภาพ!)
-    // คุณสามารถเปลี่ยนลิงก์ภาพด้านล่างเป็นลิงก์ภาพจริงของร้านคุณได้เลย
+    // 🌟 ภาพตัวอย่างเมนูแยกตามหมวดหมู่ (คัดสรรมาอย่างดี ไม่ซ้ำกัน ดูพรีเมียม)
     const DEFAULT_CATEGORY_IMAGES = {
-        "เครื่องดื่ม": "https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=300&q=80",
+        "เครื่องดื่ม": "https://images.unsplash.com/photo-1541167760496-1628856ab772?w=300&q=80",
         "ของทอด/ทานเล่น": "https://images.unsplash.com/photo-1576107232684-1279f390859f?w=300&q=80",
         "ขนมปังปิ้ง": "https://images.unsplash.com/photo-1584776296944-ab6fb5763875?w=300&q=80",
         "อาหาร/กะเพรา": "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=300&q=80"
@@ -1416,7 +1415,6 @@
         return 'เครื่องดื่ม';
     }
 
-    // ฟังก์ชันดึงรูปภาพ: ตรวจสอบภาพที่บันทึกไว้ก่อน ถ้าไม่มีจะดึงภาพจากหมวดเลขอัตโนมัติทันที
     function getMenuImage(name) {
         if (imageBook[name]) return imageBook[name];
         const cat = detectCategory(name);
