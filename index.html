@@ -374,7 +374,7 @@
         
         <div>
             <button type="button" class="btn-toggle-profit" id="btnToggleProfit" onclick="toggleProfitPanel()">
-                🔍 เช็ค ต้นทุน/กำไร
+                📊 สรุปผลประกอบการ
             </button>
         </div>
 
@@ -628,10 +628,10 @@
         isProfitShown = !isProfitShown;
         if (isProfitShown) {
             secretProfitPanel.style.display = 'grid';
-            btnToggleProfit.innerText = '🔒 ซ่อน ต้นทุน/กำไร';
+            btnToggleProfit.innerText = '🔒 ปิดผลประกอบการ';
         } else {
             secretProfitPanel.style.display = 'none';
-            btnToggleProfit.innerText = '🔍 เช็ค ต้นทุน/กำไร';
+            btnToggleProfit.innerText = '📊 สรุปผลประกอบการ';
         }
     }
 
