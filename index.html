@@ -11,17 +11,40 @@
     <style>
         * { box-sizing: border-box; font-family: 'Kanit', sans-serif; margin: 0; padding: 0; }
         
-        /* พื้นหลังดึงไฟล์ bg.gif เคลื่อนไหววนลูปเต็มจอ */
         body { 
-            background: #090d16 url('bg.gif') no-repeat center center fixed;
-            background-size: cover;
+            background-color: #090d16;
             min-height: 100vh;
             padding: 12px; 
             color: #1e293b; 
             position: relative;
+            overflow-x: hidden;
         }
 
-        /* กล่องหลักแบบโปร่งใส Glassmorphism สวยงาม */
+        /* เลเยอร์ภาพพื้นหลังเคลื่อนไหวแบบ GIF เล่นวนลูปตลอดเวลา */
+        .bg-gif-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            z-index: -2;
+            pointer-events: none;
+        }
+
+        /* เลเยอร์กรองแสงจางๆ เพื่อให้อ่านตัวหนังสือชัดเจน */
+        .bg-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(9, 13, 22, 0.25);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* เมนคอนเทนเนอร์แบบ Glassmorphism สวยงาม */
         .container { 
             max-width: 480px; 
             margin: 0 auto; 
@@ -396,6 +419,10 @@
 </head>
 <body>
 
+<!-- เลเยอร์ภาพ GIF เคลื่อนไหว -->
+<img src="bg.gif" class="bg-gif-layer" alt="Background" onerror="this.style.display='none'">
+<div class="bg-overlay"></div>
+
 <div class="container">
     <div class="brand-header">
         <img src="logo.png" alt="FLUKCHAFE" class="brand-logo" onerror="this.style.display='none'">
@@ -404,6 +431,7 @@
         <div id="syncStatus" class="sync-badge" onclick="loadFromCloud()">🔄 ซิงค์ข้อมูล Cloud</div>
     </div>
 
+    <!-- แถบเลือกช่วงเวลา -->
     <div class="time-filter">
         <button type="button" class="filter-btn active" onclick="setTimeFilter('today', this)">☀️ วันนี้</button>
         <button type="button" class="filter-btn" onclick="setTimeFilter('week', this)">📅 7 วัน</button>
@@ -516,6 +544,7 @@
         <div id="menuSummaryList"></div>
     </div>
 
+    <!-- หน้าบันทึกต้นทุนซื้อของเข้าร้าน -->
     <div class="list-container" id="expensesView" style="display: none;">
         <div class="price-mgr-form">
             <input type="text" id="newExpenseName" placeholder="รายการซื้อของ เช่น ชา/นม/ของทอด" style="flex:2;">
@@ -525,6 +554,7 @@
         <div id="expenseList"></div>
     </div>
 
+    <!-- หน้าจัดการราคาเมนู -->
     <div class="list-container" id="pricesView" style="display: none;">
         <div class="price-mgr-form">
             <input type="text" id="newMenuName" placeholder="ชื่อเมนู เช่น ชาไทย ปั่น" style="flex:2;">
