@@ -1063,8 +1063,12 @@
                     <input type="text" id="newMenuName" placeholder="ชื่อเมนู เช่น ชาไทย ปั่น" style="flex:2;">
                     <input type="number" id="newMenuPrice" placeholder="ราคา" style="flex:1;">
                 </div>
-                <!-- ปรับแก้ให้รองรับข้อความลิงก์ยาวๆ หรือ Direct Link ได้อย่างอิสระ -->
-                <input type="text" id="newMenuImage" placeholder="🔗 วางลิงก์รูปภาพตรงนี้ (Direct Link)">
+                <!-- 🌟 อัปเกรดใหม่: สามารถเลือกไฟล์รูปจากเครื่อง/มือถือมาใส่ได้เลยทันที -->
+                <div style="display: flex; gap: 6px; align-items: center;">
+                    <input type="text" id="newMenuImage" placeholder="🔗 ลิงก์รูปภาพ หรือเลือกไฟล์ด้านข้าง" style="flex:1;">
+                    <input type="file" id="imageFilePicker" accept="image/*" style="display:none;" onchange="handleImageUpload(this)">
+                    <button type="button" onclick="document.getElementById('imageFilePicker').click()" style="background:#334155; white-space:nowrap; padding: 8px 10px;">📁 เลือกรูป</button>
+                </div>
                 <button type="button" onclick="addOrUpdatePrice()">💾 บันทึกเมนู & รูปภาพ</button>
             </div>
             <div class="price-search-box">
@@ -1406,6 +1410,17 @@
         if (n.includes('เฟรน') || n.includes('ฟราย') || n.includes('ชีส') || n.includes('บอล') || n.includes('ป๊อบ') || n.includes('เก็ต') || n.includes('ไส้กรอก') || n.includes('ทอด') || n.includes('ลูกชิ้น')) return 'ของทอด/ทานเล่น';
         if (n.includes('กะเพรา') || n.includes('ข้าว') || n.includes('หมูปิ้ง') || n.includes('ไก่ย่าง') || n.includes('ไข่ดาว') || n.includes('ผัด') || n.includes('มาม่า') || n.includes('ยำ')) return 'อาหาร/กะเพรา';
         return 'เครื่องดื่ม';
+    }
+
+    // 🌟 แปลงรูปภาพที่เลือกจากเครื่องเป็นรหัสข้อมูล (Base64) โดยตรง เพื่อให้รูปขึ้นแน่นอน 100%
+    function handleImageUpload(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('newMenuImage').value = e.target.result;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
     }
 
     function getMenuImage(name) {
