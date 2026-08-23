@@ -48,21 +48,22 @@
             cursor: pointer;
         }
 
+        /* แถบเลือกช่วงเวลา */
         .time-filter {
-            display: flex;
-            gap: 4px;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 3px;
             background: #e2e8f0;
             padding: 3px;
             border-radius: 10px;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
         .filter-btn {
-            flex: 1;
-            padding: 6px;
+            padding: 6px 2px;
             border: none;
             background: transparent;
             border-radius: 8px;
-            font-size: 0.78rem;
+            font-size: 0.72rem;
             font-weight: 500;
             cursor: pointer;
             color: #64748b;
@@ -72,6 +73,22 @@
             color: #0284c7;
             font-weight: 600;
             box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+        }
+
+        /* ช่องเลือกวัน/เดือนแบบเจาะจง */
+        .custom-date-picker {
+            display: none;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .custom-date-picker input {
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 1.5px solid #0284c7;
+            font-size: 0.85rem;
+            outline: none;
+            background: #fff;
+            color: #0f172a;
         }
 
         .total-banner {
@@ -237,11 +254,21 @@
         <div id="syncStatus" class="sync-badge" onclick="loadFromCloud()">🔄 ซิงค์ข้อมูล Cloud</div>
     </div>
 
+    <!-- แถบเลือกช่วงเวลา -->
     <div class="time-filter">
         <button type="button" class="filter-btn active" onclick="setTimeFilter('today', this)">☀️ วันนี้</button>
         <button type="button" class="filter-btn" onclick="setTimeFilter('week', this)">📅 7 วัน</button>
-        <button type="button" class="filter-btn" onclick="setTimeFilter('month', this)">🗓️ เดือนนี้</button>
+        <button type="button" class="filter-btn" onclick="setTimeFilter('custom-day', this)">📆 เลือกวัน</button>
+        <button type="button" class="filter-btn" onclick="setTimeFilter('custom-month', this)">🗓️ เลือกเดือน</button>
         <button type="button" class="filter-btn" onclick="setTimeFilter('all', this)">📋 ทั้งหมด</button>
+    </div>
+
+    <!-- กล่องเลือกวันที่ / เลือกเดือน -->
+    <div class="custom-date-picker" id="datePickerContainer">
+        <input type="date" id="selectDateInput" onchange="renderUI()">
+    </div>
+    <div class="custom-date-picker" id="monthPickerContainer">
+        <input type="month" id="selectMonthInput" onchange="renderUI()">
     </div>
 
     <div class="total-banner">
@@ -293,7 +320,7 @@
         </div>
         <datalist id="menuListOptions"></datalist>
         <div class="hint">
-            💡 <b>พิมพ์ง่าย:</b> <code>ชาไทยเย็น 25</code> (ครั้งแรก) ต่อไปพิมพ์แค่ <code>ชีสบอล 2</code> หรือ <code>กะเพรา 2</code> ได้เลย
+            💡 <b>ระบบจำราคา:</b> พิมพ์แค่ <code>ชาไทยเย็น</code> หรือ <code>ชีสบอล 2</code> ได้เลย
         </div>
     </form>
 
@@ -326,30 +353,17 @@
     const STORAGE_KEY = 'FLUKCHAFE_SHARED_DB_V5';
     const MENU_PRICES_KEY = 'FLUKCHAFE_SHARED_PRICES_V5';
     
-    // รายการเมนูเริ่มต้นของร้าน ฟลุ๊ค ชาเฟ่
     const DEFAULT_PRESET_PRICES = {
-        "ชาไทยเย็น": 25,
-        "ชาไทยปั่น": 30,
-        "ชาเขียวเย็น": 25,
-        "ชาเขียวปั่น": 30,
-        "นมสดเย็น": 25,
-        "นมสดปั่น": 30,
-        "โกโก้เย็น": 25,
-        "โกโก้ปั่น": 30,
-        "ปังปิ้งเนยนม": 20,
-        "ปังปิ้งช็อกโกแลต": 20,
-        "ปังปิ้งสังขยา": 25,
-        "เฟรนช์ฟรายส์": 39,
-        "ชีสบอล": 39,
-        "ไก่ป๊อบ": 39,
-        "นักเก็ตไก่": 39,
+        "ชาไทยเย็น": 25, "ชาไทยปั่น": 30,
+        "ชาเขียวเย็น": 25, "ชาเขียวปั่น": 30,
+        "นมสดเย็น": 25, "นมสดปั่น": 30,
+        "โกโก้เย็น": 25, "โกโก้ปั่น": 30,
+        "ปังปิ้งเนยนม": 20, "ปังปิ้งช็อกโกแลต": 20, "ปังปิ้งสังขยา": 25,
+        "เฟรนช์ฟรายส์": 39, "ชีสบอล": 39, "ไก่ป๊อบ": 39, "นักเก็ตไก่": 39,
         "ไส้กรอกแดงทอดกรอบ": 30,
-        "ข้าวกะเพรา": 45,
-        "ข้าวกะเพราไข่ดาว": 55,
-        "ข้าวเหนียวหมูปิ้ง": 35,
-        "ข้าวเหนียวไก่ย่างแดง": 40,
-        "หมูปิ้ง": 10,
-        "ไก่ย่างแดง": 20
+        "ข้าวกะเพรา": 45, "ข้าวกะเพราไข่ดาว": 55,
+        "ข้าวเหนียวหมูปิ้ง": 35, "ข้าวเหนียวไก่ย่างแดง": 40,
+        "หมูปิ้ง": 10, "ไก่ย่างแดง": 20
     };
 
     let sales = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
@@ -367,6 +381,21 @@
     const menuListOptions = document.getElementById('menuListOptions');
     const priceSettingList = document.getElementById('priceSettingList');
     const syncStatus = document.getElementById('syncStatus');
+    const datePickerContainer = document.getElementById('datePickerContainer');
+    const monthPickerContainer = document.getElementById('monthPickerContainer');
+    const selectDateInput = document.getElementById('selectDateInput');
+    const selectMonthInput = document.getElementById('selectMonthInput');
+
+    function formatDateYMD(d) {
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    const initD = new Date();
+    selectDateInput.value = formatDateYMD(initD);
+    selectMonthInput.value = `${initD.getFullYear()}-${String(initD.getMonth() + 1).padStart(2, '0')}`;
 
     async function loadFromCloud() {
         syncStatus.innerText = "🔄 กำลังซิงค์ข้อมูล...";
@@ -403,6 +432,10 @@
         currentFilter = filter;
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
+
+        datePickerContainer.style.display = (filter === 'custom-day') ? 'block' : 'none';
+        monthPickerContainer.style.display = (filter === 'custom-month') ? 'block' : 'none';
+
         renderUI();
     }
 
@@ -413,21 +446,12 @@
         quickInput.focus();
     }
 
-    // ระบบจัดหมวดหมู่อัจฉริยะสำหรับร้านฟลุ๊ค ชาเฟ่
     function detectCategory(name) {
         if (selectedCategory !== 'auto') return selectedCategory;
         const n = name.toLowerCase();
-        
-        // 1. ขนมปังปิ้ง
         if (n.includes('ปัง') || n.includes('โทสต์') || n.includes('เนยนม') || n.includes('สังขยา') || n.includes('เนยน้ำตาล')) return 'ขนมปังปิ้ง';
-        
-        // 2. ของทอด / ทานเล่น
         if (n.includes('เฟรน') || n.includes('ฟราย') || n.includes('ชีส') || n.includes('บอล') || n.includes('ป๊อบ') || n.includes('เก็ต') || n.includes('ไส้กรอก') || n.includes('ทอด') || n.includes('ลูกชิ้น')) return 'ของทอด/ทานเล่น';
-        
-        // 3. อาหาร / ข้าว / หมูปิ้ง / ไก่ย่าง
         if (n.includes('กะเพรา') || n.includes('ข้าว') || n.includes('หมูปิ้ง') || n.includes('ไก่ย่าง') || n.includes('ไข่ดาว') || n.includes('ผัด') || n.includes('มาม่า') || n.includes('ยำ')) return 'อาหาร/กะเพรา';
-        
-        // 4. เครื่องดื่ม / น้ำ
         return 'เครื่องดื่ม';
     }
 
@@ -503,7 +527,7 @@
         const newItem = { 
             id: String(Date.now()),
             ts: Date.now(),
-            date: now.toLocaleDateString('th-TH'),
+            date: formatDateYMD(now),
             name, 
             unitPrice, 
             qty, 
@@ -544,13 +568,30 @@
                     return itemTs >= weekStart && itemTs <= todayEnd;
                 })
             };
-        } else if (currentFilter === 'month') {
-            const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+        } else if (currentFilter === 'custom-day') {
+            const selDate = selectDateInput.value; // 'YYYY-MM-DD'
+            const [y, m, d] = selDate.split('-').map(Number);
+            const dayStart = new Date(y, m - 1, d).getTime();
+            const dayEnd = dayStart + (24 * 60 * 60 * 1000) - 1;
+
             return {
-                label: 'ยอดขายเดือนนี้',
+                label: `ยอดขายวันที่ ${selDate}`,
                 data: sales.filter(item => {
                     const itemTs = Number(item.ts) || Number(item.id) || 0;
-                    return itemTs >= monthStart;
+                    return itemTs >= dayStart && itemTs <= dayEnd;
+                })
+            };
+        } else if (currentFilter === 'custom-month') {
+            const selMonth = selectMonthInput.value; // 'YYYY-MM'
+            const [y, m] = selMonth.split('-').map(Number);
+            const mStart = new Date(y, m - 1, 1).getTime();
+            const mEnd = new Date(y, m, 1).getTime() - 1;
+
+            return {
+                label: `ยอดขายเดือน ${selMonth}`,
+                data: sales.filter(item => {
+                    const itemTs = Number(item.ts) || Number(item.id) || 0;
+                    return itemTs >= mStart && itemTs <= mEnd;
                 })
             };
         }
