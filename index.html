@@ -89,7 +89,7 @@
             color: #0f172a;
         }
 
-        /* กล่องยอดขายหลัก */
+        /* กล่องยอดขายรวม */
         .total-banner {
             background: #0f172a;
             color: #fff;
@@ -101,7 +101,6 @@
         .total-banner .amount { font-size: 2.3rem; font-weight: 600; color: #38bdf8; line-height: 1.1; }
         .total-banner .sub { font-size: 0.8rem; color: #94a3b8; margin-top: 4px; }
 
-        /* ปุ่มกดดูต้นทุน/กำไร */
         .btn-toggle-profit {
             background: rgba(255, 255, 255, 0.12);
             color: #e2e8f0;
@@ -119,7 +118,6 @@
             border-color: #38bdf8;
         }
 
-        /* กล่องซ่อนต้นทุนและกำไรสุทธิ */
         .secret-profit-panel {
             display: none;
             grid-template-columns: 1fr 1fr;
@@ -197,7 +195,61 @@
             box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);
         }
         .btn-order-submit:active { background: #0369a1; transform: scale(0.98); }
-        .hint { font-size: 0.75rem; color: #64748b; margin-top: 5px; line-height: 1.4; padding-left: 2px; }
+
+        /* แถบควบคุมโหมดลงย้อนหลัง */
+        .backdate-control {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 6px;
+            padding: 0 2px;
+        }
+        .btn-toggle-backdate {
+            background: transparent;
+            border: 1px solid #cbd5e1;
+            color: #64748b;
+            padding: 3px 8px;
+            border-radius: 8px;
+            font-size: 0.72rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .btn-toggle-backdate.active {
+            background: #fef3c7;
+            color: #b45309;
+            border-color: #f59e0b;
+            font-weight: 600;
+        }
+
+        .backdate-box {
+            display: none;
+            background: #fffbeb;
+            border: 1.5px dashed #f59e0b;
+            border-radius: 10px;
+            padding: 8px;
+            margin-top: 6px;
+        }
+        .backdate-box-title {
+            font-size: 0.72rem;
+            color: #b45309;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .backdate-inputs {
+            display: flex;
+            gap: 6px;
+        }
+        .backdate-inputs input {
+            flex: 1;
+            padding: 6px 8px;
+            border: 1px solid #fcd34d;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            outline: none;
+            background: #fff;
+        }
 
         .suggest-box {
             position: absolute;
@@ -367,7 +419,7 @@
         <input type="month" id="selectMonthInput" onchange="renderUI()">
     </div>
 
-    <!-- กล่องยอดขายรวม พร้อมปุ่มซ่อน/แสดง เช็คต้นทุน-กำไร -->
+    <!-- กล่องยอดขายรวม พร้อมปุ่มซ่อน/แสดง สรุปผลประกอบการ -->
     <div class="total-banner">
         <div class="amount" id="totalSales">฿0</div>
         <div class="sub" id="totalSalesSub">ยอดขายรวม</div>
@@ -378,7 +430,6 @@
             </button>
         </div>
 
-        <!-- กล่องซ่อนต้นทุนและกำไรสุทธิ -->
         <div class="secret-profit-panel" id="secretProfitPanel">
             <div class="secret-box">
                 <div class="secret-title">ต้นทุนซื้อของ</div>
@@ -421,6 +472,7 @@
         <button type="button" class="cat-btn" onclick="setCategory('ขนมปังปิ้ง', this)">🍞 ปังปิ้ง</button>
     </div>
 
+    <!-- ช่องพิมพ์รับออเดอร์ -->
     <form id="quickForm" class="quick-input-box" onsubmit="return handleAdd(event)">
         <div class="input-btn-group">
             <input 
@@ -434,8 +486,22 @@
             <button type="submit" class="btn-order-submit">รับออเดอร์</button>
         </div>
         <div id="suggestBox" class="suggest-box"></div>
-        <div class="hint">
-            💡 <b>ตัวอย่าง:</b> <code>ชาไทย เย็น</code>, <code>นมสดสตอเบอรี่ ปั่น</code>, <code>ไส้กรอกแดง 25</code>, <code>ชีสบอล 2</code>
+
+        <!-- แถบปุ่มเปิด/ปิด โหมดลงออเดอร์ย้อนหลัง -->
+        <div class="backdate-control">
+            <span style="font-size:0.72rem; color:#64748b;">💡 พิมพ์ค้นหาแล้วแตะเลือกได้ทันที</span>
+            <button type="button" class="btn-toggle-backdate" id="btnToggleBackdate" onclick="toggleBackdateMode()">
+                🕒 บันทึกย้อนหลัง
+            </button>
+        </div>
+
+        <!-- กล่องเลือกวัน-เวลาย้อนหลัง -->
+        <div class="backdate-box" id="backdateBox">
+            <div class="backdate-box-title">⚠️ โหมดลงออเดอร์ย้อนหลัง (ระบุวันและเวลา)</div>
+            <div class="backdate-inputs">
+                <input type="date" id="backdateDateInput">
+                <input type="time" id="backdateTimeInput">
+            </div>
         </div>
     </form>
 
@@ -541,7 +607,6 @@
         "เขียวมะนาวโซดา เย็น": 25, "เขียวมะนาวโซดา ปั่น": 30,
         "ชามะนาวโซดา เย็น": 25, "ชามะนาวโซดา ปั่น": 30,
         "บลูฮาวายโซดา เย็น": 25, "บลูฮาวายโซดา ปั่น": 30,
-        "สตรอว์เบอร์รีโซดา เย็น": 25, "สตรอว์เบอร์รีโซดา ปั่น": 30,
         "ลิ้นจี่โซดา เย็น": 25, "ลิ้นจี่โซดา ปั่น": 30,
         "กีวี่โซดา เย็น": 25, "กีวี่โซดา ปั่น": 30,
         "ส้มโซดา เย็น": 25, "ส้มโซดา ปั่น": 30,
@@ -592,6 +657,7 @@
     let selectedCategory = 'auto';
     let currentFilter = 'today';
     let isProfitShown = false;
+    let isBackdateActive = false;
 
     const quickInput = document.getElementById('quickInput');
     const suggestBox = document.getElementById('suggestBox');
@@ -612,6 +678,11 @@
     const selectMonthInput = document.getElementById('selectMonthInput');
     const priceSearchInput = document.getElementById('priceSearchInput');
 
+    const btnToggleBackdate = document.getElementById('btnToggleBackdate');
+    const backdateBox = document.getElementById('backdateBox');
+    const backdateDateInput = document.getElementById('backdateDateInput');
+    const backdateTimeInput = document.getElementById('backdateTimeInput');
+
     function formatDateYMD(d) {
         const year = d.getFullYear();
         const month = String(d.getMonth() + 1).padStart(2, '0');
@@ -622,8 +693,10 @@
     const initD = new Date();
     selectDateInput.value = formatDateYMD(initD);
     selectMonthInput.value = `${initD.getFullYear()}-${String(initD.getMonth() + 1).padStart(2, '0')}`;
+    backdateDateInput.value = formatDateYMD(initD);
+    backdateTimeInput.value = initD.toTimeString().substring(0, 5);
 
-    // ปุ่มสลับซ่อน/แสดง ต้นทุนและกำไร
+    // เปิด/ปิด แผงสรุปผลประกอบการ
     function toggleProfitPanel() {
         isProfitShown = !isProfitShown;
         if (isProfitShown) {
@@ -632,6 +705,20 @@
         } else {
             secretProfitPanel.style.display = 'none';
             btnToggleProfit.innerText = '📊 สรุปผลประกอบการ';
+        }
+    }
+
+    // เปิด/ปิด โหมดบันทึกออเดอร์ย้อนหลัง
+    function toggleBackdateMode() {
+        isBackdateActive = !isBackdateActive;
+        if (isBackdateActive) {
+            backdateBox.style.display = 'block';
+            btnToggleBackdate.classList.add('active');
+            btnToggleBackdate.innerText = '🕒 เปิดโหมดลงย้อนหลังอยู่';
+        } else {
+            backdateBox.style.display = 'none';
+            btnToggleBackdate.classList.remove('active');
+            btnToggleBackdate.innerText = '🕒 บันทึกย้อนหลัง';
         }
     }
 
@@ -787,19 +874,34 @@
 
         const category = detectCategory(name);
         const totalPrice = unitPrice * qty;
-        const now = new Date();
-        const timeStr = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+        
+        let recordDate = '';
+        let recordTime = '';
+        let recordTs = Date.now();
+
+        if (isBackdateActive && backdateDateInput.value) {
+            recordDate = backdateDateInput.value;
+            recordTime = backdateTimeInput.value || '12:00';
+            const [y, m, d] = recordDate.split('-').map(Number);
+            const [hh, mm] = recordTime.split(':').map(Number);
+            recordTs = new Date(y, m - 1, d, hh || 12, mm || 0).getTime();
+        } else {
+            const now = new Date();
+            recordDate = formatDateYMD(now);
+            recordTime = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+            recordTs = Date.now();
+        }
 
         const newItem = { 
-            id: String(Date.now()),
-            ts: Date.now(),
-            date: formatDateYMD(now),
+            id: String(Date.now() + Math.floor(Math.random() * 100)),
+            ts: recordTs,
+            date: recordDate,
             name, 
             unitPrice, 
             qty, 
             totalPrice, 
             category,
-            time: timeStr 
+            time: recordTime 
         };
 
         sales.push(newItem);
@@ -820,15 +922,30 @@
             return;
         }
 
-        const now = new Date();
-        const timeStr = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+        let recordDate = '';
+        let recordTime = '';
+        let recordTs = Date.now();
+
+        if (isBackdateActive && backdateDateInput.value) {
+            recordDate = backdateDateInput.value;
+            recordTime = backdateTimeInput.value || '12:00';
+            const [y, m, d] = recordDate.split('-').map(Number);
+            const [hh, mm] = recordTime.split(':').map(Number);
+            recordTs = new Date(y, m - 1, d, hh || 12, mm || 0).getTime();
+        } else {
+            const now = new Date();
+            recordDate = formatDateYMD(now);
+            recordTime = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+            recordTs = Date.now();
+        }
+
         const newExp = {
-            id: String(Date.now()),
-            ts: Date.now(),
-            date: formatDateYMD(now),
+            id: String(Date.now() + Math.floor(Math.random() * 100)),
+            ts: recordTs,
+            date: recordDate,
             name,
             cost,
-            time: timeStr
+            time: recordTime
         };
 
         expenses.push(newExp);
@@ -938,7 +1055,7 @@
                 row.innerHTML = `
                     <div>
                         <div class="item-title">${item.name} <span style="color:#0284c7;">x${item.qty}</span> <span class="badge">${cat}</span></div>
-                        <div class="item-detail">(@${item.unitPrice} บ.) • ${item.time} น.</div>
+                        <div class="item-detail">(@${item.unitPrice} บ.) • ${item.date} ${item.time} น.</div>
                     </div>
                     <div style="display:flex; align-items:center;">
                         <span class="item-price">฿${Number(item.totalPrice).toLocaleString()}</span>
@@ -949,7 +1066,7 @@
             });
         }
 
-        // รายการต้นทุน
+        // แสดงรายการต้นทุน
         expenseList.innerHTML = '';
         if (displayExpenses.length === 0) {
             expenseList.innerHTML = '<div class="empty-text">ยังไม่มีรายการต้นทุนในช่วงนี้</div>';
