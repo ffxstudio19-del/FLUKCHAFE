@@ -1063,12 +1063,7 @@
                     <input type="text" id="newMenuName" placeholder="ชื่อเมนู เช่น ชาไทย ปั่น" style="flex:2;">
                     <input type="number" id="newMenuPrice" placeholder="ราคา" style="flex:1;">
                 </div>
-                <!-- 🌟 อัปเกรดใหม่: สามารถเลือกไฟล์รูปจากเครื่อง/มือถือมาใส่ได้เลยทันที -->
-                <div style="display: flex; gap: 6px; align-items: center;">
-                    <input type="text" id="newMenuImage" placeholder="🔗 ลิงก์รูปภาพ หรือเลือกไฟล์ด้านข้าง" style="flex:1;">
-                    <input type="file" id="imageFilePicker" accept="image/*" style="display:none;" onchange="handleImageUpload(this)">
-                    <button type="button" onclick="document.getElementById('imageFilePicker').click()" style="background:#334155; white-space:nowrap; padding: 8px 10px;">📁 เลือกรูป</button>
-                </div>
+                <input type="text" id="newMenuImage" placeholder="🔗 ลิงก์รูปภาพเมนู (Direct Link)">
                 <button type="button" onclick="addOrUpdatePrice()">💾 บันทึกเมนู & รูปภาพ</button>
             </div>
             <div class="price-search-box">
@@ -1412,17 +1407,7 @@
         return 'เครื่องดื่ม';
     }
 
-    // 🌟 แปลงรูปภาพที่เลือกจากเครื่องเป็นรหัสข้อมูล (Base64) โดยตรง เพื่อให้รูปขึ้นแน่นอน 100%
-    function handleImageUpload(input) {
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                document.getElementById('newMenuImage').value = e.target.result;
-            };
-            reader.readAsDataURL(input.files[0]);
-        }
-    }
-
+    // 🌟 ดึงรูปภาพจาก imageBook ที่บันทึกไว้ (ป้องกันไม่ให้ Cloud มาลบรูปที่ใส่เองทิ้ง)
     function getMenuImage(name) {
         const cleanName = (name || '').trim();
         if (imageBook[cleanName] && imageBook[cleanName].trim() !== '') {
@@ -1851,7 +1836,8 @@
                 priceBook = { ...DEFAULT_PRESET_PRICES, ...data.prices };
                 localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
             }
-            if (data && data.images) {
+            // 🌟 ป้องกันไม่ให้ภาพที่ตั้งเองถูก Cloud ลบหาย (แยกการซิงค์รูปภาพเฉพาะในเครื่อง)
+            if (data && data.images && Object.keys(imageBook).length === 0) {
                 imageBook = { ...data.images };
                 localStorage.setItem(MENU_IMAGES_KEY, JSON.stringify(imageBook));
             }
