@@ -22,7 +22,7 @@
             background: #0f172a url('bg.jpg') no-repeat center center fixed;
             background-size: cover;
             min-height: 100vh;
-            padding: 12px; 
+            padding: 12px 12px 80px 12px; 
             color: #1e293b; 
         }
 
@@ -68,7 +68,39 @@
             font-weight: 600;
         }
 
-        /* ปุ่มซิงค์ข้อมูลย้ายลงล่างสุด แบบมินิมอล */
+        /* แถบแจ้งเตือนสั่งเครื่องดื่ม & ส่งหน้าบ้าน */
+        .delivery-banner-cust {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border: 1.5px solid #86efac;
+            border-radius: 14px;
+            padding: 10px 12px;
+            margin-bottom: 12px;
+            text-align: center;
+            box-shadow: 0 2px 6px rgba(22, 163, 74, 0.08);
+        }
+        .delivery-main-text {
+            font-size: 0.82rem;
+            color: #166534;
+            font-weight: 500;
+            line-height: 1.4;
+        }
+        .delivery-phone-text {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 6px;
+            padding: 3px 12px;
+            background: #15803d;
+            color: #ffffff;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-decoration: none;
+            box-shadow: 0 2px 4px rgba(21, 128, 61, 0.25);
+            transition: transform 0.15s;
+        }
+        .delivery-phone-text:active { transform: scale(0.95); }
+
         .sync-footer-box {
             text-align: center;
             margin-top: 14px;
@@ -88,39 +120,6 @@
 
         /* --- ฝั่งลูกค้า (Customer Mode) --- */
         #customerSection { display: block; }
-        .delivery-banner-cust {
-            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-            border: 1.5px solid #86efac;
-            border-radius: 14px;
-            padding: 10px 12px;
-            margin-bottom: 12px;
-            text-align: center;
-            box-shadow: 0 2px 6px rgba(22, 163, 74, 0.08);
-        }
-        .banner-text-main {
-            font-size: 0.88rem;
-            font-weight: 600;
-            color: #166534;
-            line-height: 1.35;
-        }
-        .banner-text-sub {
-            font-size: 0.76rem;
-            color: #15803d;
-            margin-top: 3px;
-        }
-        .banner-phone-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            color: #dc2626;
-            font-weight: 700;
-            text-decoration: none;
-            background: #fff;
-            padding: 2px 8px;
-            border-radius: 6px;
-            margin-left: 2px;
-            border: 1px solid #fecaca;
-        }
 
         .cust-search-box {
             margin-bottom: 10px;
@@ -139,7 +138,7 @@
             background: #fff;
         }
 
-        /* ส่วนแถบเลื่อนเมนูแนะนำ */
+        /* แถบเลื่อนเมนูแนะนำ */
         .rec-section-title {
             font-size: 0.82rem;
             font-weight: 700;
@@ -224,7 +223,7 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 10px;
-            max-height: 360px;
+            max-height: 480px;
             overflow-y: auto;
             margin-bottom: 12px;
             padding: 2px;
@@ -287,19 +286,35 @@
         .cust-card-title { font-size: 0.85rem; font-weight: 600; color: #0f172a; line-height: 1.2; }
         .cust-card-price { font-size: 1.05rem; font-weight: 700; color: #0284c7; margin-top: 6px; }
 
+        /* แถบตะกร้าสินค้าแบบลอยติดขอบล่างจอ (Floating Sticky Cart Bar) */
+        .cart-floating-wrapper {
+            position: fixed;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 24px);
+            max-width: 460px;
+            z-index: 1000;
+        }
         .cart-bar {
-            background: #0f172a;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
             color: #fff;
-            border-radius: 14px;
-            padding: 12px 14px;
+            border-radius: 16px;
+            padding: 10px 16px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.3);
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.45), 0 0 0 1.5px rgba(56, 189, 248, 0.4);
+            animation: bounceIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .cart-info { font-size: 0.9rem; font-weight: 500; }
-        .cart-total { font-size: 1.2rem; font-weight: 700; color: #38bdf8; }
+        @keyframes bounceIn {
+            0% { transform: translateY(20px) scale(0.95); opacity: 0; }
+            100% { transform: translateY(0) scale(1); opacity: 1; }
+        }
+        .cart-info { font-size: 0.85rem; font-weight: 500; }
+        .cart-items-preview { font-size: 0.72rem; color: #94a3b8; margin-top: 2px; }
+        .cart-total { font-size: 1.15rem; font-weight: 700; color: #38bdf8; text-align: right; }
 
         .order-type-selector {
             display: grid;
@@ -858,11 +873,9 @@
          ============================================== -->
     <div id="customerSection">
         <div class="delivery-banner-cust" id="custBannerText">
-            <div class="banner-text-main">
-                🛵 สั่งเครื่องดื่ม & ของทานเล่น ส่งถึงหน้าบ้าน หรือสั่งล่วงหน้ารับหน้าร้าน แจ้งได้เลยครับ
-            </div>
-            <div class="banner-text-sub">
-                ⚡ ด่วนโทร: <a href="tel:0637975257" class="banner-phone-link">📞 063-797-5257</a>
+            <div class="delivery-main-text">🛵 สั่งเครื่องดื่ม & ของทานเล่น ส่งถึงหน้าบ้าน หรือสั่งล่วงหน้ารับหน้าร้าน แจ้งได้เลยครับ</div>
+            <div>
+                <a href="tel:0637975257" class="delivery-phone-text">📞 สั่งด่วนโทร 063-797-5257</a>
             </div>
         </div>
 
@@ -877,7 +890,7 @@
             <div class="rec-scroll-container" id="recMenuList"></div>
         </div>
         
-        <!-- แถบ 5 หมวดหมู่ (นำ 'ทั้งหมด' มาไว้ปุ่มแรก) -->
+        <!-- แถบ 5 หมวดหมู่ (เรียง "ทั้งหมด" ไว้หน้าสุด) -->
         <div class="cust-cat-nav">
             <button type="button" class="cust-cat-btn active" onclick="filterCustCategory('all', this)">📋 ทั้งหมด</button>
             <button type="button" class="cust-cat-btn" onclick="filterCustCategory('เครื่องดื่ม', this)">🧋 เครื่องดื่ม</button>
@@ -888,10 +901,18 @@
 
         <div class="cust-menu-grid" id="custMenuList"></div>
 
-        <!-- แถบตะกร้าสินค้าของลูกค้า -->
-        <div class="cart-bar" id="cartBar" onclick="openCartModal()" style="display: none;">
-            <div class="cart-info">🛒 สั่งซื้อ (<span id="cartCount">0</span> รายการ)</div>
-            <div class="cart-total" id="cartTotalSum">฿0</div>
+        <!-- แถบตะกร้าสินค้าแบบลอยติดขอบล่างจอ (Floating Sticky Cart Bar) -->
+        <div class="cart-floating-wrapper" id="cartBarWrapper" style="display: none;">
+            <div class="cart-bar" id="cartBar" onclick="openCartModal()">
+                <div>
+                    <div class="cart-info">🛒 สั่งซื้อ (<span id="cartCount">0</span> รายการ)</div>
+                    <div class="cart-items-preview" id="cartPreviewText">แตะเพื่อสรุปและจัดส่ง</div>
+                </div>
+                <div>
+                    <div class="cart-total" id="cartTotalSum">฿0</div>
+                    <div style="font-size: 0.68rem; color: #38bdf8;">กดส่งออเดอร์ ➜</div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1239,8 +1260,9 @@
     const recMenuList = document.getElementById('recMenuList');
     const recSection = document.getElementById('recSection');
     const custSearchInput = document.getElementById('custSearchInput');
-    const cartBar = document.getElementById('cartBar');
+    const cartBarWrapper = document.getElementById('cartBarWrapper');
     const cartCount = document.getElementById('cartCount');
+    const cartPreviewText = document.getElementById('cartPreviewText');
     const cartTotalSum = document.getElementById('cartTotalSum');
     const cartModal = document.getElementById('cartModal');
     const cartItemsList = document.getElementById('cartItemsList');
@@ -1480,14 +1502,23 @@
     function updateCartUI() {
         let totalCount = 0;
         let totalSum = 0;
+        let lastItemName = '';
+        
         cart.forEach(item => {
             totalCount += item.qty;
             totalSum += (item.price * item.qty);
+            lastItemName = item.name;
         });
 
         cartCount.innerText = totalCount;
         cartTotalSum.innerText = `฿${totalSum.toLocaleString()}`;
-        cartBar.style.display = totalCount > 0 ? 'flex' : 'none';
+        
+        if (totalCount > 0) {
+            cartPreviewText.innerText = `ล่าสุด: ${lastItemName} (แตะเพื่อสั่งซื้อ)`;
+            cartBarWrapper.style.display = 'block';
+        } else {
+            cartBarWrapper.style.display = 'none';
+        }
     }
 
     function getCurrentLocation() {
