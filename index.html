@@ -1063,7 +1063,7 @@
                     <input type="text" id="newMenuName" placeholder="ชื่อเมนู เช่น ชาไทย ปั่น" style="flex:2;">
                     <input type="number" id="newMenuPrice" placeholder="ราคา" style="flex:1;">
                 </div>
-                <input type="url" id="newMenuImage" placeholder="🔗 ลิงก์รูปภาพเมนู หรือ Base64">
+                <input type="url" id="newMenuImage" placeholder="🔗 ลิงก์รูปภาพเมนู (วางลิงก์ตรงที่ลงท้าย .jpg/.png)">
                 <button type="button" onclick="addOrUpdatePrice()">💾 บันทึกเมนู & รูปภาพ</button>
             </div>
             <div class="price-search-box">
@@ -1407,10 +1407,11 @@
         return 'เครื่องดื่ม';
     }
 
-    // 🌟 ดึงเฉพาะภาพที่คุณตั้งค่าไว้ในหลังบ้านเท่านั้น (ไม่มีภาพสุ่มอัตโนมัติแล้ว)
+    // 🌟 ดึงรูปภาพจาก imageBook โดยตัดช่องว่างส่วนเกินออก
     function getMenuImage(name) {
-        if (imageBook[name] && imageBook[name].trim() !== '') {
-            return imageBook[name].trim();
+        const cleanName = (name || '').trim();
+        if (imageBook[cleanName] && imageBook[cleanName].trim() !== '') {
+            return imageBook[cleanName].trim();
         }
         return '';
     }
