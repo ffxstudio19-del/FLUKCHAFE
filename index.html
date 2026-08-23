@@ -5,35 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ฟลุ๊คชาเฟ่ - บันทึกยอดขาย</title>
     
-    <!-- โลโก้ไอคอนสำหรับเปิดบนเบราว์เซอร์และหน้าจอโฮมมือถือ -->
     <link rel="icon" type="image/png" href="logo.png">
     <link rel="apple-touch-icon" href="logo.png">
-    
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; font-family: 'Kanit', sans-serif; margin: 0; padding: 0; }
         body { background-color: #f1f5f9; padding: 12px; color: #1e293b; }
         .container { max-width: 480px; margin: 0 auto; background: #fff; border-radius: 16px; padding: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         
-        /* ส่วนหัวโลโก้ร้าน */
-        .brand-header {
-            text-align: center;
-            margin-bottom: 14px;
-        }
-        .brand-logo {
-            width: 75px;
-            height: 75px;
-            border-radius: 50%;
-            object-fit: cover;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.12);
-            border: 2px solid #0284c7;
-        }
-        .brand-name {
-            font-size: 1.35rem;
-            font-weight: 600;
-            color: #0f172a;
-            margin-top: 4px;
-        }
+        .brand-header { text-align: center; margin-bottom: 14px; }
+        .brand-logo { width: 75px; height: 75px; border-radius: 50%; object-fit: cover; box-shadow: 0 3px 10px rgba(0,0,0,0.12); border: 2px solid #0284c7; }
+        .brand-name { font-size: 1.35rem; font-weight: 600; color: #0f172a; margin-top: 4px; }
 
         .total-banner {
             background: #0f172a;
@@ -78,10 +60,7 @@
             font-weight: 500;
             color: #475569;
         }
-        .cat-btn.active {
-            background: #0284c7;
-            color: #fff;
-        }
+        .cat-btn.active { background: #0284c7; color: #fff; }
 
         .quick-input-box { margin-bottom: 16px; }
         .quick-input-box input {
@@ -96,14 +75,14 @@
         .quick-input-box input:focus { background: #fff; border-color: #0369a1; }
         .hint { font-size: 0.75rem; color: #64748b; margin-top: 6px; line-height: 1.4; padding-left: 2px; }
 
-        .tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+        .tabs { display: flex; gap: 6px; margin-bottom: 12px; }
         .tab-btn {
             flex: 1;
-            padding: 8px;
+            padding: 8px 4px;
             border: none;
             background: #e2e8f0;
             border-radius: 8px;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 500;
             cursor: pointer;
             color: #475569;
@@ -155,11 +134,29 @@
             border-bottom: 1px solid #f8fafc;
             font-size: 0.9rem;
         }
-        .empty-text {
-            text-align: center;
-            color: #94a3b8;
-            padding: 24px 0;
-            font-size: 0.9rem;
+        .empty-text { text-align: center; color: #94a3b8; padding: 24px 0; font-size: 0.9rem; }
+        
+        /* สไตล์ตารางจัดการราคา */
+        .price-mgr-form {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+        .price-mgr-form input {
+            padding: 8px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            outline: none;
+        }
+        .price-mgr-form button {
+            background: #0284c7;
+            color: #fff;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
         }
         .btn-clear {
             display: block;
@@ -178,7 +175,6 @@
 <body>
 
 <div class="container">
-    <!-- โลโก้และชื่อร้าน -->
     <div class="brand-header">
         <img src="logo.png" alt="ฟลุ๊คชาเฟ่" class="brand-logo" onerror="this.style.display='none'">
         <div class="brand-name">ฟลุ๊คชาเฟ่</div>
@@ -189,7 +185,6 @@
         <div class="sub" id="totalItems">ยอดขายรวมวันนี้</div>
     </div>
 
-    <!-- สรุปแยก 4 หมวดหมู่ -->
     <div class="category-summary-grid">
         <div class="cat-box">
             <div class="cat-title">🧋 เครื่องดื่ม</div>
@@ -213,7 +208,6 @@
         </div>
     </div>
 
-    <!-- แป้นเลือกหมวดหมู่อัตโนมัติ/ระบุเอง -->
     <div class="cat-selector">
         <button type="button" class="cat-btn active" onclick="setCategory('auto', this)">🤖 ออโต้</button>
         <button type="button" class="cat-btn" onclick="setCategory('เครื่องดื่ม', this)">🧋 น้ำ</button>
@@ -221,31 +215,45 @@
         <button type="button" class="cat-btn" onclick="setCategory('ขนมปังปิ้ง', this)">🍞 ปังปิ้ง</button>
     </div>
 
-    <!-- ช่องกรอกรายการขาย -->
     <form id="quickForm" class="quick-input-box" onsubmit="return handleAdd(event)">
         <input 
             type="text" 
             id="quickInput" 
-            placeholder="เช่น ชาเขียว 30 2 หรือ กะเพรา 50" 
+            list="menuListOptions"
+            placeholder="พิมพ์ชื่อเมนู เช่น ชาไทยเย็น หรือ ชาไทยปั่น 2" 
             autocomplete="off" 
             autofocus
         >
+        <datalist id="menuListOptions"></datalist>
         <div class="hint">
-            💡 พิมพ์ <code>ชาไทย 25 2</code> (50 บ. 2 แก้ว) หรือ <code>เฟรนฟราย 39</code>
+            💡 <b>ตัวอย่าง:</b> <code>ชาไทยเย็น 25</code> (แก้วแรก) ต่อไปพิมพ์แค่ <code>ชาไทยเย็น</code> หรือ <code>ชาไทยปั่น 2</code>
         </div>
     </form>
 
     <div class="tabs">
         <button type="button" class="tab-btn active" id="tabHistory" onclick="switchTab('history')">ประวัติการขาย</button>
-        <button type="button" class="tab-btn" id="tabSummary" onclick="switchTab('summary')">สรุปยอดตามเมนู</button>
+        <button type="button" class="tab-btn" id="tabSummary" onclick="switchTab('summary')">สรุปรายเมนู</button>
+        <button type="button" class="tab-btn" id="tabPrices" onclick="switchTab('prices')">⚙️ ตั้งราคาเมนู</button>
     </div>
 
+    <!-- หน้าประวัติขาย -->
     <div class="list-container" id="historyView">
         <div id="itemList"></div>
     </div>
 
+    <!-- หน้าสรุปรายเมนู -->
     <div class="list-container" id="summaryView" style="display: none;">
         <div id="menuSummaryList"></div>
+    </div>
+
+    <!-- หน้าจัดการราคาเมนู -->
+    <div class="list-container" id="pricesView" style="display: none;">
+        <div class="price-mgr-form">
+            <input type="text" id="newMenuName" placeholder="ชื่อเมนู เช่น ชาไทยปั่น" style="flex:2;">
+            <input type="number" id="newMenuPrice" placeholder="ราคา" style="flex:1;">
+            <button type="button" onclick="addOrUpdatePrice()">บันทึก</button>
+        </div>
+        <div id="priceSettingList"></div>
     </div>
 
     <button type="button" class="btn-clear" onclick="clearToday()">ล้างข้อมูลยอดขายทั้งหมด</button>
@@ -261,16 +269,18 @@
     }
 
     const STORAGE_KEY = 'SHOP_SALES_RECORDS_V2';
+    const MENU_PRICES_KEY = 'SHOP_MENU_PRICES_V1';
     
     function loadSales() {
-        try {
-            return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-        } catch (e) {
-            return [];
-        }
+        try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch (e) { return []; }
+    }
+
+    function loadPriceBook() {
+        try { return JSON.parse(localStorage.getItem(MENU_PRICES_KEY)) || {}; } catch (e) { return {}; }
     }
 
     let sales = loadSales();
+    let priceBook = loadPriceBook();
     let selectedCategory = 'auto';
 
     const quickInput = document.getElementById('quickInput');
@@ -278,6 +288,8 @@
     const totalItems = document.getElementById('totalItems');
     const itemList = document.getElementById('itemList');
     const menuSummaryList = document.getElementById('menuSummaryList');
+    const menuListOptions = document.getElementById('menuListOptions');
+    const priceSettingList = document.getElementById('priceSettingList');
 
     function setCategory(cat, btn) {
         selectedCategory = cat;
@@ -295,6 +307,16 @@
         return 'เครื่องดื่ม';
     }
 
+    function updateDatalist() {
+        menuListOptions.innerHTML = '';
+        for (const [name, price] of Object.entries(priceBook)) {
+            const opt = document.createElement('option');
+            opt.value = name;
+            opt.label = `฿${price}`;
+            menuListOptions.appendChild(opt);
+        }
+    }
+
     function handleAdd(e) {
         e.preventDefault();
         const text = quickInput.value.trim();
@@ -307,27 +329,52 @@
         const parts = text.split(/\s+/);
 
         if (parts.length >= 3 && !isNaN(parts[parts.length - 1]) && !isNaN(parts[parts.length - 2])) {
+            // กรณีระบุ 3 ตัว: "ชาไทยเย็น 25 2"
             qty = parseInt(parts[parts.length - 1]);
             unitPrice = parseFloat(parts[parts.length - 2]);
             name = parts.slice(0, parts.length - 2).join(' ');
         } else if (parts.length >= 2) {
             const lastPart = parts[parts.length - 1];
             if (lastPart.includes('*')) {
+                // กรณีใช้เครื่องหมาย *: "ชาไทยปั่น 30*2"
                 const [p, q] = lastPart.split('*');
                 unitPrice = parseFloat(p);
                 qty = parseInt(q) || 1;
                 name = parts.slice(0, parts.length - 1).join(' ');
             } else if (!isNaN(lastPart)) {
-                unitPrice = parseFloat(lastPart);
-                qty = 1;
-                name = parts.slice(0, parts.length - 1).join(' ');
+                const potentialName = parts.slice(0, parts.length - 1).join(' ');
+                const num = parseFloat(lastPart);
+                
+                // ตรวจสอบว่าคำหน้าเป็นเมนูที่จำราคาไว้แล้ว และตัวเลขหลังคือจำนวน (ไม่เกิน 20 แก้ว) หรือไม่
+                if (priceBook[potentialName] && num <= 20) {
+                    name = potentialName;
+                    qty = parseInt(num);
+                    unitPrice = priceBook[name];
+                } else {
+                    unitPrice = num;
+                    qty = 1;
+                    name = potentialName;
+                }
+            } else {
+                name = text;
             }
+        } else {
+            name = text;
+        }
+
+        // ดึงราคาจากสมุดจำราคาหากยังไม่มีการระบุ
+        if ((isNaN(unitPrice) || unitPrice <= 0) && priceBook[name]) {
+            unitPrice = priceBook[name];
         }
 
         if (!name || isNaN(unitPrice) || unitPrice <= 0 || qty <= 0) {
-            alert('กรุณาพิมพ์ เช่น:\n- ชาเขียว 30\n- ชาเขียว 30 2 (สั่ง 2 แก้ว)\n- เฟรนฟราย 40');
+            alert(`เมนู "${name || text}" ยังไม่มีราคาในระบบ\nกรุณาพิมพ์ชื่อพร้อมราคา เช่น "${name || text} 30" เพื่อให้ระบบจำราคา`);
             return false;
         }
+
+        // จำราคาเมนูแยกรายชื่อเมนูทันที
+        priceBook[name] = unitPrice;
+        localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
 
         const category = detectCategory(name);
         const totalPrice = unitPrice * qty;
@@ -352,6 +399,7 @@
 
     function saveAndRender() {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
+        updateDatalist();
         
         const today = getTodayString();
         const todaySales = sales.filter(item => item.date === today);
@@ -444,8 +492,53 @@
             menuSummaryList.innerHTML = '<div class="empty-text">ยังไม่มีข้อมูลสรุปเมนู</div>';
         }
 
+        renderPriceSettingList();
+
         totalAmount.innerText = `฿${total.toLocaleString()}`;
         totalItems.innerText = `ขายได้รวม ${totalPieces} ชิ้น/แก้ว (${todaySales.length} ออเดอร์)`;
+    }
+
+    function renderPriceSettingList() {
+        priceSettingList.innerHTML = '';
+        const keys = Object.keys(priceBook);
+        if (keys.length === 0) {
+            priceSettingList.innerHTML = '<div class="empty-text">ยังไม่มีเมนูในระบบ (เพิ่มด้านบนได้เลย)</div>';
+            return;
+        }
+        keys.sort().forEach(name => {
+            const row = document.createElement('div');
+            row.className = 'summary-row';
+            row.innerHTML = `
+                <span>${name}</span>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <b>฿${priceBook[name]}</b>
+                    <button class="btn-del" onclick="deletePrice('${name}')">✕</button>
+                </div>
+            `;
+            priceSettingList.appendChild(row);
+        });
+    }
+
+    function addOrUpdatePrice() {
+        const name = document.getElementById('newMenuName').value.trim();
+        const price = parseFloat(document.getElementById('newMenuPrice').value);
+        if (name && !isNaN(price) && price > 0) {
+            priceBook[name] = price;
+            localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
+            document.getElementById('newMenuName').value = '';
+            document.getElementById('newMenuPrice').value = '';
+            saveAndRender();
+        } else {
+            alert('กรุณากรอกชื่อเมนูและราคาให้ถูกต้อง');
+        }
+    }
+
+    function deletePrice(name) {
+        if (confirm(`ต้องการลบราคาของเมนู "${name}" หรือไม่?`)) {
+            delete priceBook[name];
+            localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
+            saveAndRender();
+        }
     }
 
     function deleteItem(id) {
@@ -463,8 +556,10 @@
     function switchTab(tab) {
         document.getElementById('tabHistory').className = `tab-btn ${tab === 'history' ? 'active' : ''}`;
         document.getElementById('tabSummary').className = `tab-btn ${tab === 'summary' ? 'active' : ''}`;
+        document.getElementById('tabPrices').className = `tab-btn ${tab === 'prices' ? 'active' : ''}`;
         document.getElementById('historyView').style.display = tab === 'history' ? 'block' : 'none';
         document.getElementById('summaryView').style.display = tab === 'summary' ? 'block' : 'none';
+        document.getElementById('pricesView').style.display = tab === 'prices' ? 'block' : 'none';
     }
 
     window.addEventListener('DOMContentLoaded', () => {
