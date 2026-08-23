@@ -78,11 +78,11 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            padding: 6px 18px;
+            padding: 5px 16px;
             background: #16a34a;
             color: #ffffff;
             border-radius: 20px;
-            font-size: 0.88rem;
+            font-size: 0.85rem;
             font-weight: 600;
             text-decoration: none;
             box-shadow: 0 3px 8px rgba(22, 163, 74, 0.35);
@@ -1176,7 +1176,7 @@
             <div class="qr-img-box">
                 <img id="custQrImg" src="" alt="PromptPay QR">
             </div>
-            <div style="font-size: 0.75rem; color: #94a3b8;">สแกนชำระผ่าน PromptPay ยอดรวม:</div>
+            <div style="font-size: 0.75rem; color: #94a3b8;">สแกนชำระพร้อมเพย์เลขบัตร 1449100055527 ยอดรวม:</div>
         </div>
 
         <div style="font-size: 1.6rem; font-weight: 700; color: #38bdf8; margin-bottom: 8px;" id="custModalTotal">฿0</div>
@@ -1203,7 +1203,7 @@
 <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbzr8lEc78rzKvRvYsgKpBkiH-E7zrpdt8oj_o9oJ6PCvMh7gcfJUrUwmMo-J1uHHVXWJQ/exec";
     const GOOGLE_SHEETS_URL = "https://docs.google.com/spreadsheets/d/1EEU-LsVCzD8jbisYSVmy5jMjdTotGOgIW-4ASJlzqYU/edit";
-    const PROMPTPAY_PHONE = "0637975257";
+    const PROMPTPAY_ID = "1449100055527"; // เลขบัตรประชาชนพร้อมเพย์ใหม่
     const ADMIN_PIN = "2424";
 
     const STORAGE_KEY = 'FLUKCHAFE_SHARED_DB_V5';
@@ -1695,7 +1695,7 @@
         });
 
         custModalTotal.innerText = `฿${totalSum.toLocaleString()}`;
-        custQrImg.src = `https://promptpay.io/${PROMPTPAY_PHONE}/${totalSum}.png`;
+        custQrImg.src = `https://promptpay.io/${PROMPTPAY_ID}/${totalSum}.png`;
         selectOrderType(selectedOrderType);
         selectPaymentType(selectedPaymentType);
         cartModal.style.display = 'flex';
