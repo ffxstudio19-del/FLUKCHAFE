@@ -31,20 +31,10 @@
             border: 1px solid rgba(255, 255, 255, 0.6);
         }
         
-        .brand-header { text-align: center; margin-bottom: 12px; position: relative; }
+        .brand-header { text-align: center; margin-bottom: 12px; }
         .brand-logo { width: 75px; height: 75px; border-radius: 50%; object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 2px solid #0284c7; }
         .brand-name-en { font-size: 1.55rem; font-weight: 700; color: #0f172a; margin-top: 4px; line-height: 1.1; }
         .brand-name-th { font-size: 0.9rem; font-weight: 400; color: #64748b; margin-top: 2px; }
-
-        .sync-badge {
-            display: inline-block;
-            font-size: 0.7rem;
-            padding: 2px 8px;
-            border-radius: 12px;
-            background: #e0f2fe;
-            color: #0369a1;
-            margin-top: 4px;
-        }
 
         .time-filter {
             display: flex;
@@ -247,21 +237,14 @@
         <img src="logo.png" alt="FLUKCHAFE" class="brand-logo" onerror="this.style.display='none'">
         <div class="brand-name-en">FLUKCHAFE</div>
         <div class="brand-name-th">ฟลุ๊ค ชาเฟ่</div>
-        <div id="syncStatus" class="sync-badge">🟢 บันทึกข้อมูลพร้อมใช้งาน</div>
     </div>
 
+    <!-- แถบเลือกช่วงเวลา -->
     <div class="time-filter">
         <button type="button" class="filter-btn active" onclick="setTimeFilter('today', this)">☀️ วันนี้</button>
         <button type="button" class="filter-btn" onclick="setTimeFilter('week', this)">📅 7 วัน</button>
-        <button type="button" class="filter-btn" onclick="setTimeFilter('custom-day', this)">📆 เลือกวัน</button>
-        <button type="button" class="filter-btn" onclick="setTimeFilter('custom-month', this)">🗓️ เลือกเดือน</button>
-    </div>
-
-    <div class="custom-date-picker" id="datePickerContainer">
-        <input type="date" id="selectDateInput" onchange="renderUI()">
-    </div>
-    <div class="custom-date-picker" id="monthPickerContainer">
-        <input type="month" id="selectMonthInput" onchange="renderUI()">
+        <button type="button" class="filter-btn" onclick="setTimeFilter('month', this)">🗓️ เดือนนี้</button>
+        <button type="button" class="filter-btn" onclick="setTimeFilter('all', this)">📋 ทั้งหมด</button>
     </div>
 
     <div class="total-banner">
@@ -343,30 +326,20 @@
 
 <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbzr8lEc78rzKvRvYsgKpBkiH-E7zrpdt8oj_o9oJ6PCvMh7gcfJUrUwmMo-J1uHHVXWJQ/exec";
-
-    function formatDateStr(d) {
-        const year = d.getFullYear();
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        const day = String(d.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-    }
-
-    function normalizeDate(dateVal) {
-        if (!dateVal) return formatDateStr(new Date());
-        let str = String(dateVal).trim();
-        if (str.startsWith("'")) str = str.substring(1);
-        if (str.includes('T')) return str.split('T')[0];
-        if (str.length >= 10 && str.includes('-')) return str.substring(0, 10);
-        const d = new Date(str);
-        return !isNaN(d.getTime()) ? formatDateStr(d) : str;
-    }
-
-    const STORAGE_KEY = 'FLUKCHAFE_SALES_ALL_MASTER_V4';
-    const MENU_PRICES_KEY = 'FLUKCHAFE_PRICES_MASTER_V4';
+    const STORAGE_KEY = 'FLUKCHAFE_FINAL_POS_DB';
+    const MENU_PRICES_KEY = 'FLUKCHAFE_FINAL_PRICE_DB';
     
-    // โหลดข้อมูลจากเครื่องทันที ไม่มีทางเป็นค่าว่าง
-    let sales = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-    let priceBook = JSON.parse(localStorage.getItem(MENU_PRICES_KEY)) || {};
+    // โหลดข้อมูลเก่าทันที ป้องกันข้อมูลหาย
+    let sales = [];
+    try {
+        sales = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    } catch(e) { sales = []; }
+
+    let priceBook = {};
+    try {
+        priceBook = JSON.parse(localStorage.getItem(MENU_PRICES_KEY)) || {};
+    } catch(e) { priceBook = {}; }
+
     let selectedCategory = 'auto';
     let currentFilter = 'today';
 
@@ -377,58 +350,11 @@
     const menuSummaryList = document.getElementById('menuSummaryList');
     const menuListOptions = document.getElementById('menuListOptions');
     const priceSettingList = document.getElementById('priceSettingList');
-    const datePickerContainer = document.getElementById('datePickerContainer');
-    const monthPickerContainer = document.getElementById('monthPickerContainer');
-    const selectDateInput = document.getElementById('selectDateInput');
-    const selectMonthInput = document.getElementById('selectMonthInput');
-    const syncStatus = document.getElementById('syncStatus');
-
-    const initDate = new Date();
-    selectDateInput.value = formatDateStr(initDate);
-    selectMonthInput.value = `${initDate.getFullYear()}-${String(initDate.getMonth() + 1).padStart(2, '0')}`;
-
-    // ซิงค์ข้อมูลกับ Google Sheet
-    async function syncWithCloud() {
-        try {
-            const res = await fetch(API_URL + "?t=" + Date.now());
-            const data = await res.json();
-            if (data.sales && Array.isArray(data.sales) && data.sales.length > 0) {
-                // ผสานข้อมูลจาก Cloud และ เครื่อง
-                const cloudSales = data.sales.map(item => ({
-                    ...item,
-                    date: normalizeDate(item.date)
-                }));
-                
-                const map = new Map();
-                sales.forEach(s => map.set(String(s.id), s));
-                cloudSales.forEach(s => map.set(String(s.id), s));
-                
-                sales = Array.from(map.values());
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
-                renderUI();
-            }
-            syncStatus.innerText = "☁️ ซิงค์ตรงกับ Google Sheet แล้ว";
-        } catch (e) {
-            syncStatus.innerText = "🟢 บันทึกในเครื่องปลอดภัย 100%";
-        }
-    }
-
-    function sendToCloud(payload) {
-        try {
-            const url = API_URL + "?data=" + encodeURIComponent(JSON.stringify(payload)) + "&t=" + Date.now();
-            const img = new Image();
-            img.src = url;
-        } catch(e) {}
-    }
 
     function setTimeFilter(filter, btn) {
         currentFilter = filter;
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-
-        datePickerContainer.style.display = (filter === 'custom-day') ? 'block' : 'none';
-        monthPickerContainer.style.display = (filter === 'custom-month') ? 'block' : 'none';
-
         renderUI();
     }
 
@@ -519,7 +445,8 @@
 
         const newItem = { 
             id: String(Date.now()),
-            date: formatDateStr(now),
+            ts: Date.now(), // ใช้ timestamp วินาทีจริง
+            date: now.toLocaleDateString('th-TH'),
             name, 
             unitPrice, 
             qty, 
@@ -528,52 +455,54 @@
             time: timeStr 
         };
 
-        // เซฟลงเครื่องทันที (ไม่มีทางหาย)
         sales.push(newItem);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
         
-        // ส่งขึ้น Cloud
-        sendToCloud({ action: "add_sale", item: newItem });
+        // ยิงข้อมูลขึ้น Google Sheet
+        try {
+            const img = new Image();
+            img.src = API_URL + "?data=" + encodeURIComponent(JSON.stringify({ action: "add_sale", item: newItem })) + "&t=" + Date.now();
+        } catch(err) {}
 
         renderUI();
         quickInput.value = '';
         return false;
     }
 
+    // กรองข้อมูลด้วย Timestamp ปลอดภัย 100%
     function getFilteredSales() {
         const now = new Date();
-        const todayStr = formatDateStr(now);
-        
+        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+        const todayEnd = todayStart + (24 * 60 * 60 * 1000) - 1;
+
         if (currentFilter === 'today') {
             return {
                 label: 'ยอดขายรวมวันนี้',
-                data: sales.filter(item => normalizeDate(item.date) === todayStr)
+                data: sales.filter(item => {
+                    const itemTs = Number(item.ts) || Number(item.id) || 0;
+                    return itemTs >= todayStart && itemTs <= todayEnd;
+                })
             };
         } else if (currentFilter === 'week') {
-            const sevenDaysAgo = new Date();
-            sevenDaysAgo.setDate(now.getDate() - 6);
-            const sevenDaysAgoStr = formatDateStr(sevenDaysAgo);
+            const weekStart = todayStart - (6 * 24 * 60 * 60 * 1000);
             return {
                 label: 'ยอดขาย 7 วันล่าสุด',
                 data: sales.filter(item => {
-                    const d = normalizeDate(item.date);
-                    return d >= sevenDaysAgoStr && d <= todayStr;
+                    const itemTs = Number(item.ts) || Number(item.id) || 0;
+                    return itemTs >= weekStart && itemTs <= todayEnd;
                 })
             };
-        } else if (currentFilter === 'custom-day') {
-            const selectedDate = selectDateInput.value;
+        } else if (currentFilter === 'month') {
+            const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
             return {
-                label: `ยอดขายวันที่ ${selectedDate}`,
-                data: sales.filter(item => normalizeDate(item.date) === selectedDate)
-            };
-        } else if (currentFilter === 'custom-month') {
-            const selectedMonth = selectMonthInput.value;
-            return {
-                label: `ยอดขายเดือน ${selectedMonth}`,
-                data: sales.filter(item => normalizeDate(item.date).startsWith(selectedMonth))
+                label: 'ยอดขายเดือนนี้',
+                data: sales.filter(item => {
+                    const itemTs = Number(item.ts) || Number(item.id) || 0;
+                    return itemTs >= monthStart;
+                })
             };
         }
-        return { label: 'ยอดขายรวม', data: sales };
+        return { label: 'ยอดขายรวมทั้งหมด', data: sales };
     }
 
     function renderUI() {
@@ -602,7 +531,7 @@
         itemList.innerHTML = '';
         
         if (displaySales.length === 0) {
-            itemList.innerHTML = '<div class="empty-text">ไม่มีข้อมูลรายการขายในช่วงเวลานี้</div>';
+            itemList.innerHTML = '<div class="empty-text">ยังไม่มีรายการขายในช่วงนี้</div>';
         } else {
             displaySales.slice().reverse().forEach((item) => {
                 total += Number(item.totalPrice);
@@ -621,7 +550,7 @@
                 row.innerHTML = `
                     <div>
                         <div class="item-title">${item.name} <span style="color:#0284c7;">x${item.qty}</span> <span class="badge">${cat}</span></div>
-                        <div class="item-detail">(@${item.unitPrice} บ.) • ${normalizeDate(item.date)} ${item.time} น.</div>
+                        <div class="item-detail">(@${item.unitPrice} บ.) • ${item.time} น.</div>
                     </div>
                     <div style="display:flex; align-items:center;">
                         <span class="item-price">฿${Number(item.totalPrice).toLocaleString()}</span>
@@ -667,13 +596,13 @@
             }
         }
         if (!hasMenu) {
-            menuSummaryList.innerHTML = '<div class="empty-text">ยังไม่มีข้อมูลสรุปเมนูในช่วงนี้</div>';
+            menuSummaryList.innerHTML = '<div class="empty-text">ยังไม่มีข้อมูลสรุปเมนู</div>';
         }
 
         renderPriceSettingList();
 
         totalAmount.innerText = `฿${total.toLocaleString()}`;
-        totalItems.innerText = `${filterResult.label} • รวม ${totalPieces} ชิ้น/แก้ว (${displaySales.length} ออเดอร์)`;
+        totalItems.innerText = `${filterResult.label} • รวม ${totalPieces} รายการ (${displaySales.length} ออเดอร์)`;
     }
 
     function renderPriceSettingList() {
@@ -722,7 +651,10 @@
     function deleteItem(id) {
         sales = sales.filter(item => String(item.id) !== String(id));
         localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
-        sendToCloud({ action: "delete_sale", id: String(id) });
+        try {
+            const img = new Image();
+            img.src = API_URL + "?data=" + encodeURIComponent(JSON.stringify({ action: "delete_sale", id: String(id) })) + "&t=" + Date.now();
+        } catch(err) {}
         renderUI();
     }
 
@@ -735,13 +667,8 @@
         document.getElementById('pricesView').style.display = tab === 'prices' ? 'block' : 'none';
     }
 
-    // เริ่มต้นแสดงผลทันทีจากข้อมูลในเครื่องก่อน
+    // แสดงผลข้อมูลทันทีเมื่อเปิดหน้าเว็บ
     renderUI();
-
-    // ดึงข้อมูลจาก Cloud มาผสาน
-    window.addEventListener('DOMContentLoaded', () => {
-        syncWithCloud();
-    });
 </script>
 </body>
 </html>
