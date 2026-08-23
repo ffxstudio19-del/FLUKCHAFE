@@ -3,19 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ฟลุ๊คชาเฟ่ - บันทึกยอดขาย</title>
+    <title>FLUKCHAFE - ฟลุ๊ค ชาเฟ่ POS</title>
     
     <link rel="icon" type="image/png" href="logo.png">
     <link rel="apple-touch-icon" href="logo.png">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; font-family: 'Kanit', sans-serif; margin: 0; padding: 0; }
         body { background-color: #f1f5f9; padding: 12px; color: #1e293b; }
         .container { max-width: 480px; margin: 0 auto; background: #fff; border-radius: 16px; padding: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         
+        /* ส่วนหัวโลโก้และชื่อร้าน */
         .brand-header { text-align: center; margin-bottom: 14px; }
         .brand-logo { width: 75px; height: 75px; border-radius: 50%; object-fit: cover; box-shadow: 0 3px 10px rgba(0,0,0,0.12); border: 2px solid #0284c7; }
-        .brand-name { font-size: 1.35rem; font-weight: 600; color: #0f172a; margin-top: 4px; }
+        .brand-name-en { font-size: 1.55rem; font-weight: 700; color: #0f172a; margin-top: 6px; letter-spacing: 0.5px; line-height: 1.1; }
+        .brand-name-th { font-size: 0.95rem; font-weight: 400; color: #64748b; margin-top: 2px; }
 
         .total-banner {
             background: #0f172a;
@@ -136,7 +138,6 @@
         }
         .empty-text { text-align: center; color: #94a3b8; padding: 24px 0; font-size: 0.9rem; }
         
-        /* สไตล์ตารางจัดการราคา */
         .price-mgr-form {
             display: flex;
             gap: 6px;
@@ -175,9 +176,11 @@
 <body>
 
 <div class="container">
+    <!-- ส่วนหัวชื่อร้าน -->
     <div class="brand-header">
-        <img src="logo.png" alt="ฟลุ๊คชาเฟ่" class="brand-logo" onerror="this.style.display='none'">
-        <div class="brand-name">ฟลุ๊คชาเฟ่</div>
+        <img src="logo.png" alt="FLUKCHAFE" class="brand-logo" onerror="this.style.display='none'">
+        <div class="brand-name-en">FLUKCHAFE</div>
+        <div class="brand-name-th">ฟลุ๊ค ชาเฟ่</div>
     </div>
 
     <div class="total-banner">
@@ -236,17 +239,14 @@
         <button type="button" class="tab-btn" id="tabPrices" onclick="switchTab('prices')">⚙️ ตั้งราคาเมนู</button>
     </div>
 
-    <!-- หน้าประวัติขาย -->
     <div class="list-container" id="historyView">
         <div id="itemList"></div>
     </div>
 
-    <!-- หน้าสรุปรายเมนู -->
     <div class="list-container" id="summaryView" style="display: none;">
         <div id="menuSummaryList"></div>
     </div>
 
-    <!-- หน้าจัดการราคาเมนู -->
     <div class="list-container" id="pricesView" style="display: none;">
         <div class="price-mgr-form">
             <input type="text" id="newMenuName" placeholder="ชื่อเมนู เช่น ชาไทยปั่น" style="flex:2;">
@@ -329,14 +329,12 @@
         const parts = text.split(/\s+/);
 
         if (parts.length >= 3 && !isNaN(parts[parts.length - 1]) && !isNaN(parts[parts.length - 2])) {
-            // กรณีระบุ 3 ตัว: "ชาไทยเย็น 25 2"
             qty = parseInt(parts[parts.length - 1]);
             unitPrice = parseFloat(parts[parts.length - 2]);
             name = parts.slice(0, parts.length - 2).join(' ');
         } else if (parts.length >= 2) {
             const lastPart = parts[parts.length - 1];
             if (lastPart.includes('*')) {
-                // กรณีใช้เครื่องหมาย *: "ชาไทยปั่น 30*2"
                 const [p, q] = lastPart.split('*');
                 unitPrice = parseFloat(p);
                 qty = parseInt(q) || 1;
@@ -345,7 +343,6 @@
                 const potentialName = parts.slice(0, parts.length - 1).join(' ');
                 const num = parseFloat(lastPart);
                 
-                // ตรวจสอบว่าคำหน้าเป็นเมนูที่จำราคาไว้แล้ว และตัวเลขหลังคือจำนวน (ไม่เกิน 20 แก้ว) หรือไม่
                 if (priceBook[potentialName] && num <= 20) {
                     name = potentialName;
                     qty = parseInt(num);
@@ -362,7 +359,6 @@
             name = text;
         }
 
-        // ดึงราคาจากสมุดจำราคาหากยังไม่มีการระบุ
         if ((isNaN(unitPrice) || unitPrice <= 0) && priceBook[name]) {
             unitPrice = priceBook[name];
         }
@@ -372,7 +368,6 @@
             return false;
         }
 
-        // จำราคาเมนูแยกรายชื่อเมนูทันที
         priceBook[name] = unitPrice;
         localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
 
