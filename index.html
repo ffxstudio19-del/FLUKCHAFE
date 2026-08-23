@@ -188,7 +188,6 @@
             color: #38bdf8;
         }
 
-        /* แถบตะกร้าสินค้าแบบไม่บังเมนู (ย้ายมาอยู่ใต้ช่องค้นหา) */
         .cart-top-banner {
             background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%);
             border: 1px solid #38bdf8;
@@ -362,24 +361,24 @@
         .cust-card-title { font-size: 0.85rem; font-weight: 600; color: #f8fafc; line-height: 1.2; }
         .cust-card-price { font-size: 1.05rem; font-weight: 700; color: #38bdf8; margin-top: 6px; }
 
-        .order-type-selector {
+        .order-type-selector, .pay-type-selector {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 6px;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
-        .order-type-btn {
-            padding: 8px 4px;
+        .order-type-btn, .pay-type-btn {
+            padding: 7px 4px;
             border-radius: 8px;
             border: 1.5px solid #334155;
             background: #1e293b;
-            font-size: 0.82rem;
+            font-size: 0.8rem;
             font-weight: 600;
             color: #94a3b8;
             cursor: pointer;
             text-align: center;
         }
-        .order-type-btn.active {
+        .order-type-btn.active, .pay-type-btn.active {
             border-color: #38bdf8;
             background: rgba(56, 189, 248, 0.15);
             color: #38bdf8;
@@ -944,7 +943,7 @@
             <div id="custSuggestDropdown" class="cust-suggest-dropdown"></div>
         </div>
 
-        <!-- แถบตะกร้าสินค้าแบบไม่บังเมนู (ย้ายมาอยู่ด้านบน ใต้ช่องค้นหา) -->
+        <!-- แถบตะกร้าสินค้า (วางไว้ด้านบน ใต้ช่องค้นหา เพื่อไม่ให้บังเมนูด้านล่าง) -->
         <div id="cartBarWrapper" style="display: none;">
             <div class="cart-top-banner" id="cartBar" onclick="openCartModal()">
                 <div>
@@ -1147,7 +1146,7 @@
     </div>
 </div>
 
-<!-- Modal ตะกร้าสินค้า & เลือกว่าส่งบ้าน หรือ รับหน้าร้าน -->
+<!-- Modal ตะกร้าสินค้า & เลือกว่าส่งบ้าน หรือ รับหน้าร้าน และเลือกวิธีจ่ายเงิน -->
 <div class="modal-overlay" id="cartModal">
     <div class="modal-card">
         <div class="modal-title">📋 สรุปรายการสั่งซื้อ</div>
@@ -1157,7 +1156,13 @@
             <button type="button" class="order-type-btn" id="btnTypePickup" onclick="selectOrderType('pickup')">🛍️ รับที่หน้าร้าน</button>
         </div>
 
-        <div id="cartItemsList" style="max-height: 130px; overflow-y: auto; text-align: left; margin-bottom: 8px; font-size: 0.85rem;"></div>
+        <!-- ตัวเลือกวิธีชำระเงิน (สแกนจ่าย QR หรือ เงินสด) -->
+        <div class="pay-type-selector">
+            <button type="button" class="pay-type-btn active" id="btnPayQr" onclick="selectPaymentType('qr')">📱 สแกนจ่าย QR</button>
+            <button type="button" class="pay-type-btn" id="btnPayCash" onclick="selectPaymentType('cash')">💵 จ่ายเงินสด</button>
+        </div>
+
+        <div id="cartItemsList" style="max-height: 120px; overflow-y: auto; text-align: left; margin-bottom: 8px; font-size: 0.85rem;"></div>
         
         <input type="text" id="custNameInput" class="modal-input" placeholder="👤 ชื่อผู้สั่ง (เช่น คุณบาส)">
         <input type="tel" id="custPhoneInput" class="modal-input" placeholder="📞 เบอร์โทรศัพท์ติดต่อ">
@@ -1168,10 +1173,14 @@
             <input type="hidden" id="custGpsLink">
         </div>
 
-        <div class="qr-img-box">
-            <img id="custQrImg" src="" alt="PromptPay QR">
+        <!-- ส่วนแสดง QR Code เฉพาะเมื่อเลือกสแกนจ่าย -->
+        <div id="qrSectionContainer">
+            <div class="qr-img-box">
+                <img id="custQrImg" src="" alt="PromptPay QR">
+            </div>
+            <div style="font-size: 0.75rem; color: #94a3b8;">สแกนชำระผ่าน PromptPay ยอดรวม:</div>
         </div>
-        <div style="font-size: 0.75rem; color: #94a3b8;">สแกนชำระผ่าน PromptPay ยอดรวม:</div>
+
         <div style="font-size: 1.6rem; font-weight: 700; color: #38bdf8; margin-bottom: 8px;" id="custModalTotal">฿0</div>
 
         <div class="modal-btn-group">
@@ -1306,6 +1315,7 @@
     let cart = [];
     let custCurrentCat = 'all';
     let selectedOrderType = 'delivery';
+    let selectedPaymentType = 'qr'; // 'qr' or 'cash'
     let previousSalesCount = sales.length;
 
     let selectedCategory = 'auto';
@@ -1329,6 +1339,7 @@
     const cartItemsList = document.getElementById('cartItemsList');
     const custModalTotal = document.getElementById('custModalTotal');
     const custQrImg = document.getElementById('custQrImg');
+    const qrSectionContainer = document.getElementById('qrSectionContainer');
     const custNameInput = document.getElementById('custNameInput');
     const custPhoneInput = document.getElementById('custPhoneInput');
     const custAddressInput = document.getElementById('custAddressInput');
@@ -1336,6 +1347,8 @@
     const deliveryAddressSection = document.getElementById('deliveryAddressSection');
     const btnTypeDelivery = document.getElementById('btnTypeDelivery');
     const btnTypePickup = document.getElementById('btnTypePickup');
+    const btnPayQr = document.getElementById('btnPayQr');
+    const btnPayCash = document.getElementById('btnPayCash');
     const pinModal = document.getElementById('pinModal');
     const pinInput = document.getElementById('pinInput');
 
@@ -1442,6 +1455,19 @@
             btnTypePickup.classList.add('active');
             btnTypeDelivery.classList.remove('active');
             deliveryAddressSection.style.display = 'none';
+        }
+    }
+
+    function selectPaymentType(type) {
+        selectedPaymentType = type;
+        if (type === 'qr') {
+            btnPayQr.classList.add('active');
+            btnPayCash.classList.remove('active');
+            qrSectionContainer.style.display = 'block';
+        } else {
+            btnPayCash.classList.add('active');
+            btnPayQr.classList.remove('active');
+            qrSectionContainer.style.display = 'none';
         }
     }
 
@@ -1625,7 +1651,7 @@
         cartTotalSum.innerText = `฿${totalSum.toLocaleString()}`;
         
         if (totalCount > 0) {
-            cartPreviewText.innerText = `ล่าสุด: ${lastItemName} (แตะเพื่อสั่งซื้อ)`;
+            cartPreviewText.innerText = `ล่าสุด: ${lastItemName} (แตะเพื่อสรุปออเดอร์)`;
             cartBarWrapper.style.display = 'block';
         } else {
             cartBarWrapper.style.display = 'none';
@@ -1673,6 +1699,7 @@
         custModalTotal.innerText = `฿${totalSum.toLocaleString()}`;
         custQrImg.src = `https://promptpay.io/${PROMPTPAY_PHONE}/${totalSum}.png`;
         selectOrderType(selectedOrderType);
+        selectPaymentType(selectedPaymentType);
         cartModal.style.display = 'flex';
     }
 
@@ -1711,6 +1738,7 @@
         const dateStr = formatDateYMD(now);
         const timeStr = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
         const isDel = (selectedOrderType === 'delivery');
+        const payMethod = (selectedPaymentType === 'qr') ? 'promptpay' : 'cash';
 
         cart.forEach(item => {
             const newItem = {
@@ -1722,7 +1750,7 @@
                 qty: item.qty,
                 totalPrice: item.price * item.qty,
                 category: detectCategory(item.name),
-                paymentMethod: 'promptpay',
+                paymentMethod: payMethod,
                 isDelivery: isDel,
                 orderType: isDel ? 'ส่งหน้าบ้าน' : 'รับหน้าร้าน',
                 custName: name,
@@ -1790,12 +1818,6 @@
         const day = String(d.getDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
     }
-
-    const initD = new Date();
-    selectDateInput.value = formatDateYMD(initD);
-    selectMonthInput.value = `${initD.getFullYear()}-${String(initD.getMonth() + 1).padStart(2, '0')}`;
-    backdateDateInput.value = formatDateYMD(initD);
-    backdateTimeInput.value = initD.toTimeString().substring(0, 5);
 
     function togglePayMethod(id) {
         const idx = sales.findIndex(s => String(s.id) === String(id));
@@ -2255,7 +2277,7 @@
         document.getElementById('catBreadCount').innerText = `${catStats['ขนมปังปิ้ง'].count} ชิ้น`;
 
         document.getElementById('catFoodSum').innerText = `฿${catStats['อาหาร/กะเพรา'].sum.toLocaleString()}`;
-        document.getElementById('catFoodCount').innerText = `${catStats['อาหาร/กะเพรา'].count} จาน/ชุด`;
+        document.getElementById('catFoodCount').innerText = `${catStats['อาหาร/กะเพรา'].count} ชุด/จาน`;
 
         menuSummaryList.innerHTML = '';
         let hasMenu = false;
