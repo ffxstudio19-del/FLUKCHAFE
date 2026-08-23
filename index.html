@@ -45,6 +45,7 @@
             color: #0369a1;
             margin-top: 6px;
             font-weight: 500;
+            cursor: pointer;
         }
 
         .time-filter {
@@ -205,6 +206,25 @@
             font-size: 0.85rem;
         }
         .empty-text { text-align: center; color: #94a3b8; padding: 20px 0; font-size: 0.85rem; }
+
+        .price-mgr-form { display: flex; gap: 6px; margin-bottom: 10px; }
+        .price-mgr-form input {
+            padding: 8px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            outline: none;
+        }
+        .price-mgr-form button {
+            background: #0284c7;
+            color: #fff;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
@@ -214,7 +234,7 @@
         <img src="logo.png" alt="FLUKCHAFE" class="brand-logo" onerror="this.style.display='none'">
         <div class="brand-name-en">FLUKCHAFE</div>
         <div class="brand-name-th">ฟลุ๊ค ชาเฟ่</div>
-        <div id="syncStatus" class="sync-badge" onclick="loadFromCloud()">🔄 กำลังซิงค์ข้อมูล...</div>
+        <div id="syncStatus" class="sync-badge" onclick="loadFromCloud()">🔄 ซิงค์ข้อมูล Cloud</div>
     </div>
 
     <div class="time-filter">
@@ -246,9 +266,9 @@
             <div class="cat-count" id="catBreadCount">0 ชิ้น</div>
         </div>
         <div class="cat-box">
-            <div class="cat-title">🍳 กะเพรา/อาหาร/อื่นๆ</div>
+            <div class="cat-title">🍳 กะเพรา/อาหาร/หมูปิ้ง</div>
             <div class="cat-val" id="catFoodSum">฿0</div>
-            <div class="cat-count" id="catFoodCount">0 จาน</div>
+            <div class="cat-count" id="catFoodCount">0 ชุด/จาน</div>
         </div>
     </div>
 
@@ -265,7 +285,7 @@
                 type="text" 
                 id="quickInput" 
                 list="menuListOptions"
-                placeholder="พิมพ์ชื่อ เช่น ชาไทยเย็น หรือ ชาไทยปั่น 2" 
+                placeholder="เช่น ชาไทยเย็น หรือ ชีสบอล 2 หรือ หมูปิ้ง 5" 
                 autocomplete="off" 
                 autofocus
             >
@@ -273,13 +293,14 @@
         </div>
         <datalist id="menuListOptions"></datalist>
         <div class="hint">
-            💡 <b>ตัวอย่าง:</b> <code>ชาไทยเย็น 25</code> หรือ <code>ชาไทยเย็น 2</code>
+            💡 <b>พิมพ์ง่าย:</b> <code>ชาไทยเย็น 25</code> (ครั้งแรก) ต่อไปพิมพ์แค่ <code>ชีสบอล 2</code> หรือ <code>กะเพรา 2</code> ได้เลย
         </div>
     </form>
 
     <div class="tabs">
         <button type="button" class="tab-btn active" id="tabHistory" onclick="switchTab('history')">ประวัติการขาย</button>
         <button type="button" class="tab-btn" id="tabSummary" onclick="switchTab('summary')">สรุปรายเมนู</button>
+        <button type="button" class="tab-btn" id="tabPrices" onclick="switchTab('prices')">⚙️ จัดการราคาเมนู</button>
     </div>
 
     <div class="list-container" id="historyView">
@@ -289,6 +310,15 @@
     <div class="list-container" id="summaryView" style="display: none;">
         <div id="menuSummaryList"></div>
     </div>
+
+    <div class="list-container" id="pricesView" style="display: none;">
+        <div class="price-mgr-form">
+            <input type="text" id="newMenuName" placeholder="ชื่อเมนู เช่น ไส้กรอกแดงทอด" style="flex:2;">
+            <input type="number" id="newMenuPrice" placeholder="ราคา" style="flex:1;">
+            <button type="button" onclick="addOrUpdatePrice()">บันทึก</button>
+        </div>
+        <div id="priceSettingList"></div>
+    </div>
 </div>
 
 <script>
@@ -296,8 +326,36 @@
     const STORAGE_KEY = 'FLUKCHAFE_SHARED_DB_V5';
     const MENU_PRICES_KEY = 'FLUKCHAFE_SHARED_PRICES_V5';
     
+    // รายการเมนูเริ่มต้นของร้าน ฟลุ๊ค ชาเฟ่
+    const DEFAULT_PRESET_PRICES = {
+        "ชาไทยเย็น": 25,
+        "ชาไทยปั่น": 30,
+        "ชาเขียวเย็น": 25,
+        "ชาเขียวปั่น": 30,
+        "นมสดเย็น": 25,
+        "นมสดปั่น": 30,
+        "โกโก้เย็น": 25,
+        "โกโก้ปั่น": 30,
+        "ปังปิ้งเนยนม": 20,
+        "ปังปิ้งช็อกโกแลต": 20,
+        "ปังปิ้งสังขยา": 25,
+        "เฟรนช์ฟรายส์": 39,
+        "ชีสบอล": 39,
+        "ไก่ป๊อบ": 39,
+        "นักเก็ตไก่": 39,
+        "ไส้กรอกแดงทอดกรอบ": 30,
+        "ข้าวกะเพรา": 45,
+        "ข้าวกะเพราไข่ดาว": 55,
+        "ข้าวเหนียวหมูปิ้ง": 35,
+        "ข้าวเหนียวไก่ย่างแดง": 40,
+        "หมูปิ้ง": 10,
+        "ไก่ย่างแดง": 20
+    };
+
     let sales = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-    let priceBook = JSON.parse(localStorage.getItem(MENU_PRICES_KEY)) || {};
+    let savedPrices = JSON.parse(localStorage.getItem(MENU_PRICES_KEY)) || {};
+    let priceBook = { ...DEFAULT_PRESET_PRICES, ...savedPrices };
+    
     let selectedCategory = 'auto';
     let currentFilter = 'today';
 
@@ -307,11 +365,11 @@
     const itemList = document.getElementById('itemList');
     const menuSummaryList = document.getElementById('menuSummaryList');
     const menuListOptions = document.getElementById('menuListOptions');
+    const priceSettingList = document.getElementById('priceSettingList');
     const syncStatus = document.getElementById('syncStatus');
 
-    // ฟังก์ชันดึงข้อมูลจาก Google Sheets ลงมาทุกเครื่องแบบ Real-time
     async function loadFromCloud() {
-        syncStatus.innerText = "🔄 กำลังซิงค์กับ Cloud...";
+        syncStatus.innerText = "🔄 กำลังซิงค์ข้อมูล...";
         try {
             const res = await fetch(API_URL);
             const data = await res.json();
@@ -320,17 +378,16 @@
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
             }
             if (data && data.prices) {
-                priceBook = { ...priceBook, ...data.prices };
+                priceBook = { ...DEFAULT_PRESET_PRICES, ...priceBook, ...data.prices };
                 localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
             }
-            syncStatus.innerText = "☁️ ข้อมูลตรงกันทุกเครื่องแล้ว (แตะเพื่อรีเฟรช)";
+            syncStatus.innerText = "☁️ ซิงค์ตรงกันทุกเครื่องแล้ว";
             renderUI();
         } catch (e) {
-            syncStatus.innerText = "💾 ใช้งานข้อมูลในเครื่อง (แตะเพื่อลองใหม่)";
+            syncStatus.innerText = "💾 ใช้งานข้อมูลในเครื่อง";
         }
     }
 
-    // ฟังก์ชันส่งข้อมูลขึ้น Google Sheets
     function saveToCloud(payload) {
         try {
             fetch(API_URL, {
@@ -356,12 +413,21 @@
         quickInput.focus();
     }
 
+    // ระบบจัดหมวดหมู่อัจฉริยะสำหรับร้านฟลุ๊ค ชาเฟ่
     function detectCategory(name) {
         if (selectedCategory !== 'auto') return selectedCategory;
         const n = name.toLowerCase();
-        if (n.includes('ปัง') || n.includes('โทสต์') || n.includes('เนยนม') || n.includes('สังขยา')) return 'ขนมปังปิ้ง';
-        if (n.includes('เฟรน') || n.includes('ทอด') || n.includes('เก็ต') || n.includes('ชีส') || n.includes('ไก่') || n.includes('ลูกชิ้น') || n.includes('ไส้กรอก')) return 'ของทอด/ทานเล่น';
-        if (n.includes('กะเพรา') || n.includes('ข้าว') || n.includes('ไข่') || n.includes('ผัด') || n.includes('มาม่า') || n.includes('ยำ')) return 'อาหาร/กะเพรา';
+        
+        // 1. ขนมปังปิ้ง
+        if (n.includes('ปัง') || n.includes('โทสต์') || n.includes('เนยนม') || n.includes('สังขยา') || n.includes('เนยน้ำตาล')) return 'ขนมปังปิ้ง';
+        
+        // 2. ของทอด / ทานเล่น
+        if (n.includes('เฟรน') || n.includes('ฟราย') || n.includes('ชีส') || n.includes('บอล') || n.includes('ป๊อบ') || n.includes('เก็ต') || n.includes('ไส้กรอก') || n.includes('ทอด') || n.includes('ลูกชิ้น')) return 'ของทอด/ทานเล่น';
+        
+        // 3. อาหาร / ข้าว / หมูปิ้ง / ไก่ย่าง
+        if (n.includes('กะเพรา') || n.includes('ข้าว') || n.includes('หมูปิ้ง') || n.includes('ไก่ย่าง') || n.includes('ไข่ดาว') || n.includes('ผัด') || n.includes('มาม่า') || n.includes('ยำ')) return 'อาหาร/กะเพรา';
+        
+        // 4. เครื่องดื่ม / น้ำ
         return 'เครื่องดื่ม';
     }
 
@@ -401,7 +467,7 @@
                 const potentialName = parts.slice(0, parts.length - 1).join(' ');
                 const num = parseFloat(lastPart);
                 
-                if (priceBook[potentialName] && num <= 20) {
+                if (priceBook[potentialName] && num <= 30) {
                     name = potentialName;
                     qty = parseInt(num);
                     unitPrice = priceBook[name];
@@ -422,7 +488,7 @@
         }
 
         if (!name || isNaN(unitPrice) || unitPrice <= 0 || qty <= 0) {
-            alert(`เมนู "${name || text}" ยังไม่มีราคาในระบบ\nกรุณาพิมพ์ชื่อพร้อมราคา เช่น "${name || text} 30"`);
+            alert(`เมนู "${name || text}" ยังไม่มีราคาในระบบ\nกรุณาพิมพ์ชื่อพร้อมราคา เช่น "${name || text} 39" เพื่อให้ระบบจำราคา`);
             return false;
         }
 
@@ -449,7 +515,6 @@
         sales.push(newItem);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
         
-        // ส่งขึ้น Google Sheets ทันที
         saveToCloud({ action: "add_sale", item: newItem });
 
         renderUI();
@@ -558,7 +623,7 @@
         document.getElementById('catBreadCount').innerText = `${catStats['ขนมปังปิ้ง'].count} ชิ้น`;
 
         document.getElementById('catFoodSum').innerText = `฿${catStats['อาหาร/กะเพรา'].sum.toLocaleString()}`;
-        document.getElementById('catFoodCount').innerText = `${catStats['อาหาร/กะเพรา'].count} จาน/อื่นๆ`;
+        document.getElementById('catFoodCount').innerText = `${catStats['อาหาร/กะเพรา'].count} จาน/ชุด`;
 
         menuSummaryList.innerHTML = '';
         let hasMenu = false;
@@ -586,8 +651,55 @@
             menuSummaryList.innerHTML = '<div class="empty-text">ยังไม่มีข้อมูลสรุปเมนู</div>';
         }
 
+        renderPriceSettingList();
+
         totalAmount.innerText = `฿${total.toLocaleString()}`;
         totalItems.innerText = `${filterResult.label} • รวม ${totalPieces} รายการ (${displaySales.length} ออเดอร์)`;
+    }
+
+    function renderPriceSettingList() {
+        priceSettingList.innerHTML = '';
+        const keys = Object.keys(priceBook);
+        if (keys.length === 0) {
+            priceSettingList.innerHTML = '<div class="empty-text">ยังไม่มีเมนูในระบบ (เพิ่มด้านบนได้เลย)</div>';
+            return;
+        }
+        keys.sort().forEach(name => {
+            const row = document.createElement('div');
+            row.className = 'summary-row';
+            row.innerHTML = `
+                <span>${name}</span>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <b>฿${priceBook[name]}</b>
+                    <button class="btn-del" onclick="deletePrice('${name}')">✕</button>
+                </div>
+            `;
+            priceSettingList.appendChild(row);
+        });
+    }
+
+    function addOrUpdatePrice() {
+        const name = document.getElementById('newMenuName').value.trim();
+        const price = parseFloat(document.getElementById('newMenuPrice').value);
+        if (name && !isNaN(price) && price > 0) {
+            priceBook[name] = price;
+            localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
+            saveToCloud({ action: "update_price", name, price });
+            document.getElementById('newMenuName').value = '';
+            document.getElementById('newMenuPrice').value = '';
+            renderUI();
+        } else {
+            alert('กรุณากรอกชื่อเมนูและราคาให้ถูกต้อง');
+        }
+    }
+
+    function deletePrice(name) {
+        if (confirm(`ต้องการลบราคาของเมนู "${name}" หรือไม่?`)) {
+            delete priceBook[name];
+            localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
+            saveToCloud({ action: "delete_price", name });
+            renderUI();
+        }
     }
 
     function deleteItem(id) {
@@ -600,11 +712,12 @@
     function switchTab(tab) {
         document.getElementById('tabHistory').className = `tab-btn ${tab === 'history' ? 'active' : ''}`;
         document.getElementById('tabSummary').className = `tab-btn ${tab === 'summary' ? 'active' : ''}`;
+        document.getElementById('tabPrices').className = `tab-btn ${tab === 'prices' ? 'active' : ''}`;
         document.getElementById('historyView').style.display = tab === 'history' ? 'block' : 'none';
         document.getElementById('summaryView').style.display = tab === 'summary' ? 'block' : 'none';
+        document.getElementById('pricesView').style.display = tab === 'prices' ? 'block' : 'none';
     }
 
-    // เมื่อเปิดหน้าเว็บ: แสดงข้อมูลทันที และดึงข้อมูลล่าสุดจาก Google Sheets มาอัปเดตอัตโนมัติ
     renderUI();
     window.addEventListener('DOMContentLoaded', () => {
         loadFromCloud();
