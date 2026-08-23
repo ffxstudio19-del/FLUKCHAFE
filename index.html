@@ -1063,7 +1063,7 @@
                     <input type="text" id="newMenuName" placeholder="ชื่อเมนู เช่น ชาไทย ปั่น" style="flex:2;">
                     <input type="number" id="newMenuPrice" placeholder="ราคา" style="flex:1;">
                 </div>
-                <input type="url" id="newMenuImage" placeholder="🔗 ลิงก์รูปภาพเมนู หรือวาง Code Base64">
+                <input type="url" id="newMenuImage" placeholder="🔗 ลิงก์รูปภาพเมนู หรือ Base64">
                 <button type="button" onclick="addOrUpdatePrice()">💾 บันทึกเมนู & รูปภาพ</button>
             </div>
             <div class="price-search-box">
@@ -1215,13 +1215,6 @@
         "ไก่ย่างแดง": 5,
         "ข้าวเหนียว 5": 5,
         "ข้าวเหนียว 10": 10
-    };
-
-    const DEFAULT_CATEGORY_IMAGES = {
-        "เครื่องดื่ม": "https://images.unsplash.com/photo-1541167760496-1628856ab772?w=300&q=80",
-        "ของทอด/ทานเล่น": "https://images.unsplash.com/photo-1576107232684-1279f390859f?w=300&q=80",
-        "ขนมปังปิ้ง": "https://images.unsplash.com/photo-1584776296944-ab6fb5763875?w=300&q=80",
-        "อาหาร/กะเพรา": "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=300&q=80"
     };
 
     let sales = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
@@ -1414,12 +1407,12 @@
         return 'เครื่องดื่ม';
     }
 
+    // 🌟 ดึงเฉพาะภาพที่คุณตั้งค่าไว้ในหลังบ้านเท่านั้น (ไม่มีภาพสุ่มอัตโนมัติแล้ว)
     function getMenuImage(name) {
         if (imageBook[name] && imageBook[name].trim() !== '') {
             return imageBook[name].trim();
         }
-        const cat = detectCategory(name);
-        return DEFAULT_CATEGORY_IMAGES[cat] || '';
+        return '';
     }
 
     function handleCustomerSearchInput(val) {
