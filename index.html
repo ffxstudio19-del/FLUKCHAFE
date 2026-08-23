@@ -780,33 +780,48 @@
         "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."
     ];
 
-    function formatThaiDateTime(dateStr, timeStr) {
-        if (!dateStr) return timeStr ? `${timeStr} น.` : '';
+    // ฟังก์ชันทำความสะอาดและแปลงรูปแบบวันที่ให้กระชับ
+    function formatThaiDateTime(rawDate, rawTime, ts = null) {
+        let d = null;
+        if (ts && !isNaN(ts)) {
+            d = new Date(Number(ts));
+        } else if (rawDate && typeof rawDate === 'string' && rawDate.includes('-')) {
+            const parts = rawDate.split('T')[0].split('-');
+            if (parts.length === 3) {
+                d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+            }
+        }
         
+        if (!d || isNaN(d.getTime())) {
+            d = new Date();
+        }
+
         const now = new Date();
-        const todayStr = formatDateYMD(now);
+        const isToday = (d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate());
         
         const yesterday = new Date();
         yesterday.setDate(now.getDate() - 1);
-        const yesterdayStr = formatDateYMD(yesterday);
+        const isYesterday = (d.getFullYear() === yesterday.getFullYear() && d.getMonth() === yesterday.getMonth() && d.getDate() === yesterday.getDate());
 
-        // ถ้าเป็นวันนี้ หรือเมื่อวานนี้ ให้แสดงเป็นคำพูดเข้าใจง่าย
-        if (dateStr === todayStr) {
-            return `วันนี้ • ${timeStr} น.`;
-        } else if (dateStr === yesterdayStr) {
-            return `เมื่อวานนี้ • ${timeStr} น.`;
+        let cleanTime = '';
+        if (rawTime && typeof rawTime === 'string') {
+            const timeMatch = rawTime.match(/\d{1,2}:\d{2}/);
+            if (timeMatch) cleanTime = timeMatch[0];
+        }
+        if (!cleanTime) {
+            cleanTime = d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', hour12: false });
         }
 
-        const parts = dateStr.split('-');
-        if (parts.length === 3) {
-            const year = parseInt(parts[0], 10);
-            const monthIdx = parseInt(parts[1], 10) - 1;
-            const day = parseInt(parts[2], 10);
-            const thaiYearShort = String((year + 543)).slice(-2);
-            const monthName = THAI_MONTHS_SHORT[monthIdx] || parts[1];
-            return `${day} ${monthName} ${thaiYearShort} • ${timeStr} น.`;
+        if (isToday) {
+            return `วันนี้ • ${cleanTime} น.`;
+        } else if (isYesterday) {
+            return `เมื่อวานนี้ • ${cleanTime} น.`;
+        } else {
+            const day = d.getDate();
+            const monthName = THAI_MONTHS_SHORT[d.getMonth()] || '';
+            const thaiYearShort = String(d.getFullYear() + 543).slice(-2);
+            return `${day} ${monthName} ${thaiYearShort} • ${cleanTime} น.`;
         }
-        return `${dateStr} • ${timeStr} น.`;
     }
 
     function formatDateYMD(d) {
@@ -1035,7 +1050,7 @@
         } else {
             const now = new Date();
             recordDate = formatDateYMD(now);
-            recordTime = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+            recordTime = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', hour12: false });
             recordTs = Date.now();
         }
 
@@ -1084,7 +1099,7 @@
         } else {
             const now = new Date();
             recordDate = formatDateYMD(now);
-            recordTime = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+            recordTime = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', hour12: false });
             recordTs = Date.now();
         }
 
@@ -1215,7 +1230,9 @@
                 const isQr = (item.paymentMethod === 'promptpay');
                 const badgeClass = isQr ? 'pay-badge qr' : 'pay-badge cash';
                 const badgeText = isQr ? '📱 สแกนจ่าย' : '💵 เงินสด';
-                const formattedTime = formatThaiDateTime(item.date, item.time);
+                
+                // แปลงเวลาให้เข้าใจง่าย
+                const formattedTime = formatThaiDateTime(item.date, item.time, item.ts);
 
                 const row = document.createElement('div');
                 row.className = 'item-row';
@@ -1239,7 +1256,7 @@
             expenseList.innerHTML = '<div class="empty-text">ยังไม่มีรายการต้นทุนในช่วงนี้</div>';
         } else {
             displayExpenses.slice().reverse().forEach((item) => {
-                const formattedExpTime = formatThaiDateTime(item.date, item.time);
+                const formattedExpTime = formatThaiDateTime(item.date, item.time, item.ts);
                 const row = document.createElement('div');
                 row.className = 'item-row';
                 row.innerHTML = `
