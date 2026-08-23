@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FLUKCHAFE - ฟลุ๊ค ชาเฟ่</title>
+    <title>FLUKCHAFE - ฟลุ๊ค ชาเฟ่ POS & Profit</title>
     
     <link rel="icon" type="image/png" href="logo.png">
     <link rel="apple-touch-icon" href="logo.png">
@@ -25,7 +25,7 @@
             position: relative;
         }
 
-        /* เลเยอร์พื้นหลัง GIF คลุมเต็มจอ 100% (ตัวพิมพ์เล็กทั้งหมด) */
+        /* เลเยอร์พื้นหลัง GIF หรือภาพนิ่งคลุมเต็มจอ 100% */
         .bg-fixed-container {
             position: fixed;
             top: 0;
@@ -34,7 +34,7 @@
             height: 100vh;
             z-index: -10;
             overflow: hidden;
-            background-color: #090d16;
+            background: linear-gradient(135deg, #090d16 0%, #0f172a 50%, #1e1b4b 100%);
         }
 
         .bg-fixed-container img {
@@ -51,7 +51,7 @@
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: rgba(9, 13, 22, 0.2);
+            background: rgba(9, 13, 22, 0.25);
             z-index: -5;
             pointer-events: none;
         }
@@ -75,6 +75,13 @@
         .brand-name-en { font-size: 1.55rem; font-weight: 700; color: #0f172a; margin-top: 4px; line-height: 1.1; }
         .brand-name-th { font-size: 0.9rem; font-weight: 400; color: #64748b; margin-top: 2px; }
 
+        .header-tools {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 6px;
+        }
+
         .sync-badge {
             display: inline-block;
             font-size: 0.72rem;
@@ -82,9 +89,20 @@
             border-radius: 12px;
             background: #e0f2fe;
             color: #0369a1;
-            margin-top: 6px;
             font-weight: 500;
             cursor: pointer;
+        }
+
+        .bg-btn-change {
+            display: inline-block;
+            font-size: 0.72rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            background: #f1f5f9;
+            color: #475569;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid #cbd5e1;
         }
 
         .time-filter {
@@ -432,18 +450,24 @@
 </head>
 <body>
 
-<!-- เลเยอร์พื้นหลังรูปภาพ bg.gif (ตัวพิมพ์เล็กทั้งหมด) -->
+<!-- เลเยอร์พื้นหลังรูปภาพ GIF แบบตรวจจับอัตโนมัติ -->
 <div class="bg-fixed-container">
-    <img src="bg.gif" id="mainBgImg" alt="Background" onerror="this.onerror=null; this.src='bg.jpg';">
+    <img id="mainBgImg" alt="Background">
 </div>
 <div class="bg-overlay"></div>
+
+<!-- ช่องเลือกรูปพื้นหลังซ่อนไว้ -->
+<input type="file" id="localBgPicker" accept="image/*" style="display: none;" onchange="handleLocalBgSelected(event)">
 
 <div class="container">
     <div class="brand-header">
         <img src="logo.png" alt="FLUKCHAFE" class="brand-logo" onerror="this.style.display='none'">
         <div class="brand-name-en">FLUKCHAFE</div>
         <div class="brand-name-th">ฟลุ๊ค ชาเฟ่</div>
-        <div id="syncStatus" class="sync-badge" onclick="loadFromCloud()">🔄 ซิงค์ข้อมูล Cloud</div>
+        <div class="header-tools">
+            <div id="syncStatus" class="sync-badge" onclick="loadFromCloud()">🔄 ซิงค์ข้อมูล Cloud</div>
+            <div class="bg-btn-change" onclick="document.getElementById('localBgPicker').click()">🖼️ เลือกภาพพื้นหลัง</div>
+        </div>
     </div>
 
     <!-- แถบเลือกช่วงเวลา -->
@@ -559,6 +583,7 @@
         <div id="menuSummaryList"></div>
     </div>
 
+    <!-- หน้าบันทึกต้นทุนซื้อของเข้าร้าน -->
     <div class="list-container" id="expensesView" style="display: none;">
         <div class="price-mgr-form">
             <input type="text" id="newExpenseName" placeholder="รายการซื้อของ เช่น ชา/นม/ของทอด" style="flex:2;">
@@ -568,6 +593,7 @@
         <div id="expenseList"></div>
     </div>
 
+    <!-- หน้าจัดการราคาเมนู -->
     <div class="list-container" id="pricesView" style="display: none;">
         <div class="price-mgr-form">
             <input type="text" id="newMenuName" placeholder="ชื่อเมนู เช่น ชาไทย ปั่น" style="flex:2;">
@@ -586,6 +612,7 @@
     const STORAGE_KEY = 'FLUKCHAFE_SHARED_DB_V5';
     const MENU_PRICES_KEY = 'FLUKCHAFE_SHARED_PRICES_V5';
     const EXPENSES_KEY = 'FLUKCHAFE_SHARED_EXP_V5';
+    const CUSTOM_BG_KEY = 'FLUKCHAFE_CUSTOM_BG_DATA';
     
     const DEFAULT_PRESET_PRICES = {
         "เอสเพรสโซ่ เย็น": 30, "เอสเพรสโซ่ ปั่น": 35,
@@ -705,11 +732,45 @@
     const selectDateInput = document.getElementById('selectDateInput');
     const selectMonthInput = document.getElementById('selectMonthInput');
     const priceSearchInput = document.getElementById('priceSearchInput');
+    const mainBgImg = document.getElementById('mainBgImg');
 
     const btnToggleBackdate = document.getElementById('btnToggleBackdate');
     const backdateBox = document.getElementById('backdateBox');
     const backdateDateInput = document.getElementById('backdateDateInput');
     const backdateTimeInput = document.getElementById('backdateTimeInput');
+
+    // จัดการระบบโหลดภาพพื้นหลัง
+    function initBackground() {
+        const savedCustomBg = localStorage.getItem(CUSTOM_BG_KEY);
+        if (savedCustomBg) {
+            mainBgImg.src = savedCustomBg;
+            return;
+        }
+
+        // ลองดึง bg.gif
+        const testImg = new Image();
+        testImg.onload = () => { mainBgImg.src = "bg.gif?t=" + Date.now(); };
+        testImg.onerror = () => {
+            // ถ้าไม่มี gif ให้ดึง bg.jpg
+            mainBgImg.src = "bg.jpg";
+        };
+        testImg.src = "bg.gif?t=" + Date.now();
+    }
+
+    function handleLocalBgSelected(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const base64 = event.target.result;
+                mainBgImg.src = base64;
+                try {
+                    localStorage.setItem(CUSTOM_BG_KEY, base64);
+                } catch(err) {}
+            };
+            reader.readAsDataURL(file);
+        }
+    }
 
     function formatDateYMD(d) {
         const year = d.getFullYear();
@@ -1238,6 +1299,7 @@
         document.getElementById('pricesView').style.display = tab === 'prices' ? 'block' : 'none';
     }
 
+    initBackground();
     renderUI();
     window.addEventListener('DOMContentLoaded', () => {
         loadFromCloud();
