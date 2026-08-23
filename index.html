@@ -31,7 +31,7 @@
             border: 1px solid rgba(255, 255, 255, 0.6);
         }
         
-        .brand-header { text-align: center; margin-bottom: 12px; }
+        .brand-header { text-align: center; margin-bottom: 12px; position: relative; }
         .brand-logo { width: 75px; height: 75px; border-radius: 50%; object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 2px solid #0284c7; }
         .brand-name-en { font-size: 1.55rem; font-weight: 700; color: #0f172a; margin-top: 4px; line-height: 1.1; }
         .brand-name-th { font-size: 0.9rem; font-weight: 400; color: #64748b; margin-top: 2px; }
@@ -132,17 +132,40 @@
         }
         .cat-btn.active { background: #0284c7; color: #fff; }
 
-        .quick-input-box { margin-bottom: 14px; }
-        .quick-input-box input {
-            width: 100%;
+        /* กล่องพิมพ์พร้อมปุ่มรับออเดอร์ */
+        .quick-input-box {
+            margin-bottom: 14px;
+        }
+        .input-btn-group {
+            display: flex;
+            gap: 6px;
+        }
+        .input-btn-group input {
+            flex: 1;
             padding: 12px 14px;
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             border: 2px solid #0284c7;
             border-radius: 12px;
             outline: none;
             background: #fff;
         }
-        .quick-input-box input:focus { border-color: #0369a1; box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.2); }
+        .input-btn-group input:focus { border-color: #0369a1; box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.2); }
+        .btn-order-submit {
+            background: #0284c7;
+            color: #fff;
+            border: none;
+            padding: 0 16px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            white-space: nowrap;
+            box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);
+        }
+        .btn-order-submit:active {
+            background: #0369a1;
+            transform: scale(0.98);
+        }
         .hint { font-size: 0.75rem; color: #64748b; margin-top: 5px; line-height: 1.4; padding-left: 2px; }
 
         .tabs { display: flex; gap: 4px; margin-bottom: 12px; }
@@ -291,15 +314,19 @@
         <button type="button" class="cat-btn" onclick="setCategory('ขนมปังปิ้ง', this)">🍞 ปังปิ้ง</button>
     </div>
 
+    <!-- ช่องพิมพ์พร้อมปุ่มรับออเดอร์ -->
     <form id="quickForm" class="quick-input-box" onsubmit="return handleAdd(event)">
-        <input 
-            type="text" 
-            id="quickInput" 
-            list="menuListOptions"
-            placeholder="พิมพ์ชื่อเมนู เช่น ชาไทยเย็น หรือ ชาไทยปั่น 2" 
-            autocomplete="off" 
-            autofocus
-        >
+        <div class="input-btn-group">
+            <input 
+                type="text" 
+                id="quickInput" 
+                list="menuListOptions"
+                placeholder="พิมพ์ชื่อ เช่น ชาไทยเย็น หรือ ชาไทยปั่น 2" 
+                autocomplete="off" 
+                autofocus
+            >
+            <button type="submit" class="btn-order-submit">รับออเดอร์</button>
+        </div>
         <datalist id="menuListOptions"></datalist>
         <div class="hint">
             💡 <b>ตัวอย่าง:</b> <code>ชาไทยเย็น 25</code> หรือ <code>ชาไทยเย็น 2</code>
@@ -340,6 +367,20 @@
         return `${year}-${month}-${day}`;
     }
 
+    // แปลงรูปแบบวันที่จาก Cloud ให้เป็น YYYY-MM-DD เสมอ
+    function normalizeDate(dateVal) {
+        if (!dateVal) return formatDateStr(new Date());
+        if (typeof dateVal === 'string') {
+            if (dateVal.includes('T')) return dateVal.split('T')[0];
+            if (dateVal.length >= 10 && dateVal.includes('-')) return dateVal.substring(0, 10);
+            const d = new Date(dateVal);
+            if (!isNaN(d.getTime())) return formatDateStr(d);
+            return dateVal.trim();
+        }
+        const d = new Date(dateVal);
+        return !isNaN(d.getTime()) ? formatDateStr(d) : formatDateStr(new Date());
+    }
+
     const STORAGE_KEY = 'FLUKCHAFE_SALES_ALL_V3';
     const MENU_PRICES_KEY = 'FLUKCHAFE_PRICES_V3';
     
@@ -371,7 +412,10 @@
             const res = await fetch(API_URL);
             const data = await res.json();
             if (data.sales && Array.isArray(data.sales)) {
-                sales = data.sales;
+                sales = data.sales.map(item => ({
+                    ...item,
+                    date: normalizeDate(item.date)
+                }));
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
             }
             if (data.prices) {
@@ -434,7 +478,7 @@
     }
 
     function handleAdd(e) {
-        e.preventDefault();
+        if (e) e.preventDefault();
         const text = quickInput.value.trim();
         if (!text) return false;
 
@@ -520,7 +564,7 @@
         if (currentFilter === 'today') {
             return {
                 label: 'ยอดขายรวมวันนี้',
-                data: sales.filter(item => String(item.date).startsWith(todayStr))
+                data: sales.filter(item => normalizeDate(item.date) === todayStr)
             };
         } else if (currentFilter === 'week') {
             const sevenDaysAgo = new Date();
@@ -528,19 +572,22 @@
             const sevenDaysAgoStr = formatDateStr(sevenDaysAgo);
             return {
                 label: 'ยอดขาย 7 วันล่าสุด',
-                data: sales.filter(item => String(item.date) >= sevenDaysAgoStr && String(item.date) <= todayStr)
+                data: sales.filter(item => {
+                    const d = normalizeDate(item.date);
+                    return d >= sevenDaysAgoStr && d <= todayStr;
+                })
             };
         } else if (currentFilter === 'custom-day') {
             const selectedDate = selectDateInput.value;
             return {
                 label: `ยอดขายวันที่ ${selectedDate}`,
-                data: sales.filter(item => String(item.date).startsWith(selectedDate))
+                data: sales.filter(item => normalizeDate(item.date) === selectedDate)
             };
         } else if (currentFilter === 'custom-month') {
             const selectedMonth = selectMonthInput.value;
             return {
                 label: `ยอดขายเดือน ${selectedMonth}`,
-                data: sales.filter(item => String(item.date).startsWith(selectedMonth))
+                data: sales.filter(item => normalizeDate(item.date).startsWith(selectedMonth))
             };
         }
         return { label: 'ยอดขายรวม', data: sales };
@@ -591,7 +638,7 @@
                 row.innerHTML = `
                     <div>
                         <div class="item-title">${item.name} <span style="color:#0284c7;">x${item.qty}</span> <span class="badge">${cat}</span></div>
-                        <div class="item-detail">(@${item.unitPrice} บ.) • ${String(item.date).substring(0, 10)} ${item.time} น.</div>
+                        <div class="item-detail">(@${item.unitPrice} บ.) • ${normalizeDate(item.date)} ${item.time} น.</div>
                     </div>
                     <div style="display:flex; align-items:center;">
                         <span class="item-price">฿${item.totalPrice}</span>
