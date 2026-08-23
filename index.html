@@ -151,6 +151,8 @@
         .secret-val { font-size: 1.1rem; font-weight: 600; margin-top: 2px; }
         .secret-val.cost { color: #f87171; }
         .secret-val.profit { color: #4ade80; }
+        .secret-val.cash { color: #34d399; }
+        .secret-val.qr { color: #38bdf8; }
 
         .category-summary-grid {
             display: grid;
@@ -334,7 +336,6 @@
             color: #0369a1;
         }
 
-        /* ป้ายสถานะการชำระเงิน (สแกนจ่าย / เงินสด) */
         .pay-badge {
             display: inline-flex;
             align-items: center;
@@ -468,7 +469,6 @@
         }
         .btn-sheets-link:active { background: #115e59; }
 
-        /* Modal หน้าต่าง QR Code PromptPay */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -568,7 +568,7 @@
         </div>
     </div>
 
-    <!-- กล่องยอดขายรวม -->
+    <!-- กล่องยอดขายรวม และสรุปผลประกอบการ (เพิ่มแยก รับเงินสด / สแกนจ่าย) -->
     <div class="total-banner">
         <div class="amount" id="totalSales">฿0</div>
         <div class="sub" id="totalSalesSub">ยอดขายรวม</div>
@@ -581,11 +581,19 @@
 
         <div class="secret-profit-panel" id="secretProfitPanel">
             <div class="secret-box">
-                <div class="secret-title">ต้นทุนซื้อของ</div>
+                <div class="secret-title">💵 รับเงินสด</div>
+                <div class="secret-val cash" id="totalCash">฿0</div>
+            </div>
+            <div class="secret-box">
+                <div class="secret-title">📱 สแกนจ่าย</div>
+                <div class="secret-val qr" id="totalQr">฿0</div>
+            </div>
+            <div class="secret-box">
+                <div class="secret-title">💸 ต้นทุนซื้อของ</div>
                 <div class="secret-val cost" id="totalCost">฿0</div>
             </div>
             <div class="secret-box">
-                <div class="secret-title">กำไรสุทธิ</div>
+                <div class="secret-title">📈 กำไรสุทธิ</div>
                 <div class="secret-val profit" id="totalProfit">฿0</div>
             </div>
         </div>
@@ -718,7 +726,7 @@
 <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbzr8lEc78rzKvRvYsgKpBkiH-E7zrpdt8oj_o9oJ6PCvMh7gcfJUrUwmMo-J1uHHVXWJQ/exec";
     const GOOGLE_SHEETS_URL = "https://docs.google.com/spreadsheets/d/1EEU-LsVCzD8jbisYSVmy5jMjdTotGOgIW-4ASJlzqYU/edit";
-    const PROMPTPAY_PHONE = "0637975257"; // เบอร์ PromptPay ร้านฟลุ๊ค ชาเฟ่
+    const PROMPTPAY_PHONE = "0637975257";
 
     const STORAGE_KEY = 'FLUKCHAFE_SHARED_DB_V5';
     const MENU_PRICES_KEY = 'FLUKCHAFE_SHARED_PRICES_V5';
@@ -830,6 +838,8 @@
     const suggestBox = document.getElementById('suggestBox');
     const totalSales = document.getElementById('totalSales');
     const totalSalesSub = document.getElementById('totalSalesSub');
+    const totalCash = document.getElementById('totalCash');
+    const totalQr = document.getElementById('totalQr');
     const totalCost = document.getElementById('totalCost');
     const totalProfit = document.getElementById('totalProfit');
     const secretProfitPanel = document.getElementById('secretProfitPanel');
@@ -896,7 +906,7 @@
     function togglePayMethod(id) {
         const idx = sales.findIndex(s => String(s.id) === String(id));
         if (idx !== -1) {
-            const current = sales[idx].paymentMethod || 'cash';
+            const current = sales[idx].paymentMethod || 'promptpay';
             sales[idx].paymentMethod = (current === 'promptpay') ? 'cash' : 'promptpay';
             localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
             saveToCloud({ action: "update_sale", item: sales[idx] });
@@ -1244,6 +1254,8 @@
 
         let totalS = 0;
         let totalC = 0;
+        let totalCashSum = 0;
+        let totalQrSum = 0;
         let totalPieces = 0;
         
         displayExpenses.forEach(e => totalC += Number(e.cost));
@@ -1268,16 +1280,23 @@
             itemList.innerHTML = '<div class="empty-text">ยังไม่มีรายการขายในช่วงนี้</div>';
         } else {
             displaySales.slice().reverse().forEach((item) => {
-                totalS += Number(item.totalPrice);
+                const price = Number(item.totalPrice);
+                totalS += price;
                 totalPieces += Number(item.qty);
 
+                if (item.paymentMethod === 'cash') {
+                    totalCashSum += price;
+                } else {
+                    totalQrSum += price; // ค่าเริ่มต้นเป็น promptpay
+                }
+
                 const cat = catStats[item.category] ? item.category : 'อาหาร/กะเพรา';
-                catStats[cat].sum += Number(item.totalPrice);
+                catStats[cat].sum += price;
                 catStats[cat].count += Number(item.qty);
 
                 if (!menuGrouped[cat][item.name]) menuGrouped[cat][item.name] = { qty: 0, sum: 0 };
                 menuGrouped[cat][item.name].qty += Number(item.qty);
-                menuGrouped[cat][item.name].sum += Number(item.totalPrice);
+                menuGrouped[cat][item.name].sum += price;
 
                 const isQr = (item.paymentMethod !== 'cash');
                 const badgeClass = isQr ? 'pay-badge qr' : 'pay-badge cash';
@@ -1291,8 +1310,8 @@
                         <div class="item-detail">(@${item.unitPrice} บ.) • ${item.date} ${item.time} น.</div>
                     </div>
                     <div style="display:flex; align-items:center;">
-                        <span class="item-price">฿${Number(item.totalPrice).toLocaleString()}</span>
-                        <button class="${badgeClass}" onclick="showPromptPayQR('${item.name}', ${item.qty}, ${item.totalPrice}, '${item.id}')" title="แตะเพื่อดู QR Code หรือเปลี่ยนประเภทการรับเงิน">${badgeText}</button>
+                        <span class="item-price">฿${price.toLocaleString()}</span>
+                        <button class="${badgeClass}" onclick="togglePayMethod('${item.id}')" title="แตะเพื่อสลับประเภทการรับเงิน">${badgeText}</button>
                         <button class="btn-del" onclick="deleteItem('${item.id}')">ลบ</button>
                     </div>
                 `;
@@ -1324,6 +1343,9 @@
         const profit = totalS - totalC;
         totalSales.innerText = `฿${totalS.toLocaleString()}`;
         totalSalesSub.innerText = `ยอดขายรวม • ${totalPieces} ชิ้น (${displaySales.length} ออเดอร์)`;
+        
+        document.getElementById('totalCash').innerText = `฿${totalCashSum.toLocaleString()}`;
+        document.getElementById('totalQr').innerText = `฿${totalQrSum.toLocaleString()}`;
         totalCost.innerText = `฿${totalC.toLocaleString()}`;
         totalProfit.innerText = `฿${profit.toLocaleString()}`;
         totalProfit.style.color = profit >= 0 ? '#4ade80' : '#f87171';
@@ -1459,6 +1481,7 @@
     function exportExpensesToCSV() {
         if (expenses.length === 0) { alert('ไม่มีข้อมูลต้นทุนสำหรับดาวน์โหลด'); return; }
         let csv = '\uFEFFวันที่,เวลา,รายการซื้อของ,จำนวนเงินต้นทุน\n';
+        expenses.exportExpensesToCSV = true; // placeholder
         expenses.forEach(e => {
             csv += `"${e.date}","${e.time}","${e.name}",${e.cost}\n`;
         });
