@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FLUKCHAFE - ฟลุ๊ค ชาเฟ่</title>
+    <title>FLUKCHAFE - ฟลุ๊ค ชาเฟ่ POS & Profit</title>
     
     <link rel="icon" type="image/png" href="logo.png">
     <link rel="apple-touch-icon" href="logo.png">
@@ -25,23 +25,28 @@
             position: relative;
         }
 
-        .bg-fixed-container {
+        /* ผืนผ้าใบ Canvas สำหรับสร้างคลื่นน้ำเคลื่อนไหวแบบ Real-time */
+        #waveCanvas {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
             z-index: -10;
-            overflow: hidden;
-            background-color: #090d16;
+            pointer-events: none;
+            background: #090d16;
         }
 
-        .bg-fixed-container img {
-            width: 100%;
-            height: 100%;
+        .bg-fixed-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -5;
             object-fit: cover;
-            object-position: center center;
-            display: block;
+            display: none;
+            pointer-events: none;
         }
 
         .bg-overlay {
@@ -51,7 +56,7 @@
             width: 100vw;
             height: 100vh;
             background: rgba(9, 13, 22, 0.25);
-            z-index: -5;
+            z-index: -2;
             pointer-events: none;
         }
 
@@ -74,6 +79,13 @@
         .brand-name-en { font-size: 1.55rem; font-weight: 700; color: #0f172a; margin-top: 4px; line-height: 1.1; }
         .brand-name-th { font-size: 0.9rem; font-weight: 400; color: #64748b; margin-top: 2px; }
 
+        .header-tools {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 6px;
+        }
+
         .sync-badge {
             display: inline-block;
             font-size: 0.72rem;
@@ -81,9 +93,20 @@
             border-radius: 12px;
             background: #e0f2fe;
             color: #0369a1;
-            margin-top: 6px;
             font-weight: 500;
             cursor: pointer;
+        }
+
+        .bg-btn-change {
+            display: inline-block;
+            font-size: 0.72rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            background: #f1f5f9;
+            color: #475569;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid #cbd5e1;
         }
 
         .time-filter {
@@ -431,18 +454,22 @@
 </head>
 <body>
 
-<!-- ดึงไฟล์ bg.gif.gif ที่อยู่บน GitHub ตรงๆ -->
-<div class="bg-fixed-container">
-    <img src="bg.gif.gif" alt="Background">
-</div>
+<!-- พื้นหลังคลื่นแสงเคลื่อนไหว Canvas (ติดแน่นอน 100%) -->
+<canvas id="waveCanvas"></canvas>
+<img id="mainBgImg" class="bg-fixed-layer" alt="Background">
 <div class="bg-overlay"></div>
+
+<input type="file" id="localBgPicker" accept="image/*" style="display: none;" onchange="handleLocalBgSelected(event)">
 
 <div class="container">
     <div class="brand-header">
         <img src="logo.png" alt="FLUKCHAFE" class="brand-logo" onerror="this.style.display='none'">
         <div class="brand-name-en">FLUKCHAFE</div>
         <div class="brand-name-th">ฟลุ๊ค ชาเฟ่</div>
-        <div id="syncStatus" class="sync-badge" onclick="loadFromCloud()">🔄 ซิงค์ข้อมูล Cloud</div>
+        <div class="header-tools">
+            <div id="syncStatus" class="sync-badge" onclick="loadFromCloud()">🔄 ซิงค์ข้อมูล Cloud</div>
+            <div class="bg-btn-change" onclick="document.getElementById('localBgPicker').click()">🖼️ เลือกภาพพื้นหลัง</div>
+        </div>
     </div>
 
     <!-- แถบเลือกช่วงเวลา -->
@@ -585,7 +612,46 @@
     const STORAGE_KEY = 'FLUKCHAFE_SHARED_DB_V5';
     const MENU_PRICES_KEY = 'FLUKCHAFE_SHARED_PRICES_V5';
     const EXPENSES_KEY = 'FLUKCHAFE_SHARED_EXP_V5';
+    const CUSTOM_BG_KEY = 'FLUKCHAFE_CUSTOM_BG_DATA';
     
+    // ระบบแอนิเมชันคลื่นน้ำ Real-time บน Canvas
+    const canvas = document.getElementById('waveCanvas');
+    const ctx = canvas.getContext('2d');
+    let width, height, step = 0;
+
+    function resizeCanvas() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function drawWave(yOffset, color, speed, wavelength, amplitude) {
+        ctx.beginPath();
+        ctx.moveTo(0, height);
+        for (let x = 0; x <= width; x += 10) {
+            const y = Math.sin((x * wavelength) + (step * speed)) * amplitude + (height * yOffset);
+            ctx.lineTo(x, y);
+        }
+        ctx.lineTo(width, height);
+        ctx.closePath();
+        ctx.fillStyle = color;
+        ctx.fill();
+    }
+
+    function animateWaves() {
+        ctx.clearRect(0, 0, width, height);
+        step += 0.02;
+        
+        // วาดคลื่น 3 ชั้น พริ้วไหวสวยงาม
+        drawWave(0.65, 'rgba(2, 132, 199, 0.25)', 0.8, 0.003, 40);
+        drawWave(0.75, 'rgba(99, 102, 241, 0.22)', -0.6, 0.002, 50);
+        drawWave(0.85, 'rgba(6, 182, 212, 0.28)', 1.0, 0.004, 30);
+        
+        requestAnimationFrame(animateWaves);
+    }
+    animateWaves();
+
     const DEFAULT_PRESET_PRICES = {
         "เอสเพรสโซ่ เย็น": 30, "เอสเพรสโซ่ ปั่น": 35,
         "คาปูชิโน่ เย็น": 30, "คาปูชิโน่ ปั่น": 35,
@@ -704,11 +770,55 @@
     const selectDateInput = document.getElementById('selectDateInput');
     const selectMonthInput = document.getElementById('selectMonthInput');
     const priceSearchInput = document.getElementById('priceSearchInput');
+    const mainBgImg = document.getElementById('mainBgImg');
 
     const btnToggleBackdate = document.getElementById('btnToggleBackdate');
     const backdateBox = document.getElementById('backdateBox');
     const backdateDateInput = document.getElementById('backdateDateInput');
     const backdateTimeInput = document.getElementById('backdateTimeInput');
+
+    function initBackground() {
+        const savedCustomBg = localStorage.getItem(CUSTOM_BG_KEY);
+        if (savedCustomBg) {
+            mainBgImg.src = savedCustomBg;
+            mainBgImg.style.display = 'block';
+            return;
+        }
+
+        const trySources = ["bg.gif.gif", "bg.gif", "bg.jpg.png", "bg.jpg"];
+        let idx = 0;
+
+        function tryNextImage() {
+            if (idx >= trySources.length) return;
+            const imgUrl = trySources[idx++];
+            const testImg = new Image();
+            testImg.onload = () => {
+                mainBgImg.src = imgUrl;
+                mainBgImg.style.display = 'block';
+            };
+            testImg.onerror = () => {
+                tryNextImage();
+            };
+            testImg.src = imgUrl + "?t=" + Date.now();
+        }
+        tryNextImage();
+    }
+
+    function handleLocalBgSelected(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const base64 = event.target.result;
+                mainBgImg.src = base64;
+                mainBgImg.style.display = 'block';
+                try {
+                    localStorage.setItem(CUSTOM_BG_KEY, base64);
+                } catch(err) {}
+            };
+            reader.readAsDataURL(file);
+        }
+    }
 
     function formatDateYMD(d) {
         const year = d.getFullYear();
@@ -1237,6 +1347,7 @@
         document.getElementById('pricesView').style.display = tab === 'prices' ? 'block' : 'none';
     }
 
+    initBackground();
     renderUI();
     window.addEventListener('DOMContentLoaded', () => {
         loadFromCloud();
