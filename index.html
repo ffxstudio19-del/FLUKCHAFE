@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FLUKCHAFE - ฟลุ๊ค ชาเฟ่</title>
+    <title>FLUKCHAFE - ฟลุ๊ค ชาเฟ่ POS</title>
     
     <link rel="icon" type="image/png" href="logo.png">
     <link rel="apple-touch-icon" href="logo.png">
@@ -36,7 +36,16 @@
         .brand-name-en { font-size: 1.55rem; font-weight: 700; color: #0f172a; margin-top: 4px; line-height: 1.1; }
         .brand-name-th { font-size: 0.9rem; font-weight: 400; color: #64748b; margin-top: 2px; }
 
-        /* แถบเลือกช่วงเวลา */
+        .sync-badge {
+            display: inline-block;
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+            background: #e0f2fe;
+            color: #0369a1;
+            margin-top: 4px;
+        }
+
         .time-filter {
             display: flex;
             gap: 4px;
@@ -63,7 +72,6 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.08);
         }
 
-        /* ช่องเลือกวันที่/เดือนแบบกำหนดเอง */
         .custom-date-picker {
             display: none;
             margin-bottom: 10px;
@@ -229,6 +237,7 @@
         <img src="logo.png" alt="FLUKCHAFE" class="brand-logo" onerror="this.style.display='none'">
         <div class="brand-name-en">FLUKCHAFE</div>
         <div class="brand-name-th">ฟลุ๊ค ชาเฟ่</div>
+        <div id="syncStatus" class="sync-badge">☁️ กำลังเชื่อมต่อ Cloud...</div>
     </div>
 
     <!-- แถบเลือกช่วงเวลา -->
@@ -241,10 +250,10 @@
 
     <!-- ช่องเลือกวัน/เดือน -->
     <div class="custom-date-picker" id="datePickerContainer">
-        <input type="date" id="selectDateInput" onchange="saveAndRender()">
+        <input type="date" id="selectDateInput" onchange="renderUI()">
     </div>
     <div class="custom-date-picker" id="monthPickerContainer">
-        <input type="month" id="selectMonthInput" onchange="saveAndRender()">
+        <input type="month" id="selectMonthInput" onchange="renderUI()">
     </div>
 
     <div class="total-banner">
@@ -322,6 +331,8 @@
 </div>
 
 <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbzr8lEc78rzKvRvYsgKpBkiH-E7zrpdt8oj_o9oJ6PCvMh7gcfJUrUwmMo-J1uHHVXWJQ/exec";
+
     function formatDateStr(d) {
         const year = d.getFullYear();
         const month = String(d.getMonth() + 1).padStart(2, '0');
@@ -332,24 +343,10 @@
     const STORAGE_KEY = 'FLUKCHAFE_SALES_ALL_V3';
     const MENU_PRICES_KEY = 'FLUKCHAFE_PRICES_V3';
     
-    function loadSales() {
-        try { 
-            return JSON.parse(localStorage.getItem(STORAGE_KEY)) || 
-                   JSON.parse(localStorage.getItem('SHOP_SALES_RECORDS_V2')) || []; 
-        } catch (e) { return []; }
-    }
-
-    function loadPriceBook() {
-        try { 
-            return JSON.parse(localStorage.getItem(MENU_PRICES_KEY)) || 
-                   JSON.parse(localStorage.getItem('SHOP_MENU_PRICES_V1')) || {}; 
-        } catch (e) { return {}; }
-    }
-
-    let sales = loadSales();
-    let priceBook = loadPriceBook();
+    let sales = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    let priceBook = JSON.parse(localStorage.getItem(MENU_PRICES_KEY)) || {};
     let selectedCategory = 'auto';
-    let currentFilter = 'today'; 
+    let currentFilter = 'today';
 
     const quickInput = document.getElementById('quickInput');
     const totalAmount = document.getElementById('totalAmount');
@@ -362,22 +359,52 @@
     const monthPickerContainer = document.getElementById('monthPickerContainer');
     const selectDateInput = document.getElementById('selectDateInput');
     const selectMonthInput = document.getElementById('selectMonthInput');
+    const syncStatus = document.getElementById('syncStatus');
 
-    // ตั้งค่าเริ่มต้นของตัวเลือกวันที่/เดือน
     const initDate = new Date();
     selectDateInput.value = formatDateStr(initDate);
     selectMonthInput.value = `${initDate.getFullYear()}-${String(initDate.getMonth() + 1).padStart(2, '0')}`;
+
+    async function fetchCloudData() {
+        syncStatus.innerText = "🔄 กำลังซิงค์ข้อมูล...";
+        try {
+            const res = await fetch(API_URL);
+            const data = await res.json();
+            if (data.sales && Array.isArray(data.sales)) {
+                sales = data.sales;
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
+            }
+            if (data.prices) {
+                priceBook = data.prices;
+                localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
+            }
+            syncStatus.innerText = "☁️ ซิงค์ตรงกันทุกเครื่องแล้ว";
+            renderUI();
+        } catch (e) {
+            syncStatus.innerText = "⚠️ ออฟไลน์ (ใช้ข้อมูลในเครื่อง)";
+        }
+    }
+
+    async function sendCloudAction(payload) {
+        try {
+            fetch(API_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+        } catch (e) {}
+    }
 
     function setTimeFilter(filter, btn) {
         currentFilter = filter;
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
 
-        // สลับแสดงกล่องเลือกวัน/เดือน
         datePickerContainer.style.display = (filter === 'custom-day') ? 'block' : 'none';
         monthPickerContainer.style.display = (filter === 'custom-month') ? 'block' : 'none';
 
-        saveAndRender();
+        renderUI();
     }
 
     function setCategory(cat, btn) {
@@ -465,7 +492,7 @@
         const now = new Date();
         const timeStr = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
 
-        sales.push({ 
+        const newItem = { 
             id: Date.now(),
             date: formatDateStr(now),
             name, 
@@ -474,9 +501,14 @@
             totalPrice, 
             category,
             time: timeStr 
-        });
+        };
 
-        saveAndRender();
+        sales.push(newItem);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
+        
+        sendCloudAction({ action: "add_sale", item: newItem });
+
+        renderUI();
         quickInput.value = '';
         return false;
     }
@@ -488,7 +520,7 @@
         if (currentFilter === 'today') {
             return {
                 label: 'ยอดขายรวมวันนี้',
-                data: sales.filter(item => item.date === todayStr)
+                data: sales.filter(item => String(item.date).startsWith(todayStr))
             };
         } else if (currentFilter === 'week') {
             const sevenDaysAgo = new Date();
@@ -496,26 +528,25 @@
             const sevenDaysAgoStr = formatDateStr(sevenDaysAgo);
             return {
                 label: 'ยอดขาย 7 วันล่าสุด',
-                data: sales.filter(item => item.date >= sevenDaysAgoStr && item.date <= todayStr)
+                data: sales.filter(item => String(item.date) >= sevenDaysAgoStr && String(item.date) <= todayStr)
             };
         } else if (currentFilter === 'custom-day') {
             const selectedDate = selectDateInput.value;
             return {
                 label: `ยอดขายวันที่ ${selectedDate}`,
-                data: sales.filter(item => item.date === selectedDate)
+                data: sales.filter(item => String(item.date).startsWith(selectedDate))
             };
         } else if (currentFilter === 'custom-month') {
-            const selectedMonth = selectMonthInput.value; // 'YYYY-MM'
+            const selectedMonth = selectMonthInput.value;
             return {
                 label: `ยอดขายเดือน ${selectedMonth}`,
-                data: sales.filter(item => item.date && item.date.startsWith(selectedMonth))
+                data: sales.filter(item => String(item.date).startsWith(selectedMonth))
             };
         }
         return { label: 'ยอดขายรวม', data: sales };
     }
 
-    function saveAndRender() {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
+    function renderUI() {
         updateDatalist();
         
         const filterResult = getFilteredSales();
@@ -544,23 +575,23 @@
             itemList.innerHTML = '<div class="empty-text">ไม่มีข้อมูลรายการขายในช่วงเวลานี้</div>';
         } else {
             displaySales.slice().reverse().forEach((item) => {
-                total += item.totalPrice;
-                totalPieces += item.qty;
+                total += Number(item.totalPrice);
+                totalPieces += Number(item.qty);
 
                 const cat = catStats[item.category] ? item.category : 'อาหาร/กะเพรา';
-                catStats[cat].sum += item.totalPrice;
-                catStats[cat].count += item.qty;
+                catStats[cat].sum += Number(item.totalPrice);
+                catStats[cat].count += Number(item.qty);
 
                 if (!menuGrouped[cat][item.name]) menuGrouped[cat][item.name] = { qty: 0, sum: 0 };
-                menuGrouped[cat][item.name].qty += item.qty;
-                menuGrouped[cat][item.name].sum += item.totalPrice;
+                menuGrouped[cat][item.name].qty += Number(item.qty);
+                menuGrouped[cat][item.name].sum += Number(item.totalPrice);
 
                 const row = document.createElement('div');
                 row.className = 'item-row';
                 row.innerHTML = `
                     <div>
                         <div class="item-title">${item.name} <span style="color:#0284c7;">x${item.qty}</span> <span class="badge">${cat}</span></div>
-                        <div class="item-detail">(@${item.unitPrice} บ.) • ${item.date} ${item.time} น.</div>
+                        <div class="item-detail">(@${item.unitPrice} บ.) • ${String(item.date).substring(0, 10)} ${item.time} น.</div>
                     </div>
                     <div style="display:flex; align-items:center;">
                         <span class="item-price">฿${item.totalPrice}</span>
@@ -642,9 +673,10 @@
         if (name && !isNaN(price) && price > 0) {
             priceBook[name] = price;
             localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
+            sendCloudAction({ action: "update_price", name, price });
             document.getElementById('newMenuName').value = '';
             document.getElementById('newMenuPrice').value = '';
-            saveAndRender();
+            renderUI();
         } else {
             alert('กรุณากรอกชื่อเมนูและราคาให้ถูกต้อง');
         }
@@ -654,13 +686,16 @@
         if (confirm(`ต้องการลบราคาของเมนู "${name}" หรือไม่?`)) {
             delete priceBook[name];
             localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
-            saveAndRender();
+            sendCloudAction({ action: "delete_price", name });
+            renderUI();
         }
     }
 
     function deleteItem(id) {
-        sales = sales.filter(item => item.id !== id);
-        saveAndRender();
+        sales = sales.filter(item => String(item.id) !== String(id));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
+        sendCloudAction({ action: "delete_sale", id });
+        renderUI();
     }
 
     function switchTab(tab) {
@@ -673,7 +708,8 @@
     }
 
     window.addEventListener('DOMContentLoaded', () => {
-        saveAndRender();
+        renderUI();
+        fetchCloudData();
     });
 </script>
 </body>
