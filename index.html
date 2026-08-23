@@ -89,25 +89,54 @@
             color: #0f172a;
         }
 
-        /* กล่องสรุปยอดขาย - ต้นทุน - กำไร */
-        .finance-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 6px;
-            margin-bottom: 12px;
-        }
-        .fin-box {
+        /* กล่องยอดขายหลัก */
+        .total-banner {
             background: #0f172a;
             color: #fff;
             border-radius: 14px;
-            padding: 10px 6px;
+            padding: 14px 10px 10px 10px;
             text-align: center;
+            margin-bottom: 10px;
         }
-        .fin-title { font-size: 0.72rem; color: #94a3b8; margin-bottom: 2px; }
-        .fin-val { font-size: 1.15rem; font-weight: 600; }
-        .fin-val.sales { color: #38bdf8; }
-        .fin-val.cost { color: #f87171; }
-        .fin-val.profit { color: #4ade80; }
+        .total-banner .amount { font-size: 2.3rem; font-weight: 600; color: #38bdf8; line-height: 1.1; }
+        .total-banner .sub { font-size: 0.8rem; color: #94a3b8; margin-top: 4px; }
+
+        /* ปุ่มกดดูต้นทุน/กำไร */
+        .btn-toggle-profit {
+            background: rgba(255, 255, 255, 0.12);
+            color: #e2e8f0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 4px 14px;
+            font-size: 0.75rem;
+            margin-top: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-toggle-profit:hover, .btn-toggle-profit:active {
+            background: rgba(56, 189, 248, 0.2);
+            color: #38bdf8;
+            border-color: #38bdf8;
+        }
+
+        /* กล่องซ่อนต้นทุนและกำไรสุทธิ */
+        .secret-profit-panel {
+            display: none;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed rgba(255, 255, 255, 0.2);
+        }
+        .secret-box {
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+            padding: 8px 4px;
+        }
+        .secret-title { font-size: 0.7rem; color: #94a3b8; }
+        .secret-val { font-size: 1.1rem; font-weight: 600; margin-top: 2px; }
+        .secret-val.cost { color: #f87171; }
+        .secret-val.profit { color: #4ade80; }
 
         .category-summary-grid {
             display: grid;
@@ -338,19 +367,27 @@
         <input type="month" id="selectMonthInput" onchange="renderUI()">
     </div>
 
-    <!-- แผงแสดง ยอดขาย - ต้นทุน - กำไรสุทธิ -->
-    <div class="finance-grid">
-        <div class="fin-box">
-            <div class="fin-title">ยอดขายรวม</div>
-            <div class="fin-val sales" id="totalSales">฿0</div>
+    <!-- กล่องยอดขายรวม พร้อมปุ่มซ่อน/แสดง เช็คต้นทุน-กำไร -->
+    <div class="total-banner">
+        <div class="amount" id="totalSales">฿0</div>
+        <div class="sub" id="totalSalesSub">ยอดขายรวม</div>
+        
+        <div>
+            <button type="button" class="btn-toggle-profit" id="btnToggleProfit" onclick="toggleProfitPanel()">
+                🔍 เช็ค ต้นทุน/กำไร
+            </button>
         </div>
-        <div class="fin-box">
-            <div class="fin-title">ต้นทุนซื้อของ</div>
-            <div class="fin-val cost" id="totalCost">฿0</div>
-        </div>
-        <div class="fin-box">
-            <div class="fin-title">กำไรสุทธิ</div>
-            <div class="fin-val profit" id="totalProfit">฿0</div>
+
+        <!-- กล่องซ่อนต้นทุนและกำไรสุทธิ -->
+        <div class="secret-profit-panel" id="secretProfitPanel">
+            <div class="secret-box">
+                <div class="secret-title">ต้นทุนซื้อของ</div>
+                <div class="secret-val cost" id="totalCost">฿0</div>
+            </div>
+            <div class="secret-box">
+                <div class="secret-title">กำไรสุทธิ</div>
+                <div class="secret-val profit" id="totalProfit">฿0</div>
+            </div>
         </div>
     </div>
 
@@ -504,6 +541,7 @@
         "เขียวมะนาวโซดา เย็น": 25, "เขียวมะนาวโซดา ปั่น": 30,
         "ชามะนาวโซดา เย็น": 25, "ชามะนาวโซดา ปั่น": 30,
         "บลูฮาวายโซดา เย็น": 25, "บลูฮาวายโซดา ปั่น": 30,
+        "สตรอว์เบอร์รีโซดา เย็น": 25, "สตรอว์เบอร์รีโซดา ปั่น": 30,
         "ลิ้นจี่โซดา เย็น": 25, "ลิ้นจี่โซดา ปั่น": 30,
         "กีวี่โซดา เย็น": 25, "กีวี่โซดา ปั่น": 30,
         "ส้มโซดา เย็น": 25, "ส้มโซดา ปั่น": 30,
@@ -553,12 +591,16 @@
     
     let selectedCategory = 'auto';
     let currentFilter = 'today';
+    let isProfitShown = false;
 
     const quickInput = document.getElementById('quickInput');
     const suggestBox = document.getElementById('suggestBox');
     const totalSales = document.getElementById('totalSales');
+    const totalSalesSub = document.getElementById('totalSalesSub');
     const totalCost = document.getElementById('totalCost');
     const totalProfit = document.getElementById('totalProfit');
+    const secretProfitPanel = document.getElementById('secretProfitPanel');
+    const btnToggleProfit = document.getElementById('btnToggleProfit');
     const itemList = document.getElementById('itemList');
     const menuSummaryList = document.getElementById('menuSummaryList');
     const expenseList = document.getElementById('expenseList');
@@ -580,6 +622,18 @@
     const initD = new Date();
     selectDateInput.value = formatDateYMD(initD);
     selectMonthInput.value = `${initD.getFullYear()}-${String(initD.getMonth() + 1).padStart(2, '0')}`;
+
+    // ปุ่มสลับซ่อน/แสดง ต้นทุนและกำไร
+    function toggleProfitPanel() {
+        isProfitShown = !isProfitShown;
+        if (isProfitShown) {
+            secretProfitPanel.style.display = 'grid';
+            btnToggleProfit.innerText = '🔒 ซ่อน ต้นทุน/กำไร';
+        } else {
+            secretProfitPanel.style.display = 'none';
+            btnToggleProfit.innerText = '🔍 เช็ค ต้นทุน/กำไร';
+        }
+    }
 
     function handleSearchSuggest(val) {
         const query = val.trim().toLowerCase();
@@ -758,7 +812,6 @@
         return false;
     }
 
-    // ฟังก์ชันเพิ่มต้นทุนซื้อของ
     function addExpense() {
         const name = document.getElementById('newExpenseName').value.trim();
         const cost = parseFloat(document.getElementById('newExpenseCost').value);
@@ -896,7 +949,7 @@
             });
         }
 
-        // แสดงรายการต้นทุน
+        // รายการต้นทุน
         expenseList.innerHTML = '';
         if (displayExpenses.length === 0) {
             expenseList.innerHTML = '<div class="empty-text">ยังไม่มีรายการต้นทุนในช่วงนี้</div>';
@@ -918,9 +971,9 @@
             });
         }
 
-        // คำนวณกำไรสุทธิ
         const profit = totalS - totalC;
         totalSales.innerText = `฿${totalS.toLocaleString()}`;
+        totalSalesSub.innerText = `ยอดขายรวม • ${totalPieces} ชิ้น (${displaySales.length} ออเดอร์)`;
         totalCost.innerText = `฿${totalC.toLocaleString()}`;
         totalProfit.innerText = `฿${profit.toLocaleString()}`;
         totalProfit.style.color = profit >= 0 ? '#4ade80' : '#f87171';
