@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FLUKCHAFE - ฟลุ๊ค ชาเฟ่</title>
+    <title>FLUKCHAFE - ฟลุ๊ค ชาเฟ่ POS & Profit</title>
     
     <link rel="icon" type="image/png" href="logo.png">
     <link rel="apple-touch-icon" href="logo.png">
@@ -89,16 +89,25 @@
             color: #0f172a;
         }
 
-        .total-banner {
+        /* กล่องสรุปยอดขาย - ต้นทุน - กำไร */
+        .finance-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+        .fin-box {
             background: #0f172a;
             color: #fff;
             border-radius: 14px;
-            padding: 14px;
+            padding: 10px 6px;
             text-align: center;
-            margin-bottom: 12px;
         }
-        .total-banner .amount { font-size: 2.3rem; font-weight: 600; color: #38bdf8; line-height: 1.1; }
-        .total-banner .sub { font-size: 0.8rem; color: #94a3b8; margin-top: 4px; }
+        .fin-title { font-size: 0.72rem; color: #94a3b8; margin-bottom: 2px; }
+        .fin-val { font-size: 1.15rem; font-weight: 600; }
+        .fin-val.sales { color: #38bdf8; }
+        .fin-val.cost { color: #f87171; }
+        .fin-val.profit { color: #4ade80; }
 
         .category-summary-grid {
             display: grid;
@@ -195,14 +204,13 @@
             font-size: 0.85rem;
         }
 
-        .tabs { display: flex; gap: 4px; margin-bottom: 12px; }
+        .tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 12px; }
         .tab-btn {
-            flex: 1;
             padding: 8px 2px;
             border: none;
             background: #e2e8f0;
             border-radius: 8px;
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             font-weight: 500;
             cursor: pointer;
             color: #475569;
@@ -283,6 +291,9 @@
             font-weight: 500;
             white-space: nowrap;
         }
+        .btn-exp-add {
+            background: #ef4444 !important;
+        }
         .price-search-box {
             margin-bottom: 8px;
         }
@@ -311,6 +322,7 @@
         <div id="syncStatus" class="sync-badge" onclick="loadFromCloud()">🔄 ซิงค์ข้อมูล Cloud</div>
     </div>
 
+    <!-- แถบเลือกช่วงเวลา -->
     <div class="time-filter">
         <button type="button" class="filter-btn active" onclick="setTimeFilter('today', this)">☀️ วันนี้</button>
         <button type="button" class="filter-btn" onclick="setTimeFilter('week', this)">📅 7 วัน</button>
@@ -326,9 +338,20 @@
         <input type="month" id="selectMonthInput" onchange="renderUI()">
     </div>
 
-    <div class="total-banner">
-        <div class="amount" id="totalAmount">฿0</div>
-        <div class="sub" id="totalItems">ยอดขายรวม</div>
+    <!-- แผงแสดง ยอดขาย - ต้นทุน - กำไรสุทธิ -->
+    <div class="finance-grid">
+        <div class="fin-box">
+            <div class="fin-title">ยอดขายรวม</div>
+            <div class="fin-val sales" id="totalSales">฿0</div>
+        </div>
+        <div class="fin-box">
+            <div class="fin-title">ต้นทุนซื้อของ</div>
+            <div class="fin-val cost" id="totalCost">฿0</div>
+        </div>
+        <div class="fin-box">
+            <div class="fin-title">กำไรสุทธิ</div>
+            <div class="fin-val profit" id="totalProfit">฿0</div>
+        </div>
     </div>
 
     <div class="category-summary-grid">
@@ -366,7 +389,7 @@
             <input 
                 type="text" 
                 id="quickInput" 
-                placeholder="เช่น ชาไทย เย็น, ชาไทย ปั่น, ไส้กรอก 25..." 
+                placeholder="เช่น ชาไทย เย็น, นมสดสตอเบอรี่ ปั่น, ไส้กรอก 25..." 
                 autocomplete="off" 
                 autofocus
                 oninput="handleSearchSuggest(this.value)"
@@ -375,14 +398,15 @@
         </div>
         <div id="suggestBox" class="suggest-box"></div>
         <div class="hint">
-            💡 <b>ตัวอย่าง:</b> <code>ชาไทย เย็น</code>, <code>ชาไทย ปั่น</code>, <code>ไส้กรอกแดง 25</code>, <code>ชีสบอล 2</code>
+            💡 <b>ตัวอย่าง:</b> <code>ชาไทย เย็น</code>, <code>นมสดสตอเบอรี่ ปั่น</code>, <code>ไส้กรอกแดง 25</code>, <code>ชีสบอล 2</code>
         </div>
     </form>
 
     <div class="tabs">
         <button type="button" class="tab-btn active" id="tabHistory" onclick="switchTab('history')">ประวัติการขาย</button>
         <button type="button" class="tab-btn" id="tabSummary" onclick="switchTab('summary')">สรุปรายเมนู</button>
-        <button type="button" class="tab-btn" id="tabPrices" onclick="switchTab('prices')">⚙️ จัดการราคาเมนู</button>
+        <button type="button" class="tab-btn" id="tabExpenses" onclick="switchTab('expenses')">💸 บันทึกต้นทุน</button>
+        <button type="button" class="tab-btn" id="tabPrices" onclick="switchTab('prices')">⚙️ ตั้งราคา</button>
     </div>
 
     <div class="list-container" id="historyView">
@@ -393,6 +417,17 @@
         <div id="menuSummaryList"></div>
     </div>
 
+    <!-- หน้าบันทึกต้นทุนซื้อของเข้าร้าน -->
+    <div class="list-container" id="expensesView" style="display: none;">
+        <div class="price-mgr-form">
+            <input type="text" id="newExpenseName" placeholder="รายการซื้อของ เช่น ชา/นม/ของทอด" style="flex:2;">
+            <input type="number" id="newExpenseCost" placeholder="จำนวนเงิน" style="flex:1;">
+            <button type="button" class="btn-exp-add" onclick="addExpense()">บันทึกทุน</button>
+        </div>
+        <div id="expenseList"></div>
+    </div>
+
+    <!-- หน้าจัดการราคาเมนู -->
     <div class="list-container" id="pricesView" style="display: none;">
         <div class="price-mgr-form">
             <input type="text" id="newMenuName" placeholder="ชื่อเมนู เช่น ชาไทย ปั่น" style="flex:2;">
@@ -410,8 +445,8 @@
     const API_URL = "https://script.google.com/macros/s/AKfycbzr8lEc78rzKvRvYsgKpBkiH-E7zrpdt8oj_o9oJ6PCvMh7gcfJUrUwmMo-J1uHHVXWJQ/exec";
     const STORAGE_KEY = 'FLUKCHAFE_SHARED_DB_V5';
     const MENU_PRICES_KEY = 'FLUKCHAFE_SHARED_PRICES_V5';
+    const EXPENSES_KEY = 'FLUKCHAFE_SHARED_EXP_V5';
     
-    // รายการเมนูมาตรฐาน คลีนชื่อซ้ำและระบุ เย็น/ปั่น ชัดเจนทุกรายการ
     const DEFAULT_PRESET_PRICES = {
         // --- กาแฟ ---
         "เอสเพรสโซ่ เย็น": 30, "เอสเพรสโซ่ ปั่น": 35,
@@ -449,10 +484,16 @@
         "มะพร้าวนมสด เย็น": 25, "มะพร้าวนมสด ปั่น": 30,
         "โอริโอ้ ปั่น": 30,
 
-        // --- สตรอว์เบอร์รี & สมูทตี้ ---
+        // --- สตรอว์เบอร์รี (Strawberry Menu) ---
         "นมสดสตรอว์เบอร์รี เย็น": 30, "นมสดสตรอว์เบอร์รี ปั่น": 35,
+        "นมสดสตอเบอรี่ เย็น": 30, "นมสดสตอเบอรี่ ปั่น": 35,
         "สตรอว์เบอร์รี เย็น": 25, "สตรอว์เบอร์รี ปั่น": 30,
-        "สตรอว์เบอร์รีโยเกิร์ต ปั่น": 35,
+        "สตอเบอรี่ เย็น": 25, "สตอเบอรี่ ปั่น": 30,
+        "สตรอว์เบอร์รีโซดา เย็น": 25, "สตรอว์เบอร์รีโซดา ปั่น": 30,
+        "สตอเบอรี่โซดา เย็น": 25, "สตอเบอรี่โซดา ปั่น": 30,
+        "สตรอว์เบอร์รีโยเกิร์ต ปั่น": 35, "สตอเบอรี่โยเกิร์ต ปั่น": 35,
+
+        // --- สมูทตี้ผลไม้ปั่น ---
         "แอปเปิ้ล ปั่น": 30, "บลูฮาวาย ปั่น": 30, "ลิ้นจี่ ปั่น": 30, "กีวี่ ปั่น": 30,
         "ส้ม ปั่น": 30, "องุ่น ปั่น": 30, "บลูเบอร์รี่ ปั่น": 30,
 
@@ -463,7 +504,6 @@
         "เขียวมะนาวโซดา เย็น": 25, "เขียวมะนาวโซดา ปั่น": 30,
         "ชามะนาวโซดา เย็น": 25, "ชามะนาวโซดา ปั่น": 30,
         "บลูฮาวายโซดา เย็น": 25, "บลูฮาวายโซดา ปั่น": 30,
-        "สตรอว์เบอร์รีโซดา เย็น": 25, "สตรอว์เบอร์รีโซดา ปั่น": 30,
         "ลิ้นจี่โซดา เย็น": 25, "ลิ้นจี่โซดา ปั่น": 30,
         "กีวี่โซดา เย็น": 25, "กีวี่โซดา ปั่น": 30,
         "ส้มโซดา เย็น": 25, "ส้มโซดา ปั่น": 30,
@@ -507,6 +547,7 @@
     };
 
     let sales = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    let expenses = JSON.parse(localStorage.getItem(EXPENSES_KEY)) || [];
     let savedPrices = JSON.parse(localStorage.getItem(MENU_PRICES_KEY)) || {};
     let priceBook = { ...DEFAULT_PRESET_PRICES, ...savedPrices };
     
@@ -515,10 +556,12 @@
 
     const quickInput = document.getElementById('quickInput');
     const suggestBox = document.getElementById('suggestBox');
-    const totalAmount = document.getElementById('totalAmount');
-    const totalItems = document.getElementById('totalItems');
+    const totalSales = document.getElementById('totalSales');
+    const totalCost = document.getElementById('totalCost');
+    const totalProfit = document.getElementById('totalProfit');
     const itemList = document.getElementById('itemList');
     const menuSummaryList = document.getElementById('menuSummaryList');
+    const expenseList = document.getElementById('expenseList');
     const priceSettingList = document.getElementById('priceSettingList');
     const syncStatus = document.getElementById('syncStatus');
     const datePickerContainer = document.getElementById('datePickerContainer');
@@ -591,6 +634,10 @@
             if (data && data.sales) {
                 sales = data.sales;
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
+            }
+            if (data && data.expenses) {
+                expenses = data.expenses;
+                localStorage.setItem(EXPENSES_KEY, JSON.stringify(expenses));
             }
             if (data && data.prices) {
                 priceBook = { ...DEFAULT_PRESET_PRICES, ...data.prices };
@@ -711,65 +758,97 @@
         return false;
     }
 
-    function getFilteredSales() {
+    // ฟังก์ชันเพิ่มต้นทุนซื้อของ
+    function addExpense() {
+        const name = document.getElementById('newExpenseName').value.trim();
+        const cost = parseFloat(document.getElementById('newExpenseCost').value);
+        if (!name || isNaN(cost) || cost <= 0) {
+            alert('กรุณากรอกรายการและจำนวนเงินต้นทุนให้ถูกต้อง');
+            return;
+        }
+
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+        const newExp = {
+            id: String(Date.now()),
+            ts: Date.now(),
+            date: formatDateYMD(now),
+            name,
+            cost,
+            time: timeStr
+        };
+
+        expenses.push(newExp);
+        localStorage.setItem(EXPENSES_KEY, JSON.stringify(expenses));
+        saveToCloud({ action: "add_expense", item: newExp });
+
+        document.getElementById('newExpenseName').value = '';
+        document.getElementById('newExpenseCost').value = '';
+        renderUI();
+    }
+
+    function deleteExpense(id) {
+        expenses = expenses.filter(item => String(item.id) !== String(id));
+        localStorage.setItem(EXPENSES_KEY, JSON.stringify(expenses));
+        saveToCloud({ action: "delete_expense", id: String(id) });
+        renderUI();
+    }
+
+    function getFilteredData() {
         const now = new Date();
         const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
         const todayEnd = todayStart + (24 * 60 * 60 * 1000) - 1;
 
+        let filterFn = () => true;
+
         if (currentFilter === 'today') {
-            return {
-                label: 'ยอดขายรวมวันนี้',
-                data: sales.filter(item => {
-                    const itemTs = Number(item.ts) || Number(item.id) || 0;
-                    return itemTs >= todayStart && itemTs <= todayEnd;
-                })
+            filterFn = item => {
+                const itemTs = Number(item.ts) || Number(item.id) || 0;
+                return itemTs >= todayStart && itemTs <= todayEnd;
             };
         } else if (currentFilter === 'week') {
             const weekStart = todayStart - (6 * 24 * 60 * 60 * 1000);
-            return {
-                label: 'ยอดขาย 7 วันล่าสุด',
-                data: sales.filter(item => {
-                    const itemTs = Number(item.ts) || Number(item.id) || 0;
-                    return itemTs >= weekStart && itemTs <= todayEnd;
-                })
+            filterFn = item => {
+                const itemTs = Number(item.ts) || Number(item.id) || 0;
+                return itemTs >= weekStart && itemTs <= todayEnd;
             };
         } else if (currentFilter === 'custom-day') {
             const selDate = selectDateInput.value;
             const [y, m, d] = selDate.split('-').map(Number);
             const dayStart = new Date(y, m - 1, d).getTime();
             const dayEnd = dayStart + (24 * 60 * 60 * 1000) - 1;
-
-            return {
-                label: `ยอดขายวันที่ ${selDate}`,
-                data: sales.filter(item => {
-                    const itemTs = Number(item.ts) || Number(item.id) || 0;
-                    return itemTs >= dayStart && itemTs <= dayEnd;
-                })
+            filterFn = item => {
+                const itemTs = Number(item.ts) || Number(item.id) || 0;
+                return itemTs >= dayStart && itemTs <= dayEnd;
             };
         } else if (currentFilter === 'custom-month') {
             const selMonth = selectMonthInput.value;
             const [y, m] = selMonth.split('-').map(Number);
             const mStart = new Date(y, m - 1, 1).getTime();
             const mEnd = new Date(y, m, 1).getTime() - 1;
-
-            return {
-                label: `ยอดขายเดือน ${selMonth}`,
-                data: sales.filter(item => {
-                    const itemTs = Number(item.ts) || Number(item.id) || 0;
-                    return itemTs >= mStart && itemTs <= mEnd;
-                })
+            filterFn = item => {
+                const itemTs = Number(item.ts) || Number(item.id) || 0;
+                return itemTs >= mStart && itemTs <= mEnd;
             };
         }
-        return { label: 'ยอดขายรวมทั้งหมด', data: sales };
+
+        return {
+            sales: sales.filter(filterFn),
+            expenses: expenses.filter(filterFn)
+        };
     }
 
     function renderUI() {
-        const filterResult = getFilteredSales();
-        const displaySales = filterResult.data;
+        const data = getFilteredData();
+        const displaySales = data.sales;
+        const displayExpenses = data.expenses;
 
-        let total = 0;
+        let totalS = 0;
+        let totalC = 0;
         let totalPieces = 0;
         
+        displayExpenses.forEach(e => totalC += Number(e.cost));
+
         const catStats = {
             'เครื่องดื่ม': { sum: 0, count: 0 },
             'ของทอด/ทานเล่น': { sum: 0, count: 0 },
@@ -790,7 +869,7 @@
             itemList.innerHTML = '<div class="empty-text">ยังไม่มีรายการขายในช่วงนี้</div>';
         } else {
             displaySales.slice().reverse().forEach((item) => {
-                total += Number(item.totalPrice);
+                totalS += Number(item.totalPrice);
                 totalPieces += Number(item.qty);
 
                 const cat = catStats[item.category] ? item.category : 'อาหาร/กะเพรา';
@@ -816,6 +895,35 @@
                 itemList.appendChild(row);
             });
         }
+
+        // แสดงรายการต้นทุน
+        expenseList.innerHTML = '';
+        if (displayExpenses.length === 0) {
+            expenseList.innerHTML = '<div class="empty-text">ยังไม่มีรายการต้นทุนในช่วงนี้</div>';
+        } else {
+            displayExpenses.slice().reverse().forEach((item) => {
+                const row = document.createElement('div');
+                row.className = 'item-row';
+                row.innerHTML = `
+                    <div>
+                        <div class="item-title" style="color:#ef4444;">💸 ${item.name}</div>
+                        <div class="item-detail">${item.date} • ${item.time} น.</div>
+                    </div>
+                    <div style="display:flex; align-items:center;">
+                        <span class="item-price" style="color:#ef4444;">-฿${Number(item.cost).toLocaleString()}</span>
+                        <button class="btn-del" onclick="deleteExpense('${item.id}')">ลบ</button>
+                    </div>
+                `;
+                expenseList.appendChild(row);
+            });
+        }
+
+        // คำนวณกำไรสุทธิ
+        const profit = totalS - totalC;
+        totalSales.innerText = `฿${totalS.toLocaleString()}`;
+        totalCost.innerText = `฿${totalC.toLocaleString()}`;
+        totalProfit.innerText = `฿${profit.toLocaleString()}`;
+        totalProfit.style.color = profit >= 0 ? '#4ade80' : '#f87171';
 
         document.getElementById('catDrinkSum').innerText = `฿${catStats['เครื่องดื่ม'].sum.toLocaleString()}`;
         document.getElementById('catDrinkCount').innerText = `${catStats['เครื่องดื่ม'].count} แก้ว`;
@@ -856,9 +964,6 @@
         }
 
         renderPriceSettingList();
-
-        totalAmount.innerText = `฿${total.toLocaleString()}`;
-        totalItems.innerText = `${filterResult.label} • รวม ${totalPieces} รายการ (${displaySales.length} ออเดอร์)`;
     }
 
     function renderPriceSettingList() {
@@ -929,9 +1034,12 @@
     function switchTab(tab) {
         document.getElementById('tabHistory').className = `tab-btn ${tab === 'history' ? 'active' : ''}`;
         document.getElementById('tabSummary').className = `tab-btn ${tab === 'summary' ? 'active' : ''}`;
+        document.getElementById('tabExpenses').className = `tab-btn ${tab === 'expenses' ? 'active' : ''}`;
         document.getElementById('tabPrices').className = `tab-btn ${tab === 'prices' ? 'active' : ''}`;
+        
         document.getElementById('historyView').style.display = tab === 'history' ? 'block' : 'none';
         document.getElementById('summaryView').style.display = tab === 'summary' ? 'block' : 'none';
+        document.getElementById('expensesView').style.display = tab === 'expenses' ? 'block' : 'none';
         document.getElementById('pricesView').style.display = tab === 'prices' ? 'block' : 'none';
     }
 
