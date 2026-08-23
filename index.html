@@ -68,17 +68,23 @@
             font-weight: 600;
         }
 
-        .sync-badge {
-            display: inline-block;
-            font-size: 0.72rem;
-            padding: 3px 10px;
-            border-radius: 12px;
-            background: #e0f2fe;
-            color: #0369a1;
-            margin-top: 6px;
-            font-weight: 500;
-            cursor: pointer;
+        /* ปุ่มซิงค์ข้อมูลย้ายลงล่างสุด แบบมินิมอล */
+        .sync-footer-box {
+            text-align: center;
+            margin-top: 14px;
+            padding-top: 8px;
+            border-top: 1px dashed rgba(0,0,0,0.06);
         }
+        .sync-badge-bottom {
+            display: inline-block;
+            font-size: 0.68rem;
+            color: #94a3b8;
+            cursor: pointer;
+            font-weight: 400;
+            transition: color 0.2s;
+            user-select: none;
+        }
+        .sync-badge-bottom:hover { color: #0284c7; }
 
         /* --- ฝั่งลูกค้า (Customer Mode) --- */
         #customerSection { display: block; }
@@ -111,6 +117,67 @@
             background: #fff;
         }
 
+        /* ส่วนแถบเลื่อนเมนูแนะนำ */
+        .rec-section-title {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #ea580c;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .rec-scroll-container {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+            scrollbar-width: thin;
+        }
+        .rec-card {
+            flex: 0 0 130px;
+            background: #fff;
+            border: 1.5px solid #fdba74;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(234, 88, 12, 0.1);
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+        .rec-card:active { transform: scale(0.96); }
+        .rec-img-box {
+            width: 100%;
+            height: 75px;
+            background: #fff7ed;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .rec-img-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .rec-body {
+            padding: 6px;
+        }
+        .rec-name {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #0f172a;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .rec-price {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #ea580c;
+            margin-top: 2px;
+        }
+
         /* แถบ 5 หมวดหมู่ */
         .cust-cat-nav {
             display: grid;
@@ -135,7 +202,7 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 10px;
-            max-height: 400px;
+            max-height: 360px;
             overflow-y: auto;
             margin-bottom: 12px;
             padding: 2px;
@@ -758,13 +825,10 @@
 <body>
 
 <div class="container">
-    <button type="button" class="btn-portal-switch" id="btnPortalSwitch" onclick="setAppMode('customer')" style="display: none;">🚪 ออกจากระบบ</button>
-
     <div class="brand-header">
-        <img src="logo.png" alt="FLUKCHAFE" class="brand-logo" id="mainBrandLogo" onclick="triggerAdminLogin()" onerror="this.style.display='none'" title="แตะเพื่อเข้าสู่ระบบร้านค้า">
-        <div class="brand-name-en" onclick="triggerAdminLogin()">FLUKCHAFE</div>
+        <img src="logo.png" alt="FLUKCHAFE" class="brand-logo" id="mainBrandLogo" onclick="handleLogoTap()" onerror="this.style.display='none'" title="แตะเพื่อจัดการระบบ">
+        <div class="brand-name-en" onclick="handleLogoTap()">FLUKCHAFE</div>
         <div class="brand-name-th">ฟลุ๊ค ชาเฟ่</div>
-        <div id="syncStatus" class="sync-badge" onclick="loadFromCloud()">🔄 ซิงค์ข้อมูล Cloud</div>
     </div>
 
     <!-- ==============================================
@@ -778,6 +842,12 @@
         <!-- ช่องค้นหาเมนู -->
         <div class="cust-search-box">
             <input type="text" id="custSearchInput" placeholder="🔍 ค้นหาเมนูเครื่องดื่ม / ของทานเล่น..." oninput="renderCustomerMenu()">
+        </div>
+
+        <!-- แถบเมนูแนะนำ / ยอดนิยม (สไลด์แนวนอน) -->
+        <div id="recSection" style="display: none;">
+            <div class="rec-section-title">🔥 เมนูแนะนำยอดนิยม</div>
+            <div class="rec-scroll-container" id="recMenuList"></div>
         </div>
         
         <!-- แถบ 5 หมวดหมู่ -->
@@ -962,6 +1032,11 @@
             </div>
         </div>
     </div>
+
+    <!-- ปุ่มสถานะการซิงค์ข้อมูลย้ายมาอยู่ตรงกลางล่างสุด แบบมินิมอล -->
+    <div class="sync-footer-box">
+        <span id="syncStatus" class="sync-badge-bottom" onclick="loadFromCloud()">🔄 ซิงค์ข้อมูล Cloud</span>
+    </div>
 </div>
 
 <!-- Modal ตะกร้าสินค้า & เลือกว่าส่งบ้าน หรือ รับหน้าร้าน -->
@@ -1020,6 +1095,7 @@
     const MENU_PRICES_KEY = 'FLUKCHAFE_SHARED_PRICES_V5';
     const MENU_IMAGES_KEY = 'FLUKCHAFE_SHARED_IMAGES_V5';
     const EXPENSES_KEY = 'FLUKCHAFE_SHARED_EXP_V5';
+    const ADMIN_AUTH_KEY = 'FLUKCHAFE_AUTH_STATUS';
     
     const DEFAULT_PRESET_PRICES = {
         "เอสเพรสโซ่ เย็น": 30, "เอสเพรสโซ่ ปั่น": 35,
@@ -1071,7 +1147,7 @@
         "แดงมะนาวโซดา เย็น": 25, "แดงมะนาวโซดา ปั่น": 30,
         "เขียวโซดา เย็น": 25, "เขียวโซดา ปั่น": 30,
         "เขียวมะนาวโซดา เย็น": 25, "เขียวมะนาวโซดา ปั่น": 30,
-        "ชามมะนาวโซดา เย็น": 25, "ชามะนาวโซดา ปั่น": 30,
+        "ชามะนาวโซดา เย็น": 25, "ชามะนาวโซดา ปั่น": 30,
         "บลูฮาวายโซดา เย็น": 25, "บลูฮาวายโซดา ปั่น": 30,
         "ลิ้นจี่โซดา เย็น": 25, "ลิ้นจี่โซดา ปั่น": 30,
         "กีวี่โซดา เย็น": 25, "กีวี่โซดา ปั่น": 30,
@@ -1118,7 +1194,7 @@
     let priceBook = { ...DEFAULT_PRESET_PRICES, ...savedPrices };
     let imageBook = { ...savedImages };
     
-    let currentMode = 'customer';
+    let currentMode = localStorage.getItem(ADMIN_AUTH_KEY) === 'true' ? 'admin' : 'customer';
     let cart = [];
     let custCurrentCat = 'all';
     let selectedOrderType = 'delivery';
@@ -1132,8 +1208,9 @@
 
     const customerSection = document.getElementById('customerSection');
     const adminSection = document.getElementById('adminSection');
-    const btnPortalSwitch = document.getElementById('btnPortalSwitch');
     const custMenuList = document.getElementById('custMenuList');
+    const recMenuList = document.getElementById('recMenuList');
+    const recSection = document.getElementById('recSection');
     const custSearchInput = document.getElementById('custSearchInput');
     const cartBar = document.getElementById('cartBar');
     const cartCount = document.getElementById('cartCount');
@@ -1195,11 +1272,15 @@
         } catch (e) {}
     }
 
-    function triggerAdminLogin() {
+    function handleLogoTap() {
         if (currentMode === 'customer') {
             pinModal.style.display = 'flex';
             pinInput.value = '';
             pinInput.focus();
+        } else {
+            if (confirm('ต้องการออกจากระบบร้านค้าเพื่อกลับสู่หน้าสั่งซื้อของลูกค้าหรือไม่?')) {
+                setAppMode('customer');
+            }
         }
     }
 
@@ -1220,15 +1301,14 @@
 
     function setAppMode(mode) {
         currentMode = mode;
+        localStorage.setItem(ADMIN_AUTH_KEY, mode === 'admin' ? 'true' : 'false');
         if (mode === 'admin') {
             customerSection.style.display = 'none';
             adminSection.style.display = 'block';
-            btnPortalSwitch.style.display = 'block';
             renderUI();
         } else {
             adminSection.style.display = 'none';
             customerSection.style.display = 'block';
-            btnPortalSwitch.style.display = 'none';
             renderCustomerMenu();
         }
     }
@@ -1271,11 +1351,39 @@
 
     function renderCustomerMenu() {
         custMenuList.innerHTML = '';
+        recMenuList.innerHTML = '';
         const searchKeyword = (custSearchInput ? custSearchInput.value : '').trim().toLowerCase();
         const popularity = getMenuPopularityMap();
 
-        let keys = Object.keys(priceBook);
+        let allKeys = Object.keys(priceBook);
 
+        const sortedByPopularity = [...allKeys].sort((a, b) => (popularity[b] || 0) - (popularity[a] || 0));
+        const topRecommended = sortedByPopularity.filter(name => (popularity[name] || 0) > 0).slice(0, 6);
+
+        if (topRecommended.length > 0 && !searchKeyword && custCurrentCat === 'all') {
+            recSection.style.display = 'block';
+            topRecommended.forEach(name => {
+                const cat = detectCategory(name);
+                const imageUrl = imageBook[name] || '';
+                let imgHtml = imageUrl ? `<img src="${imageUrl}" alt="${name}" onerror="this.outerHTML='<div style=\\'font-size:1.8rem;\\'>${getCategoryEmoji(cat)}</div>'">` : `<div style="font-size:1.8rem;">${getCategoryEmoji(cat)}</div>`;
+                
+                const recCard = document.createElement('div');
+                recCard.className = 'rec-card';
+                recCard.innerHTML = `
+                    <div class="rec-img-box">${imgHtml}</div>
+                    <div class="rec-body">
+                        <div class="rec-name">${name}</div>
+                        <div class="rec-price">฿${priceBook[name]}</div>
+                    </div>
+                `;
+                recCard.onclick = () => addToCart(name, priceBook[name]);
+                recMenuList.appendChild(recCard);
+            });
+        } else {
+            recSection.style.display = 'none';
+        }
+
+        let keys = [...allKeys];
         if (searchKeyword) {
             keys = keys.filter(k => k.toLowerCase().includes(searchKeyword));
         }
@@ -1287,9 +1395,7 @@
         keys.sort((a, b) => {
             const countA = popularity[a] || 0;
             const countB = popularity[b] || 0;
-            if (countB !== countA) {
-                return countB - countA;
-            }
+            if (countB !== countA) return countB - countA;
             return a.localeCompare(b, 'th');
         });
 
@@ -2139,8 +2245,8 @@
         document.body.removeChild(link);
     }
 
-    // เริ่มต้นระบบที่หน้าลูกค้า
-    setAppMode('customer');
+    // เริ่มต้นระบบตามสถานะ Session ที่บันทึกไว้
+    setAppMode(currentMode);
     window.addEventListener('DOMContentLoaded', () => {
         loadFromCloud();
         setInterval(loadFromCloud, 5000);
