@@ -1136,7 +1136,7 @@
 
     const STORAGE_KEY = 'FLUKCHAFE_SHARED_DB_V5';
     const MENU_PRICES_KEY = 'FLUKCHAFE_SHARED_PRICES_V5';
-    const MENU_IMAGES_KEY = 'FLUKCHAFE_SHARED_IMAGES_V5';
+    const MENU_IMAGES_KEY = 'FLUKCHAFE_SHARED_IMAGES_V6'; // อัปเกรดเวอร์ชันคีย์รูปภาพเพื่อป้องกันข้อมูลเก่าตีกัน
     const EXPENSES_KEY = 'FLUKCHAFE_SHARED_EXP_V5';
     const ADMIN_AUTH_KEY = 'FLUKCHAFE_AUTH_STATUS';
     
@@ -1407,7 +1407,6 @@
         return 'เครื่องดื่ม';
     }
 
-    // 🌟 ดึงรูปภาพจาก imageBook ที่บันทึกไว้ (ป้องกันไม่ให้ Cloud มาลบรูปที่ใส่เองทิ้ง)
     function getMenuImage(name) {
         const cleanName = (name || '').trim();
         if (imageBook[cleanName] && imageBook[cleanName].trim() !== '') {
@@ -2267,6 +2266,7 @@
             } else {
                 delete imageBook[name];
             }
+            // 🌟 ล็อกเซฟเก็บลง LocalStorage ของเครื่องทันทีอย่างถาวร
             localStorage.setItem(MENU_IMAGES_KEY, JSON.stringify(imageBook));
 
             saveToCloud({ action: "update_price", name, price, imageUrl });
