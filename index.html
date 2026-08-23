@@ -411,7 +411,7 @@
     const STORAGE_KEY = 'FLUKCHAFE_SHARED_DB_V5';
     const MENU_PRICES_KEY = 'FLUKCHAFE_SHARED_PRICES_V5';
     
-    // บันทึกฐานข้อมูลเมนูแบบแยก "เย็น" และ "ปั่น" พร้อมเว้นวรรค
+    // รายการเมนูมาตรฐาน คลีนชื่อซ้ำและระบุ เย็น/ปั่น ชัดเจนทุกรายการ
     const DEFAULT_PRESET_PRICES = {
         // --- กาแฟ ---
         "เอสเพรสโซ่ เย็น": 30, "เอสเพรสโซ่ ปั่น": 35,
@@ -435,8 +435,8 @@
         "ชาดำมะนาว เย็น": 25, "ชาดำมะนาว ปั่น": 30,
         "ชาดำน้ำผึ้ง เย็น": 25, "ชาดำน้ำผึ้ง ปั่น": 30,
         "ชาเขียวมัทฉะลาเต้ เย็น": 30, "ชาเขียวมัทฉะลาเต้ ปั่น": 35,
-        "ชาไทยโกโก้": 30, "ชาเขียวโกโก้": 30,
-        "ชาไทยนมสดสตรอว์เบอร์รี": 35, "ชาเขียวนมสดสตรอว์เบอร์รี": 35,
+        "ชาไทยโกโก้ เย็น": 30, "ชาเขียวโกโก้ เย็น": 30,
+        "ชาไทยนมสดสตรอว์เบอร์รี เย็น": 35, "ชาเขียวนมสดสตรอว์เบอร์รี เย็น": 35,
         "นมสด เย็น": 25, "นมสด ปั่น": 30,
         "นมชมพู เย็น": 25, "นมชมพู ปั่น": 30,
         "โกโก้ เย็น": 25, "โกโก้ ปั่น": 30,
@@ -452,8 +452,7 @@
         // --- สตรอว์เบอร์รี & สมูทตี้ ---
         "นมสดสตรอว์เบอร์รี เย็น": 30, "นมสดสตรอว์เบอร์รี ปั่น": 35,
         "สตรอว์เบอร์รี เย็น": 25, "สตรอว์เบอร์รี ปั่น": 30,
-        "สตรอว์เบอร์รีปั่นโยเกิร์ต": 35,
-        "สตรอว์เบอร์รี นมสด ปั่น": 35,
+        "สตรอว์เบอร์รีโยเกิร์ต ปั่น": 35,
         "แอปเปิ้ล ปั่น": 30, "บลูฮาวาย ปั่น": 30, "ลิ้นจี่ ปั่น": 30, "กีวี่ ปั่น": 30,
         "ส้ม ปั่น": 30, "องุ่น ปั่น": 30, "บลูเบอร์รี่ ปั่น": 30,
 
@@ -485,21 +484,26 @@
         "นมสดโอริโอ้คาราเมล ปั่น": 35,
 
         // --- ขนมปังปิ้ง ---
-        "ปังเนยนมน้ำตาล": 20, "ปังเนยน้ำตาล": 20, "ปังเนยนม": 20,
+        "ปังเนยนมน้ำตาล": 20, "ปังเนยนม": 20,
         "ปังโอวัลติน": 25, "ปังโอริโอ้": 30,
 
         // --- ของทอด / ทานเล่น ---
-        "เฟรนช์ฟรายส์": 29, "เฟรนฟราย": 29,
-        "ชีสบอล": 39, "ไก่ป๊อบ": 39, "นักเก็ตไก่": 39,
-        "ไส้กรอกแดง 20": 20, "ไส้กรอกแดง 25": 25, "ไส้กรอกแดง 30": 30,
-        "ไส้กรอกแดงทอดกรอบ 20": 20, "ไส้กรอกแดงทอดกรอบ 25": 25, "ไส้กรอกแดงทอดกรอบ 30": 30,
+        "เฟรนช์ฟรายส์": 29,
+        "ชีสบอล": 39,
+        "ไก่ป๊อบ": 39,
+        "นักเก็ตไก่": 39,
+        "ไส้กรอกแดง 20": 20,
+        "ไส้กรอกแดง 25": 25,
+        "ไส้กรอกแดง 30": 30,
 
         // --- ข้าวกะเพรา / ข้าวเหนียวปิ้งย่าง ---
-        "ข้าวกะเพรา 35": 35, "ข้าวกะเพรา 40": 40, "ข้าวกะเพรา 45": 45,
-        "ข้าวกะเพราไข่ดาว": 45,
-        "หมูปิ้ง": 5, "ไก่ย่างแดง": 5, "ไก่ย่าง": 5,
-        "ข้าวเหนียว": 5, "ข้าวเหนียว 10": 10,
-        "ข้าวเหนียวหมูปิ้ง": 25, "ข้าวเหนียวไก่ย่าง": 25
+        "ข้าวกะเพรา 35": 35,
+        "ข้าวกะเพรา 40": 40,
+        "ข้าวกะเพรา 45": 45,
+        "หมูปิ้ง": 5,
+        "ไก่ย่างแดง": 5,
+        "ข้าวเหนียว 5": 5,
+        "ข้าวเหนียว 10": 10
     };
 
     let sales = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
@@ -589,7 +593,7 @@
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
             }
             if (data && data.prices) {
-                priceBook = { ...DEFAULT_PRESET_PRICES, ...priceBook, ...data.prices };
+                priceBook = { ...DEFAULT_PRESET_PRICES, ...data.prices };
                 localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
             }
             syncStatus.innerText = "☁️ ซิงค์ตรงกันทุกเครื่องแล้ว";
@@ -649,34 +653,18 @@
 
         const parts = text.split(/\s+/);
 
-        if (parts.length >= 3 && !isNaN(parts[parts.length - 1]) && !isNaN(parts[parts.length - 2])) {
-            qty = parseInt(parts[parts.length - 1]);
-            unitPrice = parseFloat(parts[parts.length - 2]);
-            name = parts.slice(0, parts.length - 2).join(' ');
-        } else if (parts.length >= 2) {
-            const lastPart = parts[parts.length - 1];
-            if (lastPart.includes('*')) {
-                const [p, q] = lastPart.split('*');
-                unitPrice = parseFloat(p);
-                qty = parseInt(q) || 1;
-                name = parts.slice(0, parts.length - 1).join(' ');
-            } else if (!isNaN(lastPart)) {
-                const potentialName = parts.slice(0, parts.length - 1).join(' ');
-                const num = parseFloat(lastPart);
-                
-                if (priceBook[text]) {
-                    name = text;
-                    unitPrice = priceBook[text];
-                    qty = 1;
-                } else if (priceBook[potentialName] && num <= 15 && num !== 20 && num !== 25 && num !== 30 && num !== 35 && num !== 40 && num !== 45) {
-                    name = potentialName;
-                    qty = parseInt(num);
-                    unitPrice = priceBook[name];
-                } else {
-                    unitPrice = num;
-                    qty = 1;
-                    name = potentialName;
-                }
+        if (priceBook[text]) {
+            name = text;
+            unitPrice = priceBook[text];
+            qty = 1;
+        } else if (parts.length >= 2 && !isNaN(parts[parts.length - 1])) {
+            const potentialQty = parseInt(parts[parts.length - 1]);
+            const potentialName = parts.slice(0, parts.length - 1).join(' ');
+
+            if (priceBook[potentialName]) {
+                name = potentialName;
+                qty = potentialQty;
+                unitPrice = priceBook[name];
             } else {
                 name = text;
             }
