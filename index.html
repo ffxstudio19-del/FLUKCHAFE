@@ -3,8 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FLUKCHAFE - ฟลุ๊ค ชาเฟ่</title>
+    <title>FLUKCHAFE ฟลุ๊ค ชาเฟ่</title>
     
+    <!-- PWA & Mobile App Settings -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="FLUKCHAFE">
+
     <link rel="icon" type="image/png" href="logo.png">
     <link rel="apple-touch-icon" href="logo.png">
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -780,7 +787,6 @@
         "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."
     ];
 
-    // ฟังก์ชันทำความสะอาดและแปลงรูปแบบวันที่ให้กระชับ
     function formatThaiDateTime(rawDate, rawTime, ts = null) {
         let d = null;
         if (ts && !isNaN(ts)) {
@@ -1050,7 +1056,7 @@
         } else {
             const now = new Date();
             recordDate = formatDateYMD(now);
-            recordTime = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', hour12: false });
+            recordTime = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
             recordTs = Date.now();
         }
 
@@ -1099,7 +1105,7 @@
         } else {
             const now = new Date();
             recordDate = formatDateYMD(now);
-            recordTime = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', hour12: false });
+            recordTime = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
             recordTs = Date.now();
         }
 
@@ -1231,7 +1237,6 @@
                 const badgeClass = isQr ? 'pay-badge qr' : 'pay-badge cash';
                 const badgeText = isQr ? '📱 สแกนจ่าย' : '💵 เงินสด';
                 
-                // แปลงเวลาให้เข้าใจง่าย
                 const formattedTime = formatThaiDateTime(item.date, item.time, item.ts);
 
                 const row = document.createElement('div');
