@@ -3,47 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FLUKCHAFE - ฟลุ๊ค ชาเฟ่ POS</title>
+    <title>FLUKCHAFE - ฟลุ๊ค ชาเฟ่</title>
     
     <link rel="icon" type="image/png" href="logo.png">
     <link rel="apple-touch-icon" href="logo.png">
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; font-family: 'Kanit', sans-serif; margin: 0; padding: 0; }
-        body { background-color: #f1f5f9; padding: 12px; color: #1e293b; }
-        .container { max-width: 480px; margin: 0 auto; background: #fff; border-radius: 16px; padding: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         
-        /* ส่วนหัวโลโก้และชื่อร้าน */
-        .brand-header { text-align: center; margin-bottom: 14px; }
-        .brand-logo { width: 75px; height: 75px; border-radius: 50%; object-fit: cover; box-shadow: 0 3px 10px rgba(0,0,0,0.12); border: 2px solid #0284c7; }
-        .brand-name-en { font-size: 1.55rem; font-weight: 700; color: #0f172a; margin-top: 6px; letter-spacing: 0.5px; line-height: 1.1; }
-        .brand-name-th { font-size: 0.95rem; font-weight: 400; color: #64748b; margin-top: 2px; }
+        body { 
+            background: #0f172a url('bg.jpg') no-repeat center center fixed;
+            background-size: cover;
+            min-height: 100vh;
+            padding: 12px; 
+            color: #1e293b; 
+        }
+
+        .container { 
+            max-width: 480px; 
+            margin: 0 auto; 
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 20px; 
+            padding: 16px; 
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25); 
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+        
+        .brand-header { text-align: center; margin-bottom: 12px; }
+        .brand-logo { width: 75px; height: 75px; border-radius: 50%; object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 2px solid #0284c7; }
+        .brand-name-en { font-size: 1.55rem; font-weight: 700; color: #0f172a; margin-top: 4px; line-height: 1.1; }
+        .brand-name-th { font-size: 0.9rem; font-weight: 400; color: #64748b; margin-top: 2px; }
+
+        /* ตัวเลือกช่วงเวลาสรุปยอด */
+        .time-filter {
+            display: flex;
+            gap: 4px;
+            background: #e2e8f0;
+            padding: 3px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+        .filter-btn {
+            flex: 1;
+            padding: 6px;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            color: #64748b;
+        }
+        .filter-btn.active {
+            background: #fff;
+            color: #0284c7;
+            font-weight: 600;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+        }
 
         .total-banner {
             background: #0f172a;
             color: #fff;
-            border-radius: 12px;
-            padding: 16px;
+            border-radius: 14px;
+            padding: 14px;
             text-align: center;
             margin-bottom: 12px;
         }
         .total-banner .amount { font-size: 2.3rem; font-weight: 600; color: #38bdf8; line-height: 1.1; }
-        .total-banner .sub { font-size: 0.85rem; color: #94a3b8; margin-top: 4px; }
+        .total-banner .sub { font-size: 0.8rem; color: #94a3b8; margin-top: 4px; }
 
         .category-summary-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 8px;
-            margin-bottom: 16px;
+            margin-bottom: 14px;
         }
         .cat-box {
             background: #f8fafc;
             border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 10px;
+            border-radius: 12px;
+            padding: 8px 10px;
         }
-        .cat-title { font-size: 0.8rem; color: #64748b; font-weight: 500; }
-        .cat-val { font-size: 1.1rem; font-weight: 600; color: #0f172a; margin-top: 2px; }
+        .cat-title { font-size: 0.75rem; color: #64748b; font-weight: 500; }
+        .cat-val { font-size: 1.05rem; font-weight: 600; color: #0f172a; margin-top: 2px; }
         .cat-count { font-size: 0.75rem; color: #0284c7; }
 
         .cat-selector {
@@ -64,49 +108,49 @@
         }
         .cat-btn.active { background: #0284c7; color: #fff; }
 
-        .quick-input-box { margin-bottom: 16px; }
+        .quick-input-box { margin-bottom: 14px; }
         .quick-input-box input {
             width: 100%;
-            padding: 14px 16px;
-            font-size: 1.15rem;
+            padding: 12px 14px;
+            font-size: 1.1rem;
             border: 2px solid #0284c7;
-            border-radius: 10px;
+            border-radius: 12px;
             outline: none;
-            background: #f8fafc;
+            background: #fff;
         }
-        .quick-input-box input:focus { background: #fff; border-color: #0369a1; }
-        .hint { font-size: 0.75rem; color: #64748b; margin-top: 6px; line-height: 1.4; padding-left: 2px; }
+        .quick-input-box input:focus { border-color: #0369a1; box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.2); }
+        .hint { font-size: 0.75rem; color: #64748b; margin-top: 5px; line-height: 1.4; padding-left: 2px; }
 
-        .tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+        .tabs { display: flex; gap: 4px; margin-bottom: 12px; }
         .tab-btn {
             flex: 1;
-            padding: 8px 4px;
+            padding: 8px 2px;
             border: none;
             background: #e2e8f0;
             border-radius: 8px;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 500;
             cursor: pointer;
             color: #475569;
         }
         .tab-btn.active { background: #0f172a; color: #fff; }
 
-        .list-container { max-height: 320px; overflow-y: auto; }
+        .list-container { max-height: 300px; overflow-y: auto; }
         .item-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 4px;
+            padding: 8px 4px;
             border-bottom: 1px solid #f1f5f9;
         }
-        .item-title { font-size: 0.95rem; font-weight: 500; }
-        .item-detail { font-size: 0.75rem; color: #64748b; }
-        .item-price { font-size: 1.05rem; font-weight: 600; color: #0f172a; margin-right: 8px; }
+        .item-title { font-size: 0.9rem; font-weight: 500; }
+        .item-detail { font-size: 0.7rem; color: #64748b; }
+        .item-price { font-size: 1rem; font-weight: 600; color: #0f172a; margin-right: 6px; }
         .badge {
             display: inline-block;
-            padding: 1px 6px;
+            padding: 1px 5px;
             border-radius: 4px;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             margin-left: 4px;
             background: #e0f2fe;
             color: #0369a1;
@@ -116,38 +160,38 @@
             color: #ef4444;
             border: none;
             border-radius: 6px;
-            padding: 4px 8px;
-            font-size: 0.75rem;
+            padding: 3px 6px;
+            font-size: 0.7rem;
             cursor: pointer;
         }
         .summary-group-title {
             background: #f1f5f9;
-            padding: 6px 10px;
-            font-size: 0.85rem;
+            padding: 5px 8px;
+            font-size: 0.8rem;
             font-weight: 600;
             color: #475569;
             border-radius: 6px;
-            margin: 10px 0 6px 0;
+            margin: 8px 0 4px 0;
         }
         .summary-row {
             display: flex;
             justify-content: space-between;
-            padding: 6px 8px;
+            padding: 5px 6px;
             border-bottom: 1px solid #f8fafc;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
-        .empty-text { text-align: center; color: #94a3b8; padding: 24px 0; font-size: 0.9rem; }
+        .empty-text { text-align: center; color: #94a3b8; padding: 20px 0; font-size: 0.85rem; }
         
         .price-mgr-form {
             display: flex;
             gap: 6px;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
         .price-mgr-form input {
             padding: 8px;
             border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            font-size: 0.85rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
             outline: none;
         }
         .price-mgr-form button {
@@ -155,37 +199,54 @@
             color: #fff;
             border: none;
             padding: 8px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.85rem;
-        }
-        .btn-clear {
-            display: block;
-            width: 100%;
-            margin-top: 16px;
-            background: none;
-            border: 1px dashed #cbd5e1;
-            color: #94a3b8;
-            padding: 8px;
             border-radius: 8px;
-            font-size: 0.8rem;
             cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        /* ปุ่มจัดการข้อมูลและ Export */
+        .action-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin-top: 14px;
+        }
+        .btn-action {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            color: #475569;
+            padding: 8px 4px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .btn-action.danger {
+            color: #ef4444;
+            border-color: #fca5a5;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <!-- ส่วนหัวชื่อร้าน -->
     <div class="brand-header">
         <img src="logo.png" alt="FLUKCHAFE" class="brand-logo" onerror="this.style.display='none'">
         <div class="brand-name-en">FLUKCHAFE</div>
         <div class="brand-name-th">ฟลุ๊ค ชาเฟ่</div>
     </div>
 
+    <!-- แถบเลือกช่วงเวลาสรุปยอด -->
+    <div class="time-filter">
+        <button type="button" class="filter-btn active" onclick="setTimeFilter('today', this)">☀️ วันนี้</button>
+        <button type="button" class="filter-btn" onclick="setTimeFilter('week', this)">📅 7 วันล่าสุด</button>
+        <button type="button" class="filter-btn" onclick="setTimeFilter('month', this)">🗓️ เดือนนี้</button>
+    </div>
+
     <div class="total-banner">
         <div class="amount" id="totalAmount">฿0</div>
-        <div class="sub" id="totalItems">ยอดขายรวมวันนี้</div>
+        <div class="sub" id="totalItems">ยอดขายรวม</div>
     </div>
 
     <div class="category-summary-grid">
@@ -229,14 +290,14 @@
         >
         <datalist id="menuListOptions"></datalist>
         <div class="hint">
-            💡 <b>ตัวอย่าง:</b> <code>ชาไทยเย็น 25</code> (แก้วแรก) ต่อไปพิมพ์แค่ <code>ชาไทยเย็น</code> หรือ <code>ชาไทยปั่น 2</code>
+            💡 <b>ตัวอย่าง:</b> <code>ชาไทยเย็น 25</code> (บันทึกราคาแรก) หรือ <code>ชาไทยเย็น 2</code>
         </div>
     </form>
 
     <div class="tabs">
         <button type="button" class="tab-btn active" id="tabHistory" onclick="switchTab('history')">ประวัติการขาย</button>
         <button type="button" class="tab-btn" id="tabSummary" onclick="switchTab('summary')">สรุปรายเมนู</button>
-        <button type="button" class="tab-btn" id="tabPrices" onclick="switchTab('prices')">⚙️ ตั้งราคาเมนู</button>
+        <button type="button" class="tab-btn" id="tabPrices" onclick="switchTab('prices')">⚙️ ตั้งราคา</button>
     </div>
 
     <div class="list-container" id="historyView">
@@ -256,32 +317,44 @@
         <div id="priceSettingList"></div>
     </div>
 
-    <button type="button" class="btn-clear" onclick="clearToday()">ล้างข้อมูลยอดขายทั้งหมด</button>
+    <!-- ปุ่ม Export และ จัดการฐานข้อมูล -->
+    <div class="action-grid">
+        <button type="button" class="btn-action" onclick="exportToCSV()">📊 โหลด Excel (.CSV)</button>
+        <button type="button" class="btn-action" onclick="backupData()">💾 สำรองข้อมูล (Backup)</button>
+        <button type="button" class="btn-action" onclick="restoreData()">🔄 กู้คืนข้อมูล (Restore)</button>
+        <button type="button" class="btn-action danger" onclick="clearAllData()">🗑️ ล้างยอดขายทั้งหมด</button>
+    </div>
 </div>
 
 <script>
-    function getTodayString() {
-        const d = new Date();
+    function formatDateStr(d) {
         const year = d.getFullYear();
         const month = String(d.getMonth() + 1).padStart(2, '0');
         const day = String(d.getDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
     }
 
-    const STORAGE_KEY = 'SHOP_SALES_RECORDS_V2';
-    const MENU_PRICES_KEY = 'SHOP_MENU_PRICES_V1';
+    const STORAGE_KEY = 'FLUKCHAFE_SALES_ALL_V3';
+    const MENU_PRICES_KEY = 'FLUKCHAFE_PRICES_V3';
     
     function loadSales() {
-        try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch (e) { return []; }
+        try { 
+            return JSON.parse(localStorage.getItem(STORAGE_KEY)) || 
+                   JSON.parse(localStorage.getItem('SHOP_SALES_RECORDS_V2')) || []; 
+        } catch (e) { return []; }
     }
 
     function loadPriceBook() {
-        try { return JSON.parse(localStorage.getItem(MENU_PRICES_KEY)) || {}; } catch (e) { return {}; }
+        try { 
+            return JSON.parse(localStorage.getItem(MENU_PRICES_KEY)) || 
+                   JSON.parse(localStorage.getItem('SHOP_MENU_PRICES_V1')) || {}; 
+        } catch (e) { return {}; }
     }
 
     let sales = loadSales();
     let priceBook = loadPriceBook();
     let selectedCategory = 'auto';
+    let currentFilter = 'today'; // 'today', 'week', 'month'
 
     const quickInput = document.getElementById('quickInput');
     const totalAmount = document.getElementById('totalAmount');
@@ -290,6 +363,13 @@
     const menuSummaryList = document.getElementById('menuSummaryList');
     const menuListOptions = document.getElementById('menuListOptions');
     const priceSettingList = document.getElementById('priceSettingList');
+
+    function setTimeFilter(filter, btn) {
+        currentFilter = filter;
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        saveAndRender();
+    }
 
     function setCategory(cat, btn) {
         selectedCategory = cat;
@@ -378,7 +458,8 @@
 
         sales.push({ 
             id: Date.now(),
-            date: getTodayString(),
+            date: formatDateStr(now),
+            timestamp: now.getTime(),
             name, 
             unitPrice, 
             qty, 
@@ -392,12 +473,39 @@
         return false;
     }
 
+    function getFilteredSales() {
+        const now = new Date();
+        const todayStr = formatDateStr(now);
+        
+        if (currentFilter === 'today') {
+            return {
+                label: 'ยอดขายรวมวันนี้',
+                data: sales.filter(item => item.date === todayStr)
+            };
+        } else if (currentFilter === 'week') {
+            const sevenDaysAgo = new Date();
+            sevenDaysAgo.setDate(now.getDate() - 6);
+            const sevenDaysAgoStr = formatDateStr(sevenDaysAgo);
+            return {
+                label: 'ยอดขายรวม 7 วันล่าสุด',
+                data: sales.filter(item => item.date >= sevenDaysAgoStr && item.date <= todayStr)
+            };
+        } else if (currentFilter === 'month') {
+            const monthPrefix = todayStr.substring(0, 7); // 'YYYY-MM'
+            return {
+                label: `ยอดขายรวมเดือนนี้ (${monthPrefix})`,
+                data: sales.filter(item => item.date && item.date.startsWith(monthPrefix))
+            };
+        }
+        return { label: 'ยอดขายรวมทั้งหมด', data: sales };
+    }
+
     function saveAndRender() {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
         updateDatalist();
         
-        const today = getTodayString();
-        const todaySales = sales.filter(item => item.date === today);
+        const filterResult = getFilteredSales();
+        const displaySales = filterResult.data;
 
         let total = 0;
         let totalPieces = 0;
@@ -418,10 +526,10 @@
 
         itemList.innerHTML = '';
         
-        if (todaySales.length === 0) {
-            itemList.innerHTML = '<div class="empty-text">ยังไม่มีรายการขายในวันนี้</div>';
+        if (displaySales.length === 0) {
+            itemList.innerHTML = '<div class="empty-text">ไม่มีข้อมูลรายการขายในช่วงเวลานี้</div>';
         } else {
-            todaySales.slice().reverse().forEach((item) => {
+            displaySales.slice().reverse().forEach((item) => {
                 total += item.totalPrice;
                 totalPieces += item.qty;
 
@@ -438,7 +546,7 @@
                 row.innerHTML = `
                     <div>
                         <div class="item-title">${item.name} <span style="color:#0284c7;">x${item.qty}</span> <span class="badge">${cat}</span></div>
-                        <div class="item-detail">(@${item.unitPrice} บ.) • ${item.time} น.</div>
+                        <div class="item-detail">(@${item.unitPrice} บ.) • ${item.date} ${item.time} น.</div>
                     </div>
                     <div style="display:flex; align-items:center;">
                         <span class="item-price">฿${item.totalPrice}</span>
@@ -477,20 +585,20 @@
                     row.className = 'summary-row';
                     row.innerHTML = `
                         <span>${name} (x${data.qty})</span>
-                        <span><b>฿${data.sum}</b></span>
+                        <span><b>฿${data.sum.toLocaleString()}</b></span>
                     `;
                     menuSummaryList.appendChild(row);
                 }
             }
         }
         if (!hasMenu) {
-            menuSummaryList.innerHTML = '<div class="empty-text">ยังไม่มีข้อมูลสรุปเมนู</div>';
+            menuSummaryList.innerHTML = '<div class="empty-text">ยังไม่มีข้อมูลสรุปเมนูในช่วงนี้</div>';
         }
 
         renderPriceSettingList();
 
         totalAmount.innerText = `฿${total.toLocaleString()}`;
-        totalItems.innerText = `ขายได้รวม ${totalPieces} ชิ้น/แก้ว (${todaySales.length} ออเดอร์)`;
+        totalItems.innerText = `${filterResult.label} • ${totalPieces} รายการ (${displaySales.length} ออเดอร์)`;
     }
 
     function renderPriceSettingList() {
@@ -541,8 +649,8 @@
         saveAndRender();
     }
 
-    function clearToday() {
-        if (confirm('ต้องการล้างข้อมูลยอดขายทั้งหมดใช่หรือไม่?')) {
+    function clearAllData() {
+        if (confirm('คำเตือน: คุณต้องการลบประวัติการขายทั้งหมดใช่หรือไม่? (แนะนำให้กดสำรองข้อมูลก่อน)')) {
             sales = [];
             saveAndRender();
         }
@@ -555,6 +663,64 @@
         document.getElementById('historyView').style.display = tab === 'history' ? 'block' : 'none';
         document.getElementById('summaryView').style.display = tab === 'summary' ? 'block' : 'none';
         document.getElementById('pricesView').style.display = tab === 'prices' ? 'block' : 'none';
+    }
+
+    // Export เป็น Excel CSV
+    function exportToCSV() {
+        if (sales.length === 0) {
+            alert('ยังไม่มีข้อมูลการขายสำหรับส่งออก');
+            return;
+        }
+        let csvContent = "\uFEFFวันที่,เวลา,หมวดหมู่,ชื่อเมนู,ราคาต่อหน่วย,จำนวน,ยอดรวม\n";
+        sales.forEach(row => {
+            csvContent += `"${row.date}","${row.time}","${row.category}","${row.name}",${row.unitPrice},${row.qty},${row.totalPrice}\n`;
+        });
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `FLUKCHAFE_Sales_${formatDateStr(new Date())}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    // สำรองข้อมูลเป็นไฟล์ JSON
+    function backupData() {
+        const backupDataObj = { sales, priceBook };
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupDataObj));
+        const dlAnchorElem = document.createElement('a');
+        dlAnchorElem.setAttribute("href", dataStr);
+        dlAnchorElem.setAttribute("download", `FLUKCHAFE_Backup_${formatDateStr(new Date())}.json`);
+        dlAnchorElem.click();
+    }
+
+    // กู้คืนข้อมูล
+    function restoreData() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = e => {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.readAsText(file, 'UTF-8');
+            reader.onload = readerEvent => {
+                try {
+                    const content = JSON.parse(readerEvent.target.result);
+                    if (content.sales && Array.isArray(content.sales)) {
+                        sales = content.sales;
+                        if (content.priceBook) priceBook = content.priceBook;
+                        saveAndRender();
+                        alert('กู้คืนข้อมูลสำเร็จเรียบร้อยครับ!');
+                    } else {
+                        alert('รูปแบบไฟล์ไม่ถูกต้อง');
+                    }
+                } catch (err) {
+                    alert('เกิดข้อผิดพลาดในการอ่านไฟล์');
+                }
+            }
+        }
+        input.click();
     }
 
     window.addEventListener('DOMContentLoaded', () => {
