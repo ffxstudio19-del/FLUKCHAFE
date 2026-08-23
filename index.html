@@ -40,24 +40,33 @@
         }
         
         .brand-header { text-align: center; margin-bottom: 12px; position: relative; }
-        .brand-logo { width: 75px; height: 75px; border-radius: 50%; object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 2px solid #0284c7; }
-        .brand-name-en { font-size: 1.55rem; font-weight: 700; color: #0f172a; margin-top: 4px; line-height: 1.1; }
+        .brand-logo { 
+            width: 75px; 
+            height: 75px; 
+            border-radius: 50%; 
+            object-fit: cover; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
+            border: 2px solid #0284c7; 
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .brand-logo:active { transform: scale(0.92); }
+        .brand-name-en { font-size: 1.55rem; font-weight: 700; color: #0f172a; margin-top: 4px; line-height: 1.1; cursor: pointer; }
         .brand-name-th { font-size: 0.9rem; font-weight: 400; color: #64748b; margin-top: 2px; }
 
         .btn-portal-switch {
             position: absolute;
             top: 0;
             right: 0;
-            background: rgba(15, 23, 42, 0.08);
-            border: 1px solid rgba(15, 23, 42, 0.15);
+            background: #fee2e2;
+            border: 1px solid #fca5a5;
             padding: 4px 8px;
             border-radius: 8px;
             font-size: 0.7rem;
-            color: #475569;
+            color: #ef4444;
             cursor: pointer;
-            font-weight: 500;
+            font-weight: 600;
         }
-        .btn-portal-switch:hover { background: rgba(2, 132, 199, 0.15); color: #0284c7; }
 
         .sync-badge {
             display: inline-block;
@@ -85,23 +94,42 @@
             font-weight: 500;
         }
 
+        .cust-search-box {
+            margin-bottom: 10px;
+        }
+        .cust-search-box input {
+            width: 100%;
+            padding: 9px 14px;
+            border-radius: 12px;
+            border: 1.5px solid #cbd5e1;
+            font-size: 0.85rem;
+            outline: none;
+            background: #f8fafc;
+        }
+        .cust-search-box input:focus {
+            border-color: #0284c7;
+            background: #fff;
+        }
+
+        /* แถบ 5 หมวดหมู่ */
         .cust-cat-nav {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 4px;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 3px;
             margin-bottom: 10px;
         }
         .cust-cat-btn {
             background: #e2e8f0;
             border: none;
-            padding: 8px 2px;
+            padding: 8px 1px;
             border-radius: 8px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             cursor: pointer;
             font-weight: 500;
             color: #475569;
+            white-space: nowrap;
         }
-        .cust-cat-btn.active { background: #0284c7; color: #fff; }
+        .cust-cat-btn.active { background: #0284c7; color: #fff; font-weight: 600; }
 
         .cust-menu-grid {
             display: grid;
@@ -123,9 +151,24 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
             cursor: pointer;
             transition: all 0.15s;
+            position: relative;
         }
         .cust-menu-card:active { transform: scale(0.97); border-color: #0284c7; background: #f0f9ff; }
         
+        .bestseller-badge {
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            background: #ef4444;
+            color: #fff;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            z-index: 2;
+        }
+
         .cust-img-container {
             width: 100%;
             height: 105px;
@@ -560,7 +603,6 @@
         }
         .empty-text { text-align: center; color: #94a3b8; padding: 20px 0; font-size: 0.85rem; }
 
-        /* ฟอร์มจัดการราคาและรูปภาพ */
         .price-mgr-form-grid {
             display: flex;
             flex-direction: column;
@@ -716,11 +758,11 @@
 <body>
 
 <div class="container">
-    <button type="button" class="btn-portal-switch" id="btnPortalSwitch" onclick="handlePortalSwitch()">🔒 สำหรับร้านค้า</button>
+    <button type="button" class="btn-portal-switch" id="btnPortalSwitch" onclick="setAppMode('customer')" style="display: none;">🚪 ออกจากระบบ</button>
 
     <div class="brand-header">
-        <img src="logo.png" alt="FLUKCHAFE" class="brand-logo" onerror="this.style.display='none'">
-        <div class="brand-name-en">FLUKCHAFE</div>
+        <img src="logo.png" alt="FLUKCHAFE" class="brand-logo" id="mainBrandLogo" onclick="triggerAdminLogin()" onerror="this.style.display='none'" title="แตะเพื่อเข้าสู่ระบบร้านค้า">
+        <div class="brand-name-en" onclick="triggerAdminLogin()">FLUKCHAFE</div>
         <div class="brand-name-th">ฟลุ๊ค ชาเฟ่</div>
         <div id="syncStatus" class="sync-badge" onclick="loadFromCloud()">🔄 ซิงค์ข้อมูล Cloud</div>
     </div>
@@ -732,12 +774,19 @@
         <div class="delivery-banner-cust" id="custBannerText">
             🛵 สั่งเครื่องดื่ม & ของทานเล่น ส่งหน้าบ้าน หรือสั่งล่วงหน้ารับหน้าร้าน
         </div>
+
+        <!-- ช่องค้นหาเมนู -->
+        <div class="cust-search-box">
+            <input type="text" id="custSearchInput" placeholder="🔍 ค้นหาเมนูเครื่องดื่ม / ของทานเล่น..." oninput="renderCustomerMenu()">
+        </div>
         
+        <!-- แถบ 5 หมวดหมู่ -->
         <div class="cust-cat-nav">
-            <button type="button" class="cust-cat-btn active" onclick="filterCustCategory('all', this)">📋 ทั้งหมด</button>
             <button type="button" class="cust-cat-btn" onclick="filterCustCategory('เครื่องดื่ม', this)">🧋 เครื่องดื่ม</button>
-            <button type="button" class="cust-cat-btn" onclick="filterCustCategory('ของทอด/ทานเล่น', this)">🍟 ของทอด</button>
+            <button type="button" class="cust-cat-btn" onclick="filterCustCategory('ของทอด/ทานเล่น', this)">🍟 ทานเล่น</button>
             <button type="button" class="cust-cat-btn" onclick="filterCustCategory('ขนมปังปิ้ง', this)">🍞 ปังปิ้ง</button>
+            <button type="button" class="cust-cat-btn" onclick="filterCustCategory('อาหาร/กะเพรา', this)">🍳 กะเพรา/อื่นๆ</button>
+            <button type="button" class="cust-cat-btn active" onclick="filterCustCategory('all', this)">📋 ทั้งหมด</button>
         </div>
 
         <div class="cust-menu-grid" id="custMenuList"></div>
@@ -965,7 +1014,7 @@
     const API_URL = "https://script.google.com/macros/s/AKfycbzr8lEc78rzKvRvYsgKpBkiH-E7zrpdt8oj_o9oJ6PCvMh7gcfJUrUwmMo-J1uHHVXWJQ/exec";
     const GOOGLE_SHEETS_URL = "https://docs.google.com/spreadsheets/d/1EEU-LsVCzD8jbisYSVmy5jMjdTotGOgIW-4ASJlzqYU/edit";
     const PROMPTPAY_PHONE = "0637975257";
-    const ADMIN_PIN = "2424"; // รหัสผ่านใหม่เข้าระบบร้านค้า
+    const ADMIN_PIN = "2424";
 
     const STORAGE_KEY = 'FLUKCHAFE_SHARED_DB_V5';
     const MENU_PRICES_KEY = 'FLUKCHAFE_SHARED_PRICES_V5';
@@ -1022,7 +1071,7 @@
         "แดงมะนาวโซดา เย็น": 25, "แดงมะนาวโซดา ปั่น": 30,
         "เขียวโซดา เย็น": 25, "เขียวโซดา ปั่น": 30,
         "เขียวมะนาวโซดา เย็น": 25, "เขียวมะนาวโซดา ปั่น": 30,
-        "ชามะนาวโซดา เย็น": 25, "ชามะนาวโซดา ปั่น": 30,
+        "ชามมะนาวโซดา เย็น": 25, "ชามะนาวโซดา ปั่น": 30,
         "บลูฮาวายโซดา เย็น": 25, "บลูฮาวายโซดา ปั่น": 30,
         "ลิ้นจี่โซดา เย็น": 25, "ลิ้นจี่โซดา ปั่น": 30,
         "กีวี่โซดา เย็น": 25, "กีวี่โซดา ปั่น": 30,
@@ -1085,6 +1134,7 @@
     const adminSection = document.getElementById('adminSection');
     const btnPortalSwitch = document.getElementById('btnPortalSwitch');
     const custMenuList = document.getElementById('custMenuList');
+    const custSearchInput = document.getElementById('custSearchInput');
     const cartBar = document.getElementById('cartBar');
     const cartCount = document.getElementById('cartCount');
     const cartTotalSum = document.getElementById('cartTotalSum');
@@ -1145,13 +1195,11 @@
         } catch (e) {}
     }
 
-    function handlePortalSwitch() {
+    function triggerAdminLogin() {
         if (currentMode === 'customer') {
             pinModal.style.display = 'flex';
             pinInput.value = '';
             pinInput.focus();
-        } else {
-            setAppMode('customer');
         }
     }
 
@@ -1175,17 +1223,25 @@
         if (mode === 'admin') {
             customerSection.style.display = 'none';
             adminSection.style.display = 'block';
-            btnPortalSwitch.innerText = '🚪 ออกจากระบบร้านค้า';
+            btnPortalSwitch.style.display = 'block';
             renderUI();
         } else {
             adminSection.style.display = 'none';
             customerSection.style.display = 'block';
-            btnPortalSwitch.innerText = '🔒 สำหรับร้านค้า';
+            btnPortalSwitch.style.display = 'none';
             renderCustomerMenu();
         }
     }
 
-    // --- ส่วนการทำงานของลูกค้า ---
+    function getMenuPopularityMap() {
+        const counts = {};
+        sales.forEach(s => {
+            const cleanName = (s.name || '').split(' (')[0].trim();
+            counts[cleanName] = (counts[cleanName] || 0) + (Number(s.qty) || 1);
+        });
+        return counts;
+    }
+
     function selectOrderType(type) {
         selectedOrderType = type;
         if (type === 'delivery') {
@@ -1215,37 +1271,66 @@
 
     function renderCustomerMenu() {
         custMenuList.innerHTML = '';
-        const keys = Object.keys(priceBook).sort();
-        
-        keys.forEach(name => {
-            const cat = detectCategory(name);
-            if (custCurrentCat === 'all' || cat === custCurrentCat) {
-                const card = document.createElement('div');
-                card.className = 'cust-menu-card';
-                
-                const imageUrl = imageBook[name] || '';
-                let imgHtml = '';
-                if (imageUrl) {
-                    imgHtml = `<img src="${imageUrl}" alt="${name}" class="cust-menu-img" onerror="this.outerHTML='<div class=\\'cust-img-fallback\\'>${getCategoryEmoji(cat)}</div>'">`;
-                } else {
-                    imgHtml = `<div class="cust-img-fallback">${getCategoryEmoji(cat)}</div>`;
-                }
+        const searchKeyword = (custSearchInput ? custSearchInput.value : '').trim().toLowerCase();
+        const popularity = getMenuPopularityMap();
 
-                card.innerHTML = `
-                    <div class="cust-img-container">
-                        ${imgHtml}
-                    </div>
-                    <div class="cust-card-body">
-                        <div>
-                            <div class="cust-card-title">${name}</div>
-                            <span class="badge">${cat}</span>
-                        </div>
-                        <div class="cust-card-price">฿${priceBook[name]}</div>
-                    </div>
-                `;
-                card.onclick = () => addToCart(name, priceBook[name]);
-                custMenuList.appendChild(card);
+        let keys = Object.keys(priceBook);
+
+        if (searchKeyword) {
+            keys = keys.filter(k => k.toLowerCase().includes(searchKeyword));
+        }
+
+        if (custCurrentCat !== 'all') {
+            keys = keys.filter(name => detectCategory(name) === custCurrentCat);
+        }
+
+        keys.sort((a, b) => {
+            const countA = popularity[a] || 0;
+            const countB = popularity[b] || 0;
+            if (countB !== countA) {
+                return countB - countA;
             }
+            return a.localeCompare(b, 'th');
+        });
+
+        if (keys.length === 0) {
+            custMenuList.innerHTML = '<div style="grid-column: span 2; text-align:center; color:#94a3b8; padding:30px 0;">ไม่พบเมนูที่ค้นหา</div>';
+            return;
+        }
+
+        keys.forEach((name, index) => {
+            const cat = detectCategory(name);
+            const card = document.createElement('div');
+            card.className = 'cust-menu-card';
+            
+            const imageUrl = imageBook[name] || '';
+            let imgHtml = '';
+            if (imageUrl) {
+                imgHtml = `<img src="${imageUrl}" alt="${name}" class="cust-menu-img" onerror="this.outerHTML='<div class=\\'cust-img-fallback\\'>${getCategoryEmoji(cat)}</div>'">`;
+            } else {
+                imgHtml = `<div class="cust-img-fallback">${getCategoryEmoji(cat)}</div>`;
+            }
+
+            let bestsellerTag = '';
+            if ((popularity[name] || 0) > 0 && index < 4 && !searchKeyword) {
+                bestsellerTag = `<div class="bestseller-badge">🔥 ขายดี</div>`;
+            }
+
+            card.innerHTML = `
+                ${bestsellerTag}
+                <div class="cust-img-container">
+                    ${imgHtml}
+                </div>
+                <div class="cust-card-body">
+                    <div>
+                        <div class="cust-card-title">${name}</div>
+                        <span class="badge">${cat}</span>
+                    </div>
+                    <div class="cust-card-price">฿${priceBook[name]}</div>
+                </div>
+            `;
+            card.onclick = () => addToCart(name, priceBook[name]);
+            custMenuList.appendChild(card);
         });
     }
 
@@ -1390,9 +1475,9 @@
         custGpsLink.value = '';
         updateCartUI();
         closeCartModal();
+        renderCustomerMenu();
     }
 
-    // --- ส่วนการแปลงวันที่และเวลา ---
     function formatThaiDateTime(rawDate, rawTime, ts = null) {
         let d = null;
         if (ts && !isNaN(ts)) {
