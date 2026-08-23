@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FLUKCHAFE - ฟลุ๊ค ชาเฟ่</title>
+    <title>FLUKCHAFE - ฟลุ๊ค ชาเฟ่ POS & Profit</title>
     
     <link rel="icon" type="image/png" href="logo.png">
     <link rel="apple-touch-icon" href="logo.png">
@@ -48,6 +48,7 @@
             cursor: pointer;
         }
 
+        /* แถบเลือกช่วงเวลาแบบ 4 ปุ่ม */
         .time-filter {
             display: grid;
             grid-template-columns: 1fr 1.25fr 1.35fr 1fr;
@@ -333,6 +334,16 @@
             background: #e0f2fe;
             color: #0369a1;
         }
+        .btn-qr-mini {
+            background: #e0f2fe;
+            color: #0369a1;
+            border: none;
+            border-radius: 6px;
+            padding: 3px 6px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            margin-right: 4px;
+        }
         .btn-del {
             background: #fee2e2;
             color: #ef4444;
@@ -442,6 +453,73 @@
             text-decoration: none;
         }
         .btn-sheets-link:active { background: #115e59; }
+
+        /* Modal หน้าต่าง QR Code PromptPay */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(6px);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .modal-card {
+            background: #fff;
+            border-radius: 20px;
+            max-width: 340px;
+            width: 100%;
+            padding: 20px 16px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            animation: popIn 0.25s ease-out;
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .qr-header-title { font-size: 1.15rem; font-weight: 700; color: #0f172a; margin-top: 4px; }
+        .qr-header-sub { font-size: 0.8rem; color: #64748b; margin-bottom: 12px; }
+        .qr-img-box {
+            background: #f8fafc;
+            border: 2px dashed #0284c7;
+            border-radius: 16px;
+            padding: 12px;
+            display: inline-block;
+            margin-bottom: 12px;
+        }
+        .qr-img-box img {
+            width: 200px;
+            height: 200px;
+            display: block;
+            border-radius: 8px;
+        }
+        .qr-amount-label { font-size: 0.85rem; color: #475569; }
+        .qr-amount-val { font-size: 2.2rem; font-weight: 700; color: #0284c7; line-height: 1.1; margin-bottom: 14px; }
+        .modal-btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .btn-modal-done {
+            background: #10b981;
+            color: #fff;
+            border: none;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-modal-close {
+            background: #e2e8f0;
+            color: #475569;
+            border: none;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -454,7 +532,7 @@
         <div id="syncStatus" class="sync-badge" onclick="loadFromCloud()">🔄 ซิงค์ข้อมูล Cloud</div>
     </div>
 
-    <!-- แถบเลือกช่วงเวลา (คำมาตรฐานทางการ) -->
+    <!-- แถบเลือกช่วงเวลาแบบ 4 ปุ่ม -->
     <div class="time-filter">
         <button type="button" class="filter-btn active" onclick="setTimeFilter('today', this)">☀️ วันนี้</button>
         <button type="button" class="filter-btn" onclick="setTimeFilter('week', this)">📅 อาทิตย์นี้</button>
@@ -606,9 +684,27 @@
     </div>
 </div>
 
+<!-- Modal หน้าต่าง QR Code PromptPay -->
+<div class="modal-overlay" id="qrModal">
+    <div class="modal-card">
+        <div class="qr-header-title">📲 สแกนจ่าย PromptPay</div>
+        <div class="qr-header-sub" id="qrMenuDesc">ฟลุ๊ค ชาเฟ่</div>
+        <div class="qr-img-box">
+            <img id="qrImageTag" src="" alt="PromptPay QR">
+        </div>
+        <div class="qr-amount-label">ยอดชำระเงินทั้งหมด</div>
+        <div class="qr-amount-val" id="qrAmountDisplay">฿0</div>
+        <div class="modal-btn-group">
+            <button type="button" class="btn-modal-done" onclick="closeQrModal()">✅ รับเงินแล้ว</button>
+            <button type="button" class="btn-modal-close" onclick="closeQrModal()">💵 เงินสด / ปิด</button>
+        </div>
+    </div>
+</div>
+
 <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbzr8lEc78rzKvRvYsgKpBkiH-E7zrpdt8oj_o9oJ6PCvMh7gcfJUrUwmMo-J1uHHVXWJQ/exec";
     const GOOGLE_SHEETS_URL = "https://docs.google.com/spreadsheets/d/1EEU-LsVCzD8jbisYSVmy5jMjdTotGOgIW-4ASJlzqYU/edit";
+    const PROMPTPAY_PHONE = "0637975257"; // เบอร์ PromptPay ร้านฟลุ๊ค ชาเฟ่
 
     const STORAGE_KEY = 'FLUKCHAFE_SHARED_DB_V5';
     const MENU_PRICES_KEY = 'FLUKCHAFE_SHARED_PRICES_V5';
@@ -629,7 +725,7 @@
         "ชาไทย เย็น": 25, "ชาไทย ปั่น": 30,
         "ชาเขียว เย็น": 25, "ชาเขียว ปั่น": 30,
         "ชานม เย็น": 25, "ชานม ปั่น": 30,
-        "ชามะนาว เย็น": 25, "ชามะนาว ปั่น": 30,
+        "ชามมะนาว เย็น": 25, "ชามะนาว ปั่น": 30,
         "ชามะนาวน้ำผึ้ง เย็น": 25, "ชามะนาวน้ำผึ้ง ปั่น": 30,
         "ชาดำ เย็น": 25, "ชาดำ ปั่น": 30,
         "ชาดำมะนาว เย็น": 25, "ชาดำมะนาว ปั่น": 30,
@@ -738,6 +834,11 @@
     const backdateDateInput = document.getElementById('backdateDateInput');
     const backdateTimeInput = document.getElementById('backdateTimeInput');
 
+    const qrModal = document.getElementById('qrModal');
+    const qrImageTag = document.getElementById('qrImageTag');
+    const qrAmountDisplay = document.getElementById('qrAmountDisplay');
+    const qrMenuDesc = document.getElementById('qrMenuDesc');
+
     function formatDateYMD(d) {
         const year = d.getFullYear();
         const month = String(d.getMonth() + 1).padStart(2, '0');
@@ -750,6 +851,18 @@
     selectMonthInput.value = `${initD.getFullYear()}-${String(initD.getMonth() + 1).padStart(2, '0')}`;
     backdateDateInput.value = formatDateYMD(initD);
     backdateTimeInput.value = initD.toTimeString().substring(0, 5);
+
+    function showPromptPayQR(name, qty, totalAmount) {
+        qrMenuDesc.innerText = `${name} (x${qty})`;
+        qrAmountDisplay.innerText = `฿${Number(totalAmount).toLocaleString()}`;
+        // สร้าง Dynamic PromptPay QR Code ผ่าน PromptPay API มาตรฐาน
+        qrImageTag.src = `https://promptpay.io/${PROMPTPAY_PHONE}/${totalAmount}.png`;
+        qrModal.style.display = 'flex';
+    }
+
+    function closeQrModal() {
+        qrModal.style.display = 'none';
+    }
 
     function openGoogleSheets() {
         if (GOOGLE_SHEETS_URL && GOOGLE_SHEETS_URL.includes("docs.google.com")) {
@@ -976,6 +1089,12 @@
 
         renderUI();
         quickInput.value = '';
+
+        // แสดงหน้าต่างสแกนจ่าย PromptPay อัตโนมัติ (เฉพาะเมื่อไม่อยู่ในโหมดลงย้อนหลัง)
+        if (!isBackdateActive) {
+            showPromptPayQR(name, qty, totalPrice);
+        }
+
         return false;
     }
 
@@ -1042,10 +1161,12 @@
                 return itemTs >= todayStart && itemTs <= todayEnd;
             };
         } else if (currentFilter === 'week') {
-            const weekStart = todayStart - (6 * 24 * 60 * 60 * 1000);
+            const dayOfWeek = now.getDay() || 7;
+            const mondayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek + 1).getTime();
+            const sundayEnd = mondayStart + (7 * 24 * 60 * 60 * 1000) - 1;
             filterFn = item => {
                 const itemTs = Number(item.ts) || Number(item.id) || 0;
-                return itemTs >= weekStart && itemTs <= todayEnd;
+                return itemTs >= mondayStart && itemTs <= sundayEnd;
             };
         } else if (currentFilter === 'custom') {
             if (customFilterType === 'date') {
@@ -1126,6 +1247,7 @@
                     </div>
                     <div style="display:flex; align-items:center;">
                         <span class="item-price">฿${Number(item.totalPrice).toLocaleString()}</span>
+                        <button class="btn-qr-mini" onclick="showPromptPayQR('${item.name}', ${item.qty}, ${item.totalPrice})">📲 QR</button>
                         <button class="btn-del" onclick="deleteItem('${item.id}')">ลบ</button>
                     </div>
                 `;
