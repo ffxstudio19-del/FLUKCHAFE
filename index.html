@@ -31,10 +31,21 @@
             border: 1px solid rgba(255, 255, 255, 0.6);
         }
         
-        .brand-header { text-align: center; margin-bottom: 12px; }
+        .brand-header { text-align: center; margin-bottom: 12px; position: relative; }
         .brand-logo { width: 75px; height: 75px; border-radius: 50%; object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 2px solid #0284c7; }
         .brand-name-en { font-size: 1.55rem; font-weight: 700; color: #0f172a; margin-top: 4px; line-height: 1.1; }
         .brand-name-th { font-size: 0.9rem; font-weight: 400; color: #64748b; margin-top: 2px; }
+
+        .sync-badge {
+            display: inline-block;
+            font-size: 0.72rem;
+            padding: 3px 10px;
+            border-radius: 12px;
+            background: #e0f2fe;
+            color: #0369a1;
+            margin-top: 6px;
+            font-weight: 500;
+        }
 
         .time-filter {
             display: flex;
@@ -60,21 +71,6 @@
             color: #0284c7;
             font-weight: 600;
             box-shadow: 0 2px 5px rgba(0,0,0,0.08);
-        }
-
-        .custom-date-picker {
-            display: none;
-            margin-bottom: 10px;
-            text-align: center;
-        }
-        .custom-date-picker input {
-            padding: 6px 12px;
-            border-radius: 8px;
-            border: 1.5px solid #0284c7;
-            font-size: 0.85rem;
-            outline: none;
-            background: #fff;
-            color: #0f172a;
         }
 
         .total-banner {
@@ -209,25 +205,6 @@
             font-size: 0.85rem;
         }
         .empty-text { text-align: center; color: #94a3b8; padding: 20px 0; font-size: 0.85rem; }
-        
-        .price-mgr-form { display: flex; gap: 6px; margin-bottom: 10px; }
-        .price-mgr-form input {
-            padding: 8px;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            font-size: 0.8rem;
-            outline: none;
-        }
-        .price-mgr-form button {
-            background: #0284c7;
-            color: #fff;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            font-weight: 500;
-        }
     </style>
 </head>
 <body>
@@ -237,9 +214,9 @@
         <img src="logo.png" alt="FLUKCHAFE" class="brand-logo" onerror="this.style.display='none'">
         <div class="brand-name-en">FLUKCHAFE</div>
         <div class="brand-name-th">ฟลุ๊ค ชาเฟ่</div>
+        <div id="syncStatus" class="sync-badge" onclick="loadFromCloud()">🔄 กำลังซิงค์ข้อมูล...</div>
     </div>
 
-    <!-- แถบเลือกช่วงเวลา -->
     <div class="time-filter">
         <button type="button" class="filter-btn active" onclick="setTimeFilter('today', this)">☀️ วันนี้</button>
         <button type="button" class="filter-btn" onclick="setTimeFilter('week', this)">📅 7 วัน</button>
@@ -303,7 +280,6 @@
     <div class="tabs">
         <button type="button" class="tab-btn active" id="tabHistory" onclick="switchTab('history')">ประวัติการขาย</button>
         <button type="button" class="tab-btn" id="tabSummary" onclick="switchTab('summary')">สรุปรายเมนู</button>
-        <button type="button" class="tab-btn" id="tabPrices" onclick="switchTab('prices')">⚙️ ตั้งราคา</button>
     </div>
 
     <div class="list-container" id="historyView">
@@ -313,33 +289,15 @@
     <div class="list-container" id="summaryView" style="display: none;">
         <div id="menuSummaryList"></div>
     </div>
-
-    <div class="list-container" id="pricesView" style="display: none;">
-        <div class="price-mgr-form">
-            <input type="text" id="newMenuName" placeholder="ชื่อเมนู เช่น ชาไทยปั่น" style="flex:2;">
-            <input type="number" id="newMenuPrice" placeholder="ราคา" style="flex:1;">
-            <button type="button" onclick="addOrUpdatePrice()">บันทึก</button>
-        </div>
-        <div id="priceSettingList"></div>
-    </div>
 </div>
 
 <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbzr8lEc78rzKvRvYsgKpBkiH-E7zrpdt8oj_o9oJ6PCvMh7gcfJUrUwmMo-J1uHHVXWJQ/exec";
-    const STORAGE_KEY = 'FLUKCHAFE_FINAL_POS_DB';
-    const MENU_PRICES_KEY = 'FLUKCHAFE_FINAL_PRICE_DB';
+    const STORAGE_KEY = 'FLUKCHAFE_SHARED_DB_V5';
+    const MENU_PRICES_KEY = 'FLUKCHAFE_SHARED_PRICES_V5';
     
-    // โหลดข้อมูลเก่าทันที ป้องกันข้อมูลหาย
-    let sales = [];
-    try {
-        sales = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-    } catch(e) { sales = []; }
-
-    let priceBook = {};
-    try {
-        priceBook = JSON.parse(localStorage.getItem(MENU_PRICES_KEY)) || {};
-    } catch(e) { priceBook = {}; }
-
+    let sales = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    let priceBook = JSON.parse(localStorage.getItem(MENU_PRICES_KEY)) || {};
     let selectedCategory = 'auto';
     let currentFilter = 'today';
 
@@ -349,7 +307,40 @@
     const itemList = document.getElementById('itemList');
     const menuSummaryList = document.getElementById('menuSummaryList');
     const menuListOptions = document.getElementById('menuListOptions');
-    const priceSettingList = document.getElementById('priceSettingList');
+    const syncStatus = document.getElementById('syncStatus');
+
+    // ฟังก์ชันดึงข้อมูลจาก Google Sheets ลงมาทุกเครื่องแบบ Real-time
+    async function loadFromCloud() {
+        syncStatus.innerText = "🔄 กำลังซิงค์กับ Cloud...";
+        try {
+            const res = await fetch(API_URL);
+            const data = await res.json();
+            if (data && data.sales) {
+                sales = data.sales;
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
+            }
+            if (data && data.prices) {
+                priceBook = { ...priceBook, ...data.prices };
+                localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
+            }
+            syncStatus.innerText = "☁️ ข้อมูลตรงกันทุกเครื่องแล้ว (แตะเพื่อรีเฟรช)";
+            renderUI();
+        } catch (e) {
+            syncStatus.innerText = "💾 ใช้งานข้อมูลในเครื่อง (แตะเพื่อลองใหม่)";
+        }
+    }
+
+    // ฟังก์ชันส่งข้อมูลขึ้น Google Sheets
+    function saveToCloud(payload) {
+        try {
+            fetch(API_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "text/plain" },
+                body: JSON.stringify(payload)
+            });
+        } catch (e) {}
+    }
 
     function setTimeFilter(filter, btn) {
         currentFilter = filter;
@@ -445,7 +436,7 @@
 
         const newItem = { 
             id: String(Date.now()),
-            ts: Date.now(), // ใช้ timestamp วินาทีจริง
+            ts: Date.now(),
             date: now.toLocaleDateString('th-TH'),
             name, 
             unitPrice, 
@@ -458,18 +449,14 @@
         sales.push(newItem);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
         
-        // ยิงข้อมูลขึ้น Google Sheet
-        try {
-            const img = new Image();
-            img.src = API_URL + "?data=" + encodeURIComponent(JSON.stringify({ action: "add_sale", item: newItem })) + "&t=" + Date.now();
-        } catch(err) {}
+        // ส่งขึ้น Google Sheets ทันที
+        saveToCloud({ action: "add_sale", item: newItem });
 
         renderUI();
         quickInput.value = '';
         return false;
     }
 
-    // กรองข้อมูลด้วย Timestamp ปลอดภัย 100%
     function getFilteredSales() {
         const now = new Date();
         const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
@@ -599,76 +586,29 @@
             menuSummaryList.innerHTML = '<div class="empty-text">ยังไม่มีข้อมูลสรุปเมนู</div>';
         }
 
-        renderPriceSettingList();
-
         totalAmount.innerText = `฿${total.toLocaleString()}`;
         totalItems.innerText = `${filterResult.label} • รวม ${totalPieces} รายการ (${displaySales.length} ออเดอร์)`;
-    }
-
-    function renderPriceSettingList() {
-        priceSettingList.innerHTML = '';
-        const keys = Object.keys(priceBook);
-        if (keys.length === 0) {
-            priceSettingList.innerHTML = '<div class="empty-text">ยังไม่มีเมนูในระบบ (เพิ่มด้านบนได้เลย)</div>';
-            return;
-        }
-        keys.sort().forEach(name => {
-            const row = document.createElement('div');
-            row.className = 'summary-row';
-            row.innerHTML = `
-                <span>${name}</span>
-                <div style="display:flex; align-items:center; gap:8px;">
-                    <b>฿${priceBook[name]}</b>
-                    <button class="btn-del" onclick="deletePrice('${name}')">✕</button>
-                </div>
-            `;
-            priceSettingList.appendChild(row);
-        });
-    }
-
-    function addOrUpdatePrice() {
-        const name = document.getElementById('newMenuName').value.trim();
-        const price = parseFloat(document.getElementById('newMenuPrice').value);
-        if (name && !isNaN(price) && price > 0) {
-            priceBook[name] = price;
-            localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
-            document.getElementById('newMenuName').value = '';
-            document.getElementById('newMenuPrice').value = '';
-            renderUI();
-        } else {
-            alert('กรุณากรอกชื่อเมนูและราคาให้ถูกต้อง');
-        }
-    }
-
-    function deletePrice(name) {
-        if (confirm(`ต้องการลบราคาของเมนู "${name}" หรือไม่?`)) {
-            delete priceBook[name];
-            localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
-            renderUI();
-        }
     }
 
     function deleteItem(id) {
         sales = sales.filter(item => String(item.id) !== String(id));
         localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
-        try {
-            const img = new Image();
-            img.src = API_URL + "?data=" + encodeURIComponent(JSON.stringify({ action: "delete_sale", id: String(id) })) + "&t=" + Date.now();
-        } catch(err) {}
+        saveToCloud({ action: "delete_sale", id: String(id) });
         renderUI();
     }
 
     function switchTab(tab) {
         document.getElementById('tabHistory').className = `tab-btn ${tab === 'history' ? 'active' : ''}`;
         document.getElementById('tabSummary').className = `tab-btn ${tab === 'summary' ? 'active' : ''}`;
-        document.getElementById('tabPrices').className = `tab-btn ${tab === 'prices' ? 'active' : ''}`;
         document.getElementById('historyView').style.display = tab === 'history' ? 'block' : 'none';
         document.getElementById('summaryView').style.display = tab === 'summary' ? 'block' : 'none';
-        document.getElementById('pricesView').style.display = tab === 'prices' ? 'block' : 'none';
     }
 
-    // แสดงผลข้อมูลทันทีเมื่อเปิดหน้าเว็บ
+    // เมื่อเปิดหน้าเว็บ: แสดงข้อมูลทันที และดึงข้อมูลล่าสุดจาก Google Sheets มาอัปเดตอัตโนมัติ
     renderUI();
+    window.addEventListener('DOMContentLoaded', () => {
+        loadFromCloud();
+    });
 </script>
 </body>
 </html>
