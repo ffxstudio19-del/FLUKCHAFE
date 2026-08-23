@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FLUKCHAFE - ฟลุ๊ค ชาเฟ่</title>
+    <title>FLUKCHAFE - ฟลุ๊ค ชาเฟ่ POS & Profit</title>
     
     <link rel="icon" type="image/png" href="logo.png">
     <link rel="apple-touch-icon" href="logo.png">
@@ -12,23 +12,86 @@
         * { box-sizing: border-box; font-family: 'Kanit', sans-serif; margin: 0; padding: 0; }
         
         body { 
-            background: #0f172a url('bg.jpg') no-repeat center center fixed;
-            background-size: cover;
+            background-color: #090d16;
             min-height: 100vh;
             padding: 12px; 
             color: #1e293b; 
+            position: relative;
+            overflow-x: hidden;
         }
 
+        /* --- พื้นหลังคลื่นแสงเคลื่อนไหว (Animated Ambient Waves) --- */
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            overflow: hidden;
+            background: linear-gradient(135deg, #090d16 0%, #0f172a 50%, #1e1b4b 100%);
+        }
+
+        .wave-glow {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.45;
+            animation: waveMotion 16s infinite alternate ease-in-out;
+        }
+
+        .wave-1 {
+            width: 500px;
+            height: 500px;
+            background: #0284c7;
+            top: -100px;
+            left: -100px;
+            animation-duration: 14s;
+        }
+
+        .wave-2 {
+            width: 600px;
+            height: 600px;
+            background: #6366f1;
+            bottom: -150px;
+            right: -100px;
+            animation-duration: 18s;
+            animation-delay: -4s;
+        }
+
+        .wave-3 {
+            width: 450px;
+            height: 450px;
+            background: #06b6d4;
+            top: 35%;
+            left: 30%;
+            animation-duration: 20s;
+            animation-delay: -8s;
+        }
+
+        @keyframes waveMotion {
+            0% {
+                transform: translate(0, 0) scale(1) rotate(0deg);
+            }
+            50% {
+                transform: translate(60px, 80px) scale(1.15) rotate(90deg);
+            }
+            100% {
+                transform: translate(-50px, 40px) scale(0.9) rotate(180deg);
+            }
+        }
+
+        /* เมนคอนเทนเนอร์แบบ Glassmorphism */
         .container { 
             max-width: 480px; 
             margin: 0 auto; 
-            background: rgba(255, 255, 255, 0.95); 
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-radius: 20px; 
+            background: rgba(255, 255, 255, 0.94); 
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-radius: 22px; 
             padding: 16px; 
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25); 
-            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35); 
+            border: 1px solid rgba(255, 255, 255, 0.65);
         }
         
         .brand-header { text-align: center; margin-bottom: 12px; position: relative; }
@@ -89,7 +152,6 @@
             color: #0f172a;
         }
 
-        /* กล่องยอดขายรวม */
         .total-banner {
             background: #0f172a;
             color: #fff;
@@ -196,7 +258,6 @@
         }
         .btn-order-submit:active { background: #0369a1; transform: scale(0.98); }
 
-        /* แถบควบคุมโหมดลงย้อนหลัง */
         .backdate-control {
             display: flex;
             align-items: center;
@@ -395,6 +456,13 @@
 </head>
 <body>
 
+<!-- เลเยอร์คลื่นเคลื่อนไหว -->
+<div class="animated-bg">
+    <div class="wave-glow wave-1"></div>
+    <div class="wave-glow wave-2"></div>
+    <div class="wave-glow wave-3"></div>
+</div>
+
 <div class="container">
     <div class="brand-header">
         <img src="logo.png" alt="FLUKCHAFE" class="brand-logo" onerror="this.style.display='none'">
@@ -419,7 +487,6 @@
         <input type="month" id="selectMonthInput" onchange="renderUI()">
     </div>
 
-    <!-- กล่องยอดขายรวม พร้อมปุ่มซ่อน/แสดง สรุปผลประกอบการ -->
     <div class="total-banner">
         <div class="amount" id="totalSales">฿0</div>
         <div class="sub" id="totalSalesSub">ยอดขายรวม</div>
@@ -487,7 +554,6 @@
         </div>
         <div id="suggestBox" class="suggest-box"></div>
 
-        <!-- แถบปุ่มเปิด/ปิด โหมดลงออเดอร์ย้อนหลัง -->
         <div class="backdate-control">
             <span style="font-size:0.72rem; color:#64748b;">💡 พิมพ์ค้นหาแล้วแตะเลือกได้ทันที</span>
             <button type="button" class="btn-toggle-backdate" id="btnToggleBackdate" onclick="toggleBackdateMode()">
@@ -495,7 +561,6 @@
             </button>
         </div>
 
-        <!-- กล่องเลือกวัน-เวลาย้อนหลัง -->
         <div class="backdate-box" id="backdateBox">
             <div class="backdate-box-title">⚠️ โหมดลงออเดอร์ย้อนหลัง (ระบุวันและเวลา)</div>
             <div class="backdate-inputs">
@@ -520,7 +585,6 @@
         <div id="menuSummaryList"></div>
     </div>
 
-    <!-- หน้าบันทึกต้นทุนซื้อของเข้าร้าน -->
     <div class="list-container" id="expensesView" style="display: none;">
         <div class="price-mgr-form">
             <input type="text" id="newExpenseName" placeholder="รายการซื้อของ เช่น ชา/นม/ของทอด" style="flex:2;">
@@ -530,7 +594,6 @@
         <div id="expenseList"></div>
     </div>
 
-    <!-- หน้าจัดการราคาเมนู -->
     <div class="list-container" id="pricesView" style="display: none;">
         <div class="price-mgr-form">
             <input type="text" id="newMenuName" placeholder="ชื่อเมนู เช่น ชาไทย ปั่น" style="flex:2;">
@@ -551,7 +614,6 @@
     const EXPENSES_KEY = 'FLUKCHAFE_SHARED_EXP_V5';
     
     const DEFAULT_PRESET_PRICES = {
-        // --- กาแฟ ---
         "เอสเพรสโซ่ เย็น": 30, "เอสเพรสโซ่ ปั่น": 35,
         "คาปูชิโน่ เย็น": 30, "คาปูชิโน่ ปั่น": 35,
         "ลาเต้ เย็น": 30, "ลาเต้ ปั่น": 35,
@@ -563,7 +625,6 @@
         "อเมริกาโน่น้ำผึ้งมะนาว เย็น": 40, "อเมริกาโน่น้ำผึ้งมะนาว ปั่น": 45,
         "อเมริกาโน่ลิ้นจี่ เย็น": 40, "อเมริกาโน่ลิ้นจี่ ปั่น": 45,
 
-        // --- ชา & นม & เมนูประจำร้าน ---
         "ชาไทย เย็น": 25, "ชาไทย ปั่น": 30,
         "ชาเขียว เย็น": 25, "ชาเขียว ปั่น": 30,
         "ชานม เย็น": 25, "ชานม ปั่น": 30,
@@ -587,7 +648,6 @@
         "มะพร้าวนมสด เย็น": 25, "มะพร้าวนมสด ปั่น": 30,
         "โอริโอ้ ปั่น": 30,
 
-        // --- สตรอว์เบอร์รี (Strawberry Menu) ---
         "นมสดสตรอว์เบอร์รี เย็น": 30, "นมสดสตรอว์เบอร์รี ปั่น": 35,
         "นมสดสตอเบอรี่ เย็น": 30, "นมสดสตอเบอรี่ ปั่น": 35,
         "สตรอว์เบอร์รี เย็น": 25, "สตรอว์เบอร์รี ปั่น": 30,
@@ -596,11 +656,9 @@
         "สตอเบอรี่โซดา เย็น": 25, "สตอเบอรี่โซดา ปั่น": 30,
         "สตรอว์เบอร์รีโยเกิร์ต ปั่น": 35, "สตอเบอรี่โยเกิร์ต ปั่น": 35,
 
-        // --- สมูทตี้ผลไม้ปั่น ---
         "แอปเปิ้ล ปั่น": 30, "บลูฮาวาย ปั่น": 30, "ลิ้นจี่ ปั่น": 30, "กีวี่ ปั่น": 30,
         "ส้ม ปั่น": 30, "องุ่น ปั่น": 30, "บลูเบอร์รี่ ปั่น": 30,
 
-        // --- อิตาเลียนโซดา ---
         "แดงโซดา เย็น": 25, "แดงโซดา ปั่น": 30,
         "แดงมะนาวโซดา เย็น": 25, "แดงมะนาวโซดา ปั่น": 30,
         "เขียวโซดา เย็น": 25, "เขียวโซดา ปั่น": 30,
@@ -615,7 +673,6 @@
         "บลูเบอร์รี่โซดา เย็น": 25, "บลูเบอร์รี่โซดา ปั่น": 30,
         "น้ำผึ้งมะนาวโซดา เย็น": 25, "น้ำผึ้งมะนาวโซดา ปั่น": 30,
 
-        // --- เมนูโอริโอ้ปั่น ---
         "นมสดโอริโอ้ ปั่น": 35,
         "ชาไทยโอริโอ้ ปั่น": 35,
         "ชาเขียวโอริโอ้ ปั่น": 35,
@@ -626,11 +683,9 @@
         "นมเผือกโอริโอ้ ปั่น": 30,
         "นมสดโอริโอ้คาราเมล ปั่น": 35,
 
-        // --- ขนมปังปิ้ง ---
         "ปังเนยนมน้ำตาล": 20, "ปังเนยนม": 20,
         "ปังโอวัลติน": 25, "ปังโอริโอ้": 30,
 
-        // --- ของทอด / ทานเล่น ---
         "เฟรนช์ฟรายส์": 29,
         "ชีสบอล": 39,
         "ไก่ป๊อบ": 39,
@@ -639,7 +694,6 @@
         "ไส้กรอกแดง 25": 25,
         "ไส้กรอกแดง 30": 30,
 
-        // --- ข้าวกะเพรา / ข้าวเหนียวปิ้งย่าง ---
         "ข้าวกะเพรา 35": 35,
         "ข้าวกะเพรา 40": 40,
         "ข้าวกะเพรา 45": 45,
@@ -696,7 +750,6 @@
     backdateDateInput.value = formatDateYMD(initD);
     backdateTimeInput.value = initD.toTimeString().substring(0, 5);
 
-    // เปิด/ปิด แผงสรุปผลประกอบการ
     function toggleProfitPanel() {
         isProfitShown = !isProfitShown;
         if (isProfitShown) {
@@ -708,7 +761,6 @@
         }
     }
 
-    // เปิด/ปิด โหมดบันทึกออเดอร์ย้อนหลัง
     function toggleBackdateMode() {
         isBackdateActive = !isBackdateActive;
         if (isBackdateActive) {
@@ -1066,7 +1118,6 @@
             });
         }
 
-        // แสดงรายการต้นทุน
         expenseList.innerHTML = '';
         if (displayExpenses.length === 0) {
             expenseList.innerHTML = '<div class="empty-text">ยังไม่มีรายการต้นทุนในช่วงนี้</div>';
