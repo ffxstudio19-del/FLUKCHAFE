@@ -22,14 +22,14 @@
             background: #090d16 url('bg.jpg') no-repeat center center fixed;
             background-size: cover;
             min-height: 100vh;
-            padding: 12px 12px 85px 12px; 
+            padding: 12px 12px 30px 12px; 
             color: #f1f5f9; 
         }
 
         .container { 
             max-width: 480px; 
             margin: 0 auto; 
-            background: rgba(15, 23, 42, 0.92); 
+            background: rgba(15, 23, 42, 0.94); 
             backdrop-filter: blur(14px);
             -webkit-backdrop-filter: blur(14px);
             border-radius: 20px; 
@@ -129,7 +129,6 @@
             background: #0f172a;
         }
 
-        /* กล่องแนะนำเมนูขณะพิมพ์ (Auto-suggest Dropdown) */
         .cust-suggest-dropdown {
             position: absolute;
             top: 42px;
@@ -189,7 +188,28 @@
             color: #38bdf8;
         }
 
-        /* ส่วนแถบเลื่อนเมนูแนะนำ */
+        /* แถบตะกร้าสินค้าแบบไม่บังเมนู (ย้ายมาอยู่ใต้ช่องค้นหา) */
+        .cart-top-banner {
+            background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%);
+            border: 1px solid #38bdf8;
+            border-radius: 12px;
+            padding: 10px 14px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+            animation: fadeIn 0.25s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .cart-info { font-size: 0.85rem; font-weight: 600; color: #fff; }
+        .cart-items-preview { font-size: 0.72rem; color: #e0f2fe; margin-top: 1px; }
+        .cart-total { font-size: 1.1rem; font-weight: 700; color: #fff; text-align: right; }
+
         .rec-section-title {
             font-size: 0.82rem;
             font-weight: 700;
@@ -250,7 +270,6 @@
             margin-top: 2px;
         }
 
-        /* แถบ 5 หมวดหมู่ */
         .cust-cat-nav {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
@@ -280,7 +299,7 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 10px;
-            max-height: 360px;
+            max-height: 400px;
             overflow-y: auto;
             margin-bottom: 12px;
             padding: 2px;
@@ -342,36 +361,6 @@
         }
         .cust-card-title { font-size: 0.85rem; font-weight: 600; color: #f8fafc; line-height: 1.2; }
         .cust-card-price { font-size: 1.05rem; font-weight: 700; color: #38bdf8; margin-top: 6px; }
-
-        /* แถบตะกร้าสินค้า Floating Bar */
-        .cart-floating-wrapper {
-            position: fixed;
-            bottom: 12px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: calc(100% - 24px);
-            max-width: 460px;
-            z-index: 1000;
-        }
-        .cart-bar {
-            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
-            color: #fff;
-            border-radius: 16px;
-            padding: 10px 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            box-shadow: 0 10px 25px rgba(2, 132, 199, 0.45), 0 0 0 1.5px rgba(255, 255, 255, 0.2);
-            animation: bounceIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        @keyframes bounceIn {
-            0% { transform: translateY(20px) scale(0.95); opacity: 0; }
-            100% { transform: translateY(0) scale(1); opacity: 1; }
-        }
-        .cart-info { font-size: 0.85rem; font-weight: 600; }
-        .cart-items-preview { font-size: 0.72rem; color: #e0f2fe; margin-top: 2px; }
-        .cart-total { font-size: 1.15rem; font-weight: 700; color: #ffffff; text-align: right; }
 
         .order-type-selector {
             display: grid;
@@ -946,13 +935,27 @@
             <div class="delivery-main-text">🛵 สั่งเครื่องดื่ม & ของทานเล่น ส่งถึงหน้าบ้าน หรือสั่งล่วงหน้ารับหน้าร้าน แจ้งได้เลยครับ</div>
         </div>
         <div class="external-phone-box">
-            <a href="tel:0637975257" class="delivery-phone-text">📞 สั่งด่วน โทร 063-797-5257</a>
+            <a href="tel:0637975257" class="delivery-phone-text">🤎 อยากกินอะไร สั่งเลยส่งไวทันใจ: 063-797-5257</a>
         </div>
 
         <!-- ช่องค้นหาเมนูพร้อม Auto-suggest -->
         <div class="cust-search-box">
             <input type="text" id="custSearchInput" placeholder="🔍 พิมพ์ค้นหาเมนู (เช่น ชาไทย, เฟรนช์ฟรายส์)..." autocomplete="off" oninput="handleCustomerSearchInput(this.value)">
             <div id="custSuggestDropdown" class="cust-suggest-dropdown"></div>
+        </div>
+
+        <!-- แถบตะกร้าสินค้าแบบไม่บังเมนู (ย้ายมาอยู่ด้านบน ใต้ช่องค้นหา) -->
+        <div id="cartBarWrapper" style="display: none;">
+            <div class="cart-top-banner" id="cartBar" onclick="openCartModal()">
+                <div>
+                    <div class="cart-info">🛒 เลือกแล้ว (<span id="cartCount">0</span> รายการ)</div>
+                    <div class="cart-items-preview" id="cartPreviewText">แตะเพื่อสรุปและจัดส่ง</div>
+                </div>
+                <div>
+                    <div class="cart-total" id="cartTotalSum">฿0</div>
+                    <div style="font-size: 0.68rem; color: #e0f2fe; text-align: right;">กดส่งออเดอร์ ➜</div>
+                </div>
+            </div>
         </div>
 
         <!-- แถบเมนูแนะนำ / ยอดนิยม (สไลด์แนวนอน) -->
@@ -971,20 +974,6 @@
         </div>
 
         <div class="cust-menu-grid" id="custMenuList"></div>
-
-        <!-- แถบตะกร้าสินค้าแบบลอยติดขอบล่างจอ (Floating Sticky Cart Bar) -->
-        <div class="cart-floating-wrapper" id="cartBarWrapper" style="display: none;">
-            <div class="cart-bar" id="cartBar" onclick="openCartModal()">
-                <div>
-                    <div class="cart-info">🛒 สั่งซื้อ (<span id="cartCount">0</span> รายการ)</div>
-                    <div class="cart-items-preview" id="cartPreviewText">แตะเพื่อสรุปและจัดส่ง</div>
-                </div>
-                <div>
-                    <div class="cart-total" id="cartTotalSum">฿0</div>
-                    <div style="font-size: 0.68rem; color: #e0f2fe;">กดส่งออเดอร์ ➜</div>
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- ==============================================
@@ -1470,7 +1459,6 @@
         return '🧋';
     }
 
-    // ฟังก์ชันจัดการ Auto-suggest ขณะพิมพ์ค้นหาเมนู
     function handleCustomerSearchInput(val) {
         renderCustomerMenu();
         const query = val.trim().toLowerCase();
