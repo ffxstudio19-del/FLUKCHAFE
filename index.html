@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FLUKCHAFE - ฟลุ๊ค ชาเฟ่ POS & Profit</title>
+    <title>FLUKCHAFE - ฟลุ๊ค ชาเฟ่</title>
     
     <link rel="icon" type="image/png" href="logo.png">
     <link rel="apple-touch-icon" href="logo.png">
@@ -324,7 +324,7 @@
             border-bottom: 1px solid #f1f5f9;
         }
         .item-title { font-size: 0.9rem; font-weight: 500; }
-        .item-detail { font-size: 0.7rem; color: #64748b; }
+        .item-detail { font-size: 0.72rem; color: #64748b; margin-top: 1px; }
         .item-price { font-size: 1rem; font-weight: 600; color: #0f172a; margin-right: 6px; }
         .badge {
             display: inline-block;
@@ -336,7 +336,6 @@
             color: #0369a1;
         }
 
-        /* ปุ่มสลับประเภทการรับเงิน (คลิกสลับได้ทันที) */
         .pay-badge {
             display: inline-flex;
             align-items: center;
@@ -776,6 +775,25 @@
     const backdateDateInput = document.getElementById('backdateDateInput');
     const backdateTimeInput = document.getElementById('backdateTimeInput');
 
+    const THAI_MONTHS_SHORT = [
+        "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.",
+        "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."
+    ];
+
+    function formatThaiDateTime(dateStr, timeStr) {
+        if (!dateStr) return timeStr ? `${timeStr} น.` : '';
+        const parts = dateStr.split('-');
+        if (parts.length === 3) {
+            const year = parseInt(parts[0], 10);
+            const monthIdx = parseInt(parts[1], 10) - 1;
+            const day = parseInt(parts[2], 10);
+            const thaiYearShort = String((year + 543)).slice(-2);
+            const monthName = THAI_MONTHS_SHORT[monthIdx] || parts[1];
+            return `${day} ${monthName} ${thaiYearShort} • ${timeStr} น.`;
+        }
+        return `${dateStr} ${timeStr} น.`;
+    }
+
     function formatDateYMD(d) {
         const year = d.getFullYear();
         const month = String(d.getMonth() + 1).padStart(2, '0');
@@ -1016,7 +1034,7 @@
             qty, 
             totalPrice, 
             category,
-            paymentMethod: 'cash', // ค่าเริ่มต้นเป็นเงินสด
+            paymentMethod: 'cash',
             time: recordTime 
         };
 
@@ -1182,13 +1200,14 @@
                 const isQr = (item.paymentMethod === 'promptpay');
                 const badgeClass = isQr ? 'pay-badge qr' : 'pay-badge cash';
                 const badgeText = isQr ? '📱 สแกนจ่าย' : '💵 เงินสด';
+                const formattedTime = formatThaiDateTime(item.date, item.time);
 
                 const row = document.createElement('div');
                 row.className = 'item-row';
                 row.innerHTML = `
                     <div>
                         <div class="item-title">${item.name} <span style="color:#0284c7;">x${item.qty}</span> <span class="badge">${cat}</span></div>
-                        <div class="item-detail">(@${item.unitPrice} บ.) • ${item.date} ${item.time} น.</div>
+                        <div class="item-detail">(@${item.unitPrice} บ.) • ${formattedTime}</div>
                     </div>
                     <div style="display:flex; align-items:center;">
                         <span class="item-price">฿${price.toLocaleString()}</span>
@@ -1205,12 +1224,13 @@
             expenseList.innerHTML = '<div class="empty-text">ยังไม่มีรายการต้นทุนในช่วงนี้</div>';
         } else {
             displayExpenses.slice().reverse().forEach((item) => {
+                const formattedExpTime = formatThaiDateTime(item.date, item.time);
                 const row = document.createElement('div');
                 row.className = 'item-row';
                 row.innerHTML = `
                     <div>
                         <div class="item-title" style="color:#ef4444;">💸 ${item.name}</div>
-                        <div class="item-detail">${item.date} • ${item.time} น.</div>
+                        <div class="item-detail">${formattedExpTime}</div>
                     </div>
                     <div style="display:flex; align-items:center;">
                         <span class="item-price" style="color:#ef4444;">-฿${Number(item.cost).toLocaleString()}</span>
