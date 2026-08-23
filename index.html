@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FLUKCHAFE - ฟลุ๊ค ชาเฟ่</title>
+    <title>FLUKCHAFE - ฟลุ๊ค ชาเฟ่ POS & Profit</title>
     
     <link rel="icon" type="image/png" href="logo.png">
     <link rel="apple-touch-icon" href="logo.png">
@@ -336,17 +336,18 @@
             color: #0369a1;
         }
 
+        /* ปุ่มสลับประเภทการรับเงิน (คลิกสลับได้ทันที) */
         .pay-badge {
             display: inline-flex;
             align-items: center;
             gap: 2px;
-            padding: 3px 6px;
+            padding: 4px 8px;
             border-radius: 6px;
-            font-size: 0.68rem;
+            font-size: 0.7rem;
             font-weight: 500;
             cursor: pointer;
             margin-right: 6px;
-            border: none;
+            transition: all 0.15s;
         }
         .pay-badge.qr {
             background: #e0f2fe;
@@ -358,6 +359,7 @@
             color: #047857;
             border: 1px solid #a7f3d0;
         }
+        .pay-badge:active { transform: scale(0.95); }
 
         .btn-del {
             background: #fee2e2;
@@ -468,72 +470,6 @@
             text-decoration: none;
         }
         .btn-sheets-link:active { background: #115e59; }
-
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100vw; height: 100vh;
-            background: rgba(15, 23, 42, 0.75);
-            backdrop-filter: blur(6px);
-            z-index: 9999;
-            align-items: center;
-            justify-content: center;
-            padding: 16px;
-        }
-        .modal-card {
-            background: #fff;
-            border-radius: 20px;
-            max-width: 340px;
-            width: 100%;
-            padding: 20px 16px;
-            text-align: center;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-            animation: popIn 0.25s ease-out;
-        }
-        @keyframes popIn {
-            0% { transform: scale(0.9); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        .qr-header-title { font-size: 1.15rem; font-weight: 700; color: #0f172a; margin-top: 4px; }
-        .qr-header-sub { font-size: 0.8rem; color: #64748b; margin-bottom: 12px; }
-        .qr-img-box {
-            background: #f8fafc;
-            border: 2px dashed #0284c7;
-            border-radius: 16px;
-            padding: 12px;
-            display: inline-block;
-            margin-bottom: 12px;
-        }
-        .qr-img-box img {
-            width: 200px;
-            height: 200px;
-            display: block;
-            border-radius: 8px;
-        }
-        .qr-amount-label { font-size: 0.85rem; color: #475569; }
-        .qr-amount-val { font-size: 2.2rem; font-weight: 700; color: #0284c7; line-height: 1.1; margin-bottom: 14px; }
-        .modal-btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .btn-modal-done {
-            background: #0284c7;
-            color: #fff;
-            border: none;
-            padding: 10px;
-            border-radius: 10px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        .btn-modal-close {
-            background: #10b981;
-            color: #fff;
-            border: none;
-            padding: 10px;
-            border-radius: 10px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-        }
     </style>
 </head>
 <body>
@@ -546,7 +482,7 @@
         <div id="syncStatus" class="sync-badge" onclick="loadFromCloud()">🔄 ซิงค์ข้อมูล Cloud</div>
     </div>
 
-    <!-- แถบเลือกช่วงเวลาแบบ 4 ปุ่ม -->
+    <!-- แถบเลือกช่วงเวลา -->
     <div class="time-filter">
         <button type="button" class="filter-btn active" onclick="setTimeFilter('today', this)">☀️ วันนี้</button>
         <button type="button" class="filter-btn" onclick="setTimeFilter('week', this)">📅 อาทิตย์นี้</button>
@@ -554,7 +490,7 @@
         <button type="button" class="filter-btn" onclick="setTimeFilter('all', this)">📋 ทั้งหมด</button>
     </div>
 
-    <!-- กล่องเลือกวันที่และเดือนในแถวเดียว -->
+    <!-- กล่องเลือกวันที่และเดือน -->
     <div class="custom-filter-box" id="customFilterBox">
         <div class="custom-filter-grid">
             <div class="filter-input-group">
@@ -568,7 +504,7 @@
         </div>
     </div>
 
-    <!-- กล่องยอดขายรวม และสรุปผลประกอบการ (เพิ่มแยก รับเงินสด / สแกนจ่าย) -->
+    <!-- กล่องยอดขายรวม และสรุปผลประกอบการ แยกรับเงินสด/สแกนจ่าย -->
     <div class="total-banner">
         <div class="amount" id="totalSales">฿0</div>
         <div class="sub" id="totalSalesSub">ยอดขายรวม</div>
@@ -706,27 +642,9 @@
     </div>
 </div>
 
-<!-- Modal หน้าต่าง QR Code PromptPay -->
-<div class="modal-overlay" id="qrModal">
-    <div class="modal-card">
-        <div class="qr-header-title">📲 สแกนจ่าย PromptPay</div>
-        <div class="qr-header-sub" id="qrMenuDesc">ฟลุ๊ค ชาเฟ่</div>
-        <div class="qr-img-box">
-            <img id="qrImageTag" src="" alt="PromptPay QR">
-        </div>
-        <div class="qr-amount-label">ยอดชำระเงินทั้งหมด</div>
-        <div class="qr-amount-val" id="qrAmountDisplay">฿0</div>
-        <div class="modal-btn-group">
-            <button type="button" class="btn-modal-done" onclick="confirmPaymentMethod('promptpay')">📱 สแกนจ่ายแล้ว</button>
-            <button type="button" class="btn-modal-close" onclick="confirmPaymentMethod('cash')">💵 รับเงินสด</button>
-        </div>
-    </div>
-</div>
-
 <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbzr8lEc78rzKvRvYsgKpBkiH-E7zrpdt8oj_o9oJ6PCvMh7gcfJUrUwmMo-J1uHHVXWJQ/exec";
     const GOOGLE_SHEETS_URL = "https://docs.google.com/spreadsheets/d/1EEU-LsVCzD8jbisYSVmy5jMjdTotGOgIW-4ASJlzqYU/edit";
-    const PROMPTPAY_PHONE = "0637975257";
 
     const STORAGE_KEY = 'FLUKCHAFE_SHARED_DB_V5';
     const MENU_PRICES_KEY = 'FLUKCHAFE_SHARED_PRICES_V5';
@@ -832,7 +750,6 @@
     let customFilterType = 'date';
     let isProfitShown = false;
     let isBackdateActive = false;
-    let currentActiveItemId = null;
 
     const quickInput = document.getElementById('quickInput');
     const suggestBox = document.getElementById('suggestBox');
@@ -859,11 +776,6 @@
     const backdateDateInput = document.getElementById('backdateDateInput');
     const backdateTimeInput = document.getElementById('backdateTimeInput');
 
-    const qrModal = document.getElementById('qrModal');
-    const qrImageTag = document.getElementById('qrImageTag');
-    const qrAmountDisplay = document.getElementById('qrAmountDisplay');
-    const qrMenuDesc = document.getElementById('qrMenuDesc');
-
     function formatDateYMD(d) {
         const year = d.getFullYear();
         const month = String(d.getMonth() + 1).padStart(2, '0');
@@ -877,37 +789,11 @@
     backdateDateInput.value = formatDateYMD(initD);
     backdateTimeInput.value = initD.toTimeString().substring(0, 5);
 
-    function showPromptPayQR(name, qty, totalAmount, itemId = null) {
-        currentActiveItemId = itemId;
-        qrMenuDesc.innerText = `${name} (x${qty})`;
-        qrAmountDisplay.innerText = `฿${Number(totalAmount).toLocaleString()}`;
-        qrImageTag.src = `https://promptpay.io/${PROMPTPAY_PHONE}/${totalAmount}.png`;
-        qrModal.style.display = 'flex';
-    }
-
-    function confirmPaymentMethod(method) {
-        if (currentActiveItemId) {
-            const idx = sales.findIndex(s => String(s.id) === String(currentActiveItemId));
-            if (idx !== -1) {
-                sales[idx].paymentMethod = method;
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
-                saveToCloud({ action: "update_sale", item: sales[idx] });
-                renderUI();
-            }
-        }
-        closeQrModal();
-    }
-
-    function closeQrModal() {
-        qrModal.style.display = 'none';
-        currentActiveItemId = null;
-    }
-
     function togglePayMethod(id) {
         const idx = sales.findIndex(s => String(s.id) === String(id));
         if (idx !== -1) {
-            const current = sales[idx].paymentMethod || 'promptpay';
-            sales[idx].paymentMethod = (current === 'promptpay') ? 'cash' : 'promptpay';
+            const current = sales[idx].paymentMethod || 'cash';
+            sales[idx].paymentMethod = (current === 'cash') ? 'promptpay' : 'cash';
             localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
             saveToCloud({ action: "update_sale", item: sales[idx] });
             renderUI();
@@ -1130,7 +1016,7 @@
             qty, 
             totalPrice, 
             category,
-            paymentMethod: 'promptpay',
+            paymentMethod: 'cash', // ค่าเริ่มต้นเป็นเงินสด
             time: recordTime 
         };
 
@@ -1141,11 +1027,6 @@
 
         renderUI();
         quickInput.value = '';
-
-        if (!isBackdateActive) {
-            showPromptPayQR(name, qty, totalPrice, newId);
-        }
-
         return false;
     }
 
@@ -1284,10 +1165,10 @@
                 totalS += price;
                 totalPieces += Number(item.qty);
 
-                if (item.paymentMethod === 'cash') {
-                    totalCashSum += price;
+                if (item.paymentMethod === 'promptpay') {
+                    totalQrSum += price;
                 } else {
-                    totalQrSum += price; // ค่าเริ่มต้นเป็น promptpay
+                    totalCashSum += price;
                 }
 
                 const cat = catStats[item.category] ? item.category : 'อาหาร/กะเพรา';
@@ -1298,7 +1179,7 @@
                 menuGrouped[cat][item.name].qty += Number(item.qty);
                 menuGrouped[cat][item.name].sum += price;
 
-                const isQr = (item.paymentMethod !== 'cash');
+                const isQr = (item.paymentMethod === 'promptpay');
                 const badgeClass = isQr ? 'pay-badge qr' : 'pay-badge cash';
                 const badgeText = isQr ? '📱 สแกนจ่าย' : '💵 เงินสด';
 
@@ -1311,7 +1192,7 @@
                     </div>
                     <div style="display:flex; align-items:center;">
                         <span class="item-price">฿${price.toLocaleString()}</span>
-                        <button class="${badgeClass}" onclick="togglePayMethod('${item.id}')" title="แตะเพื่อสลับประเภทการรับเงิน">${badgeText}</button>
+                        <button class="${badgeClass}" onclick="togglePayMethod('${item.id}')" title="แตะเพื่อสลับเป็น ${isQr ? 'เงินสด' : 'สแกนจ่าย'}">${badgeText}</button>
                         <button class="btn-del" onclick="deleteItem('${item.id}')">ลบ</button>
                     </div>
                 `;
@@ -1472,7 +1353,7 @@
         if (sales.length === 0) { alert('ไม่มีข้อมูลยอดขายสำหรับดาวน์โหลด'); return; }
         let csv = '\uFEFFวันที่,เวลา,ชื่อเมนู,หมวดหมู่,ประเภทการชำระ,ราคาต่อหน่วย,จำนวน,ราคารวม\n';
         sales.forEach(s => {
-            const payText = (s.paymentMethod === 'cash') ? 'เงินสด' : 'สแกนจ่าย';
+            const payText = (s.paymentMethod === 'promptpay') ? 'สแกนจ่าย' : 'เงินสด';
             csv += `"${s.date}","${s.time}","${s.name}","${s.category}","${payText}",${s.unitPrice},${s.qty},${s.totalPrice}\n`;
         });
         downloadBlob(csv, `FLUKCHAFE_Sales_${formatDateYMD(new Date())}.csv`);
@@ -1481,7 +1362,6 @@
     function exportExpensesToCSV() {
         if (expenses.length === 0) { alert('ไม่มีข้อมูลต้นทุนสำหรับดาวน์โหลด'); return; }
         let csv = '\uFEFFวันที่,เวลา,รายการซื้อของ,จำนวนเงินต้นทุน\n';
-        expenses.exportExpensesToCSV = true; // placeholder
         expenses.forEach(e => {
             csv += `"${e.date}","${e.time}","${e.name}",${e.cost}\n`;
         });
