@@ -134,7 +134,7 @@
         }
         .cat-btn.active { background: #0284c7; color: #fff; }
 
-        .quick-input-box { margin-bottom: 14px; }
+        .quick-input-box { margin-bottom: 14px; position: relative; }
         .input-btn-group { display: flex; gap: 6px; }
         .input-btn-group input {
             flex: 1;
@@ -160,6 +160,41 @@
         }
         .btn-order-submit:active { background: #0369a1; transform: scale(0.98); }
         .hint { font-size: 0.75rem; color: #64748b; margin-top: 5px; line-height: 1.4; padding-left: 2px; }
+
+        /* กล่องแสดงตัวเลือกเมนูด่วน Auto-Suggest Dropdown */
+        .suggest-box {
+            position: absolute;
+            top: 52px;
+            left: 0;
+            right: 110px;
+            background: #ffffff;
+            border: 1.5px solid #0284c7;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            max-height: 220px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+        .suggest-item {
+            padding: 10px 14px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.95rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        .suggest-item:last-child { border-bottom: none; }
+        .suggest-item:active, .suggest-item:hover {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+        .suggest-price {
+            font-weight: 600;
+            color: #0284c7;
+            font-size: 0.85rem;
+        }
 
         .tabs { display: flex; gap: 4px; margin-bottom: 12px; }
         .tab-btn {
@@ -261,7 +296,6 @@
         <button type="button" class="filter-btn" onclick="setTimeFilter('all', this)">📋 ทั้งหมด</button>
     </div>
 
-    <!-- กล่องเลือกวันที่ / เลือกเดือน -->
     <div class="custom-date-picker" id="datePickerContainer">
         <input type="date" id="selectDateInput" onchange="renderUI()">
     </div>
@@ -304,21 +338,23 @@
         <button type="button" class="cat-btn" onclick="setCategory('ขนมปังปิ้ง', this)">🍞 ปังปิ้ง</button>
     </div>
 
+    <!-- ช่องพิมพ์พร้อมระบบแนะนำเมนูอัจฉริยะ (Auto-Suggest) -->
     <form id="quickForm" class="quick-input-box" onsubmit="return handleAdd(event)">
         <div class="input-btn-group">
             <input 
                 type="text" 
                 id="quickInput" 
-                list="menuListOptions"
-                placeholder="เช่น ชาไทยเย็น หรือ ไส้กรอกแดง 25 หรือ ชีสบอล 2" 
+                placeholder="พิมพ์ชื่อเมนู เช่น ชาไทย, ไส้กรอก, ชีส..." 
                 autocomplete="off" 
                 autofocus
+                oninput="handleSearchSuggest(this.value)"
             >
             <button type="submit" class="btn-order-submit">รับออเดอร์</button>
         </div>
-        <datalist id="menuListOptions"></datalist>
+        <!-- กล่องรายการค้นหาด่วน -->
+        <div id="suggestBox" class="suggest-box"></div>
         <div class="hint">
-            💡 <b>ตัวอย่าง:</b> <code>ไส้กรอกแดง 20</code>, <code>ไส้กรอกแดง 25</code>, <code>ไส้กรอกแดง 30</code>, <code>ชีสบอล 2</code>
+            💡 <b>พิมพ์คำค้นสั้นๆ:</b> เช่น <code>ชาไทย</code>, <code>ไส้กรอก</code>, <code>ชีสบอล</code> แล้วแตะเลือกได้ทันที
         </div>
     </form>
 
@@ -351,7 +387,6 @@
     const STORAGE_KEY = 'FLUKCHAFE_SHARED_DB_V5';
     const MENU_PRICES_KEY = 'FLUKCHAFE_SHARED_PRICES_V5';
     
-    // บันทึกฐานข้อมูลราคาร้าน ฟลุ๊ค ชาเฟ่ ครบ 100% ตรงตามป้ายจริง
     const DEFAULT_PRESET_PRICES = {
         // --- กาแฟ ---
         "เอสเพรสโซ่": 30, "เอสเพรสโซ่เย็น": 30, "เอสเพรสโซ่ปั่น": 35,
@@ -431,14 +466,8 @@
         // --- ของทอด / ทานเล่น ---
         "เฟรนช์ฟรายส์": 29, "เฟรนฟราย": 29,
         "ชีสบอล": 39, "ไก่ป๊อบ": 39, "นักเก็ตไก่": 39,
-        "ไส้กรอกแดง": 20,
-        "ไส้กรอกแดง 20": 20,
-        "ไส้กรอกแดง 25": 25,
-        "ไส้กรอกแดง 30": 30,
-        "ไส้กรอกแดงทอดกรอบ": 20,
-        "ไส้กรอกแดงทอดกรอบ 20": 20,
-        "ไส้กรอกแดงทอดกรอบ 25": 25,
-        "ไส้กรอกแดงทอดกรอบ 30": 30,
+        "ไส้กรอกแดง": 20, "ไส้กรอกแดง 20": 20, "ไส้กรอกแดง 25": 25, "ไส้กรอกแดง 30": 30,
+        "ไส้กรอกแดงทอดกรอบ": 20, "ไส้กรอกแดงทอดกรอบ 20": 20, "ไส้กรอกแดงทอดกรอบ 25": 25, "ไส้กรอกแดงทอดกรอบ 30": 30,
 
         // --- ข้าวกะเพรา / ข้าวเหนียวปิ้งย่าง ---
         "ข้าวกะเพรา": 35, "ข้าวกะเพรา 35": 35, "ข้าวกะเพรา 40": 40, "ข้าวกะเพรา 45": 45,
@@ -456,11 +485,11 @@
     let currentFilter = 'today';
 
     const quickInput = document.getElementById('quickInput');
+    const suggestBox = document.getElementById('suggestBox');
     const totalAmount = document.getElementById('totalAmount');
     const totalItems = document.getElementById('totalItems');
     const itemList = document.getElementById('itemList');
     const menuSummaryList = document.getElementById('menuSummaryList');
-    const menuListOptions = document.getElementById('menuListOptions');
     const priceSettingList = document.getElementById('priceSettingList');
     const syncStatus = document.getElementById('syncStatus');
     const datePickerContainer = document.getElementById('datePickerContainer');
@@ -478,6 +507,53 @@
     const initD = new Date();
     selectDateInput.value = formatDateYMD(initD);
     selectMonthInput.value = `${initD.getFullYear()}-${String(initD.getMonth() + 1).padStart(2, '0')}`;
+
+    // ฟังก์ชันค้นหาเมนูด่วนและแสดงรายการให้แตะเลือกบนมือถือ
+    function handleSearchSuggest(val) {
+        const query = val.trim().toLowerCase();
+        if (!query) {
+            suggestBox.style.display = 'none';
+            suggestBox.innerHTML = '';
+            return;
+        }
+
+        const matched = [];
+        for (const [name, price] of Object.entries(priceBook)) {
+            if (name.toLowerCase().includes(query)) {
+                matched.push({ name, price });
+            }
+        }
+
+        if (matched.length === 0) {
+            suggestBox.style.display = 'none';
+            suggestBox.innerHTML = '';
+            return;
+        }
+
+        suggestBox.innerHTML = '';
+        matched.slice(0, 8).forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'suggest-item';
+            div.innerHTML = `
+                <span>${item.name}</span>
+                <span class="suggest-price">฿${item.price}</span>
+            `;
+            div.onclick = () => {
+                quickInput.value = item.name;
+                suggestBox.style.display = 'none';
+                quickInput.focus();
+            };
+            suggestBox.appendChild(div);
+        });
+        suggestBox.style.display = 'block';
+    }
+
+    // ซ่อนกล่องตัวเลือกเมื่อแตะที่อื่นบนหน้าจอ
+    document.addEventListener('click', (e) => {
+        if (!quickInput.contains(e.target) && !suggestBox.contains(e.target)) {
+            suggestBox.style.display = 'none';
+        }
+    });
 
     async function loadFromCloud() {
         syncStatus.innerText = "🔄 กำลังซิงค์ข้อมูล...";
@@ -537,18 +613,9 @@
         return 'เครื่องดื่ม';
     }
 
-    function updateDatalist() {
-        menuListOptions.innerHTML = '';
-        for (const [name, price] of Object.entries(priceBook)) {
-            const opt = document.createElement('option');
-            opt.value = name;
-            opt.label = `฿${price}`;
-            menuListOptions.appendChild(opt);
-        }
-    }
-
     function handleAdd(e) {
         if (e) e.preventDefault();
+        suggestBox.style.display = 'none';
         const text = quickInput.value.trim();
         if (!text) return false;
 
@@ -573,7 +640,6 @@
                 const potentialName = parts.slice(0, parts.length - 1).join(' ');
                 const num = parseFloat(lastPart);
                 
-                // ตรวจจับเมนูที่มีราคาเฉพาะเจาะจง เช่น ไส้กรอกแดง 20, 25, 30 หรือ ข้าวกะเพรา 35, 40, 45
                 if (priceBook[text]) {
                     name = text;
                     unitPrice = priceBook[text];
@@ -686,8 +752,6 @@
     }
 
     function renderUI() {
-        updateDatalist();
-        
         const filterResult = getFilteredSales();
         const displaySales = filterResult.data;
 
