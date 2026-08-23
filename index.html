@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FLUKCHAFE - ฟลุ๊ค ชาเฟ่ POS & Profit</title>
+    <title>FLUKCHAFE - ฟลุ๊ค ชาเฟ่</title>
     
     <link rel="icon" type="image/png" href="logo.png">
     <link rel="apple-touch-icon" href="logo.png">
@@ -11,80 +11,30 @@
     <style>
         * { box-sizing: border-box; font-family: 'Kanit', sans-serif; margin: 0; padding: 0; }
         
-        html, body {
-            width: 100%;
+        body { 
+            background: #0f172a url('bg.jpg') no-repeat center center fixed;
+            background-size: cover;
             min-height: 100vh;
-            margin: 0;
-            padding: 0;
-            background-color: #090d16;
-            color: #1e293b;
-        }
-
-        body {
-            padding: 12px;
-            position: relative;
-        }
-
-        /* ผืนผ้าใบ Canvas สำหรับสร้างคลื่นน้ำเคลื่อนไหวแบบ Real-time */
-        #waveCanvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: -10;
-            pointer-events: none;
-            background: #090d16;
-        }
-
-        .bg-fixed-layer {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: -5;
-            object-fit: cover;
-            display: none;
-            pointer-events: none;
-        }
-
-        .bg-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(9, 13, 22, 0.25);
-            z-index: -2;
-            pointer-events: none;
+            padding: 12px; 
+            color: #1e293b; 
         }
 
         .container { 
             max-width: 480px; 
             margin: 0 auto; 
-            background: rgba(255, 255, 255, 0.94); 
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-radius: 22px; 
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 20px; 
             padding: 16px; 
-            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45); 
-            border: 1px solid rgba(255, 255, 255, 0.7);
-            position: relative;
-            z-index: 1;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25); 
+            border: 1px solid rgba(255, 255, 255, 0.6);
         }
         
         .brand-header { text-align: center; margin-bottom: 12px; position: relative; }
         .brand-logo { width: 75px; height: 75px; border-radius: 50%; object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 2px solid #0284c7; }
         .brand-name-en { font-size: 1.55rem; font-weight: 700; color: #0f172a; margin-top: 4px; line-height: 1.1; }
         .brand-name-th { font-size: 0.9rem; font-weight: 400; color: #64748b; margin-top: 2px; }
-
-        .header-tools {
-            display: flex;
-            justify-content: center;
-            gap: 6px;
-            margin-top: 6px;
-        }
 
         .sync-badge {
             display: inline-block;
@@ -93,20 +43,9 @@
             border-radius: 12px;
             background: #e0f2fe;
             color: #0369a1;
+            margin-top: 6px;
             font-weight: 500;
             cursor: pointer;
-        }
-
-        .bg-btn-change {
-            display: inline-block;
-            font-size: 0.72rem;
-            padding: 3px 8px;
-            border-radius: 12px;
-            background: #f1f5f9;
-            color: #475569;
-            font-weight: 500;
-            cursor: pointer;
-            border: 1px solid #cbd5e1;
         }
 
         .time-filter {
@@ -150,6 +89,7 @@
             color: #0f172a;
         }
 
+        /* กล่องยอดขายรวม */
         .total-banner {
             background: #0f172a;
             color: #fff;
@@ -256,6 +196,7 @@
         }
         .btn-order-submit:active { background: #0369a1; transform: scale(0.98); }
 
+        /* แถบควบคุมโหมดลงย้อนหลัง */
         .backdate-control {
             display: flex;
             align-items: center;
@@ -454,22 +395,12 @@
 </head>
 <body>
 
-<!-- พื้นหลังคลื่นแสงเคลื่อนไหว Canvas (ติดแน่นอน 100%) -->
-<canvas id="waveCanvas"></canvas>
-<img id="mainBgImg" class="bg-fixed-layer" alt="Background">
-<div class="bg-overlay"></div>
-
-<input type="file" id="localBgPicker" accept="image/*" style="display: none;" onchange="handleLocalBgSelected(event)">
-
 <div class="container">
     <div class="brand-header">
         <img src="logo.png" alt="FLUKCHAFE" class="brand-logo" onerror="this.style.display='none'">
         <div class="brand-name-en">FLUKCHAFE</div>
         <div class="brand-name-th">ฟลุ๊ค ชาเฟ่</div>
-        <div class="header-tools">
-            <div id="syncStatus" class="sync-badge" onclick="loadFromCloud()">🔄 ซิงค์ข้อมูล Cloud</div>
-            <div class="bg-btn-change" onclick="document.getElementById('localBgPicker').click()">🖼️ เลือกภาพพื้นหลัง</div>
-        </div>
+        <div id="syncStatus" class="sync-badge" onclick="loadFromCloud()">🔄 ซิงค์ข้อมูล Cloud</div>
     </div>
 
     <!-- แถบเลือกช่วงเวลา -->
@@ -488,6 +419,7 @@
         <input type="month" id="selectMonthInput" onchange="renderUI()">
     </div>
 
+    <!-- กล่องยอดขายรวม พร้อมปุ่มซ่อน/แสดง สรุปผลประกอบการ -->
     <div class="total-banner">
         <div class="amount" id="totalSales">฿0</div>
         <div class="sub" id="totalSalesSub">ยอดขายรวม</div>
@@ -540,6 +472,7 @@
         <button type="button" class="cat-btn" onclick="setCategory('ขนมปังปิ้ง', this)">🍞 ปังปิ้ง</button>
     </div>
 
+    <!-- ช่องพิมพ์รับออเดอร์ -->
     <form id="quickForm" class="quick-input-box" onsubmit="return handleAdd(event)">
         <div class="input-btn-group">
             <input 
@@ -554,6 +487,7 @@
         </div>
         <div id="suggestBox" class="suggest-box"></div>
 
+        <!-- แถบปุ่มเปิด/ปิด โหมดลงออเดอร์ย้อนหลัง -->
         <div class="backdate-control">
             <span style="font-size:0.72rem; color:#64748b;">💡 พิมพ์ค้นหาแล้วแตะเลือกได้ทันที</span>
             <button type="button" class="btn-toggle-backdate" id="btnToggleBackdate" onclick="toggleBackdateMode()">
@@ -561,6 +495,7 @@
             </button>
         </div>
 
+        <!-- กล่องเลือกวัน-เวลาย้อนหลัง -->
         <div class="backdate-box" id="backdateBox">
             <div class="backdate-box-title">⚠️ โหมดลงออเดอร์ย้อนหลัง (ระบุวันและเวลา)</div>
             <div class="backdate-inputs">
@@ -585,6 +520,7 @@
         <div id="menuSummaryList"></div>
     </div>
 
+    <!-- หน้าบันทึกต้นทุนซื้อของเข้าร้าน -->
     <div class="list-container" id="expensesView" style="display: none;">
         <div class="price-mgr-form">
             <input type="text" id="newExpenseName" placeholder="รายการซื้อของ เช่น ชา/นม/ของทอด" style="flex:2;">
@@ -594,6 +530,7 @@
         <div id="expenseList"></div>
     </div>
 
+    <!-- หน้าจัดการราคาเมนู -->
     <div class="list-container" id="pricesView" style="display: none;">
         <div class="price-mgr-form">
             <input type="text" id="newMenuName" placeholder="ชื่อเมนู เช่น ชาไทย ปั่น" style="flex:2;">
@@ -612,47 +549,9 @@
     const STORAGE_KEY = 'FLUKCHAFE_SHARED_DB_V5';
     const MENU_PRICES_KEY = 'FLUKCHAFE_SHARED_PRICES_V5';
     const EXPENSES_KEY = 'FLUKCHAFE_SHARED_EXP_V5';
-    const CUSTOM_BG_KEY = 'FLUKCHAFE_CUSTOM_BG_DATA';
     
-    // ระบบแอนิเมชันคลื่นน้ำ Real-time บน Canvas
-    const canvas = document.getElementById('waveCanvas');
-    const ctx = canvas.getContext('2d');
-    let width, height, step = 0;
-
-    function resizeCanvas() {
-        width = canvas.width = window.innerWidth;
-        height = canvas.height = window.innerHeight;
-    }
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
-
-    function drawWave(yOffset, color, speed, wavelength, amplitude) {
-        ctx.beginPath();
-        ctx.moveTo(0, height);
-        for (let x = 0; x <= width; x += 10) {
-            const y = Math.sin((x * wavelength) + (step * speed)) * amplitude + (height * yOffset);
-            ctx.lineTo(x, y);
-        }
-        ctx.lineTo(width, height);
-        ctx.closePath();
-        ctx.fillStyle = color;
-        ctx.fill();
-    }
-
-    function animateWaves() {
-        ctx.clearRect(0, 0, width, height);
-        step += 0.02;
-        
-        // วาดคลื่น 3 ชั้น พริ้วไหวสวยงาม
-        drawWave(0.65, 'rgba(2, 132, 199, 0.25)', 0.8, 0.003, 40);
-        drawWave(0.75, 'rgba(99, 102, 241, 0.22)', -0.6, 0.002, 50);
-        drawWave(0.85, 'rgba(6, 182, 212, 0.28)', 1.0, 0.004, 30);
-        
-        requestAnimationFrame(animateWaves);
-    }
-    animateWaves();
-
     const DEFAULT_PRESET_PRICES = {
+        // --- กาแฟ ---
         "เอสเพรสโซ่ เย็น": 30, "เอสเพรสโซ่ ปั่น": 35,
         "คาปูชิโน่ เย็น": 30, "คาปูชิโน่ ปั่น": 35,
         "ลาเต้ เย็น": 30, "ลาเต้ ปั่น": 35,
@@ -664,6 +563,7 @@
         "อเมริกาโน่น้ำผึ้งมะนาว เย็น": 40, "อเมริกาโน่น้ำผึ้งมะนาว ปั่น": 45,
         "อเมริกาโน่ลิ้นจี่ เย็น": 40, "อเมริกาโน่ลิ้นจี่ ปั่น": 45,
 
+        // --- ชา & นม & เมนูประจำร้าน ---
         "ชาไทย เย็น": 25, "ชาไทย ปั่น": 30,
         "ชาเขียว เย็น": 25, "ชาเขียว ปั่น": 30,
         "ชานม เย็น": 25, "ชานม ปั่น": 30,
@@ -687,6 +587,7 @@
         "มะพร้าวนมสด เย็น": 25, "มะพร้าวนมสด ปั่น": 30,
         "โอริโอ้ ปั่น": 30,
 
+        // --- สตรอว์เบอร์รี (Strawberry Menu) ---
         "นมสดสตรอว์เบอร์รี เย็น": 30, "นมสดสตรอว์เบอร์รี ปั่น": 35,
         "นมสดสตอเบอรี่ เย็น": 30, "นมสดสตอเบอรี่ ปั่น": 35,
         "สตรอว์เบอร์รี เย็น": 25, "สตรอว์เบอร์รี ปั่น": 30,
@@ -695,9 +596,11 @@
         "สตอเบอรี่โซดา เย็น": 25, "สตอเบอรี่โซดา ปั่น": 30,
         "สตรอว์เบอร์รีโยเกิร์ต ปั่น": 35, "สตอเบอรี่โยเกิร์ต ปั่น": 35,
 
+        // --- สมูทตี้ผลไม้ปั่น ---
         "แอปเปิ้ล ปั่น": 30, "บลูฮาวาย ปั่น": 30, "ลิ้นจี่ ปั่น": 30, "กีวี่ ปั่น": 30,
         "ส้ม ปั่น": 30, "องุ่น ปั่น": 30, "บลูเบอร์รี่ ปั่น": 30,
 
+        // --- อิตาเลียนโซดา ---
         "แดงโซดา เย็น": 25, "แดงโซดา ปั่น": 30,
         "แดงมะนาวโซดา เย็น": 25, "แดงมะนาวโซดา ปั่น": 30,
         "เขียวโซดา เย็น": 25, "เขียวโซดา ปั่น": 30,
@@ -712,6 +615,7 @@
         "บลูเบอร์รี่โซดา เย็น": 25, "บลูเบอร์รี่โซดา ปั่น": 30,
         "น้ำผึ้งมะนาวโซดา เย็น": 25, "น้ำผึ้งมะนาวโซดา ปั่น": 30,
 
+        // --- เมนูโอริโอ้ปั่น ---
         "นมสดโอริโอ้ ปั่น": 35,
         "ชาไทยโอริโอ้ ปั่น": 35,
         "ชาเขียวโอริโอ้ ปั่น": 35,
@@ -722,9 +626,11 @@
         "นมเผือกโอริโอ้ ปั่น": 30,
         "นมสดโอริโอ้คาราเมล ปั่น": 35,
 
+        // --- ขนมปังปิ้ง ---
         "ปังเนยนมน้ำตาล": 20, "ปังเนยนม": 20,
         "ปังโอวัลติน": 25, "ปังโอริโอ้": 30,
 
+        // --- ของทอด / ทานเล่น ---
         "เฟรนช์ฟรายส์": 29,
         "ชีสบอล": 39,
         "ไก่ป๊อบ": 39,
@@ -733,6 +639,7 @@
         "ไส้กรอกแดง 25": 25,
         "ไส้กรอกแดง 30": 30,
 
+        // --- ข้าวกะเพรา / ข้าวเหนียวปิ้งย่าง ---
         "ข้าวกะเพรา 35": 35,
         "ข้าวกะเพรา 40": 40,
         "ข้าวกะเพรา 45": 45,
@@ -770,55 +677,11 @@
     const selectDateInput = document.getElementById('selectDateInput');
     const selectMonthInput = document.getElementById('selectMonthInput');
     const priceSearchInput = document.getElementById('priceSearchInput');
-    const mainBgImg = document.getElementById('mainBgImg');
 
     const btnToggleBackdate = document.getElementById('btnToggleBackdate');
     const backdateBox = document.getElementById('backdateBox');
     const backdateDateInput = document.getElementById('backdateDateInput');
     const backdateTimeInput = document.getElementById('backdateTimeInput');
-
-    function initBackground() {
-        const savedCustomBg = localStorage.getItem(CUSTOM_BG_KEY);
-        if (savedCustomBg) {
-            mainBgImg.src = savedCustomBg;
-            mainBgImg.style.display = 'block';
-            return;
-        }
-
-        const trySources = ["bg.gif.gif", "bg.gif", "bg.jpg.png", "bg.jpg"];
-        let idx = 0;
-
-        function tryNextImage() {
-            if (idx >= trySources.length) return;
-            const imgUrl = trySources[idx++];
-            const testImg = new Image();
-            testImg.onload = () => {
-                mainBgImg.src = imgUrl;
-                mainBgImg.style.display = 'block';
-            };
-            testImg.onerror = () => {
-                tryNextImage();
-            };
-            testImg.src = imgUrl + "?t=" + Date.now();
-        }
-        tryNextImage();
-    }
-
-    function handleLocalBgSelected(e) {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const base64 = event.target.result;
-                mainBgImg.src = base64;
-                mainBgImg.style.display = 'block';
-                try {
-                    localStorage.setItem(CUSTOM_BG_KEY, base64);
-                } catch(err) {}
-            };
-            reader.readAsDataURL(file);
-        }
-    }
 
     function formatDateYMD(d) {
         const year = d.getFullYear();
@@ -833,6 +696,7 @@
     backdateDateInput.value = formatDateYMD(initD);
     backdateTimeInput.value = initD.toTimeString().substring(0, 5);
 
+    // เปิด/ปิด แผงสรุปผลประกอบการ
     function toggleProfitPanel() {
         isProfitShown = !isProfitShown;
         if (isProfitShown) {
@@ -844,6 +708,7 @@
         }
     }
 
+    // เปิด/ปิด โหมดบันทึกออเดอร์ย้อนหลัง
     function toggleBackdateMode() {
         isBackdateActive = !isBackdateActive;
         if (isBackdateActive) {
@@ -1201,6 +1066,7 @@
             });
         }
 
+        // แสดงรายการต้นทุน
         expenseList.innerHTML = '';
         if (displayExpenses.length === 0) {
             expenseList.innerHTML = '<div class="empty-text">ยังไม่มีรายการต้นทุนในช่วงนี้</div>';
@@ -1347,7 +1213,6 @@
         document.getElementById('pricesView').style.display = tab === 'prices' ? 'block' : 'none';
     }
 
-    initBackground();
     renderUI();
     window.addEventListener('DOMContentLoaded', () => {
         loadFromCloud();
