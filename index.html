@@ -7,7 +7,7 @@
     
     <!-- PWA Settings -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0f172a">
+    <meta name="theme-color" content="#090d16">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="FLUKCHAFE">
@@ -19,23 +19,23 @@
         * { box-sizing: border-box; font-family: 'Kanit', sans-serif; margin: 0; padding: 0; }
         
         body { 
-            background: #0f172a url('bg.jpg') no-repeat center center fixed;
+            background: #090d16 url('bg.jpg') no-repeat center center fixed;
             background-size: cover;
             min-height: 100vh;
-            padding: 12px 12px 80px 12px; 
-            color: #1e293b; 
+            padding: 12px 12px 85px 12px; 
+            color: #f1f5f9; 
         }
 
         .container { 
             max-width: 480px; 
             margin: 0 auto; 
-            background: rgba(255, 255, 255, 0.96); 
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+            background: rgba(15, 23, 42, 0.92); 
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
             border-radius: 20px; 
             padding: 16px; 
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25); 
-            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.5); 
+            border: 1px solid rgba(255, 255, 255, 0.1);
             position: relative;
         }
         
@@ -45,58 +45,47 @@
             height: 75px; 
             border-radius: 50%; 
             object-fit: cover; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
-            border: 2px solid #0284c7; 
+            box-shadow: 0 4px 14px rgba(56, 189, 248, 0.25); 
+            border: 2px solid #38bdf8; 
             cursor: pointer;
             transition: transform 0.2s;
         }
         .brand-logo:active { transform: scale(0.92); }
-        .brand-name-en { font-size: 1.55rem; font-weight: 700; color: #0f172a; margin-top: 4px; line-height: 1.1; cursor: pointer; }
-        .brand-name-th { font-size: 0.9rem; font-weight: 400; color: #64748b; margin-top: 2px; }
+        .brand-name-en { font-size: 1.55rem; font-weight: 700; color: #f8fafc; margin-top: 4px; line-height: 1.1; cursor: pointer; letter-spacing: 0.5px; }
+        .brand-name-th { font-size: 0.9rem; font-weight: 400; color: #94a3b8; margin-top: 2px; }
 
-        .btn-portal-switch {
-            position: absolute;
-            top: 0;
-            right: 0;
-            background: #fee2e2;
-            border: 1px solid #fca5a5;
-            padding: 4px 8px;
-            border-radius: 8px;
-            font-size: 0.7rem;
-            color: #ef4444;
-            cursor: pointer;
-            font-weight: 600;
-        }
-
-        /* แถบแจ้งเตือนสั่งเครื่องดื่ม & ส่งหน้าบ้าน */
         .delivery-banner-cust {
-            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-            border: 1.5px solid #86efac;
+            background: rgba(22, 101, 52, 0.2);
+            border: 1.5px solid #22c55e;
             border-radius: 14px;
             padding: 10px 12px;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
             text-align: center;
-            box-shadow: 0 2px 6px rgba(22, 163, 74, 0.08);
+            box-shadow: 0 2px 8px rgba(34, 197, 94, 0.15);
         }
         .delivery-main-text {
             font-size: 0.82rem;
-            color: #166534;
+            color: #86efac;
             font-weight: 500;
             line-height: 1.4;
+        }
+
+        .external-phone-box {
+            text-align: center;
+            margin-bottom: 12px;
         }
         .delivery-phone-text {
             display: inline-flex;
             align-items: center;
-            gap: 4px;
-            margin-top: 6px;
-            padding: 3px 12px;
-            background: #15803d;
+            gap: 6px;
+            padding: 5px 16px;
+            background: #16a34a;
             color: #ffffff;
             border-radius: 20px;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             font-weight: 600;
             text-decoration: none;
-            box-shadow: 0 2px 4px rgba(21, 128, 61, 0.25);
+            box-shadow: 0 3px 8px rgba(22, 163, 74, 0.35);
             transition: transform 0.15s;
         }
         .delivery-phone-text:active { transform: scale(0.95); }
@@ -105,44 +94,106 @@
             text-align: center;
             margin-top: 14px;
             padding-top: 8px;
-            border-top: 1px dashed rgba(0,0,0,0.06);
+            border-top: 1px dashed rgba(255, 255, 255, 0.1);
         }
         .sync-badge-bottom {
             display: inline-block;
             font-size: 0.68rem;
-            color: #94a3b8;
+            color: #64748b;
             cursor: pointer;
             font-weight: 400;
             transition: color 0.2s;
             user-select: none;
         }
-        .sync-badge-bottom:hover { color: #0284c7; }
+        .sync-badge-bottom:hover { color: #38bdf8; }
 
         /* --- ฝั่งลูกค้า (Customer Mode) --- */
         #customerSection { display: block; }
 
         .cust-search-box {
             margin-bottom: 10px;
+            position: relative;
         }
         .cust-search-box input {
             width: 100%;
             padding: 9px 14px;
             border-radius: 12px;
-            border: 1.5px solid #cbd5e1;
+            border: 1.5px solid #334155;
             font-size: 0.85rem;
             outline: none;
-            background: #f8fafc;
+            background: #1e293b;
+            color: #f8fafc;
         }
         .cust-search-box input:focus {
-            border-color: #0284c7;
-            background: #fff;
+            border-color: #38bdf8;
+            background: #0f172a;
         }
 
-        /* แถบเลื่อนเมนูแนะนำ */
+        /* กล่องแนะนำเมนูขณะพิมพ์ (Auto-suggest Dropdown) */
+        .cust-suggest-dropdown {
+            position: absolute;
+            top: 42px;
+            left: 0;
+            right: 0;
+            background: #1e293b;
+            border: 1.5px solid #0284c7;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+            max-height: 260px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+        .cust-suggest-item {
+            padding: 8px 12px;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .cust-suggest-item:last-child { border-bottom: none; }
+        .cust-suggest-item:hover, .cust-suggest-item:active {
+            background: #0f172a;
+        }
+        .cust-suggest-img {
+            width: 38px;
+            height: 38px;
+            border-radius: 8px;
+            object-fit: cover;
+            background: #0f172a;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        .cust-suggest-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .cust-suggest-name {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #f8fafc;
+        }
+        .cust-suggest-cat {
+            font-size: 0.68rem;
+            color: #94a3b8;
+        }
+        .cust-suggest-price {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #38bdf8;
+        }
+
+        /* ส่วนแถบเลื่อนเมนูแนะนำ */
         .rec-section-title {
             font-size: 0.82rem;
             font-weight: 700;
-            color: #ea580c;
+            color: #fb923c;
             margin-bottom: 6px;
             display: flex;
             align-items: center;
@@ -158,11 +209,11 @@
         }
         .rec-card {
             flex: 0 0 130px;
-            background: #fff;
-            border: 1.5px solid #fdba74;
+            background: #1e293b;
+            border: 1.5px solid rgba(251, 146, 60, 0.5);
             border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 2px 5px rgba(234, 88, 12, 0.1);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
             cursor: pointer;
             transition: transform 0.15s;
         }
@@ -170,7 +221,7 @@
         .rec-img-box {
             width: 100%;
             height: 75px;
-            background: #fff7ed;
+            background: #0f172a;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -187,7 +238,7 @@
         .rec-name {
             font-size: 0.75rem;
             font-weight: 600;
-            color: #0f172a;
+            color: #f1f5f9;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -195,7 +246,7 @@
         .rec-price {
             font-size: 0.85rem;
             font-weight: 700;
-            color: #ea580c;
+            color: #fb923c;
             margin-top: 2px;
         }
 
@@ -207,41 +258,47 @@
             margin-bottom: 10px;
         }
         .cust-cat-btn {
-            background: #e2e8f0;
-            border: none;
+            background: #1e293b;
+            border: 1px solid #334155;
             padding: 8px 1px;
             border-radius: 8px;
             font-size: 0.7rem;
             cursor: pointer;
             font-weight: 500;
-            color: #475569;
+            color: #94a3b8;
             white-space: nowrap;
         }
-        .cust-cat-btn.active { background: #0284c7; color: #fff; font-weight: 600; }
+        .cust-cat-btn.active { 
+            background: #0284c7; 
+            color: #fff; 
+            font-weight: 600; 
+            border-color: #38bdf8;
+            box-shadow: 0 2px 6px rgba(2, 132, 199, 0.4);
+        }
 
         .cust-menu-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 10px;
-            max-height: 480px;
+            max-height: 360px;
             overflow-y: auto;
             margin-bottom: 12px;
             padding: 2px;
         }
         .cust-menu-card {
-            background: #ffffff;
-            border: 1.5px solid #e2e8f0;
+            background: #1e293b;
+            border: 1.5px solid #334155;
             border-radius: 14px;
             overflow: hidden;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
             cursor: pointer;
             transition: all 0.15s;
             position: relative;
         }
-        .cust-menu-card:active { transform: scale(0.97); border-color: #0284c7; background: #f0f9ff; }
+        .cust-menu-card:active { transform: scale(0.97); border-color: #38bdf8; background: #0f172a; }
         
         .bestseller-badge {
             position: absolute;
@@ -253,14 +310,14 @@
             font-weight: 700;
             padding: 2px 6px;
             border-radius: 6px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.4);
             z-index: 2;
         }
 
         .cust-img-container {
             width: 100%;
             height: 105px;
-            background: #f1f5f9;
+            background: #0f172a;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -283,10 +340,10 @@
             justify-content: space-between;
             flex: 1;
         }
-        .cust-card-title { font-size: 0.85rem; font-weight: 600; color: #0f172a; line-height: 1.2; }
-        .cust-card-price { font-size: 1.05rem; font-weight: 700; color: #0284c7; margin-top: 6px; }
+        .cust-card-title { font-size: 0.85rem; font-weight: 600; color: #f8fafc; line-height: 1.2; }
+        .cust-card-price { font-size: 1.05rem; font-weight: 700; color: #38bdf8; margin-top: 6px; }
 
-        /* แถบตะกร้าสินค้าแบบลอยติดขอบล่างจอ (Floating Sticky Cart Bar) */
+        /* แถบตะกร้าสินค้า Floating Bar */
         .cart-floating-wrapper {
             position: fixed;
             bottom: 12px;
@@ -297,7 +354,7 @@
             z-index: 1000;
         }
         .cart-bar {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
             color: #fff;
             border-radius: 16px;
             padding: 10px 16px;
@@ -305,16 +362,16 @@
             justify-content: space-between;
             align-items: center;
             cursor: pointer;
-            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.45), 0 0 0 1.5px rgba(56, 189, 248, 0.4);
+            box-shadow: 0 10px 25px rgba(2, 132, 199, 0.45), 0 0 0 1.5px rgba(255, 255, 255, 0.2);
             animation: bounceIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         @keyframes bounceIn {
             0% { transform: translateY(20px) scale(0.95); opacity: 0; }
             100% { transform: translateY(0) scale(1); opacity: 1; }
         }
-        .cart-info { font-size: 0.85rem; font-weight: 500; }
-        .cart-items-preview { font-size: 0.72rem; color: #94a3b8; margin-top: 2px; }
-        .cart-total { font-size: 1.15rem; font-weight: 700; color: #38bdf8; text-align: right; }
+        .cart-info { font-size: 0.85rem; font-weight: 600; }
+        .cart-items-preview { font-size: 0.72rem; color: #e0f2fe; margin-top: 2px; }
+        .cart-total { font-size: 1.15rem; font-weight: 700; color: #ffffff; text-align: right; }
 
         .order-type-selector {
             display: grid;
@@ -325,18 +382,18 @@
         .order-type-btn {
             padding: 8px 4px;
             border-radius: 8px;
-            border: 1.5px solid #cbd5e1;
-            background: #f8fafc;
+            border: 1.5px solid #334155;
+            background: #1e293b;
             font-size: 0.82rem;
             font-weight: 600;
-            color: #64748b;
+            color: #94a3b8;
             cursor: pointer;
             text-align: center;
         }
         .order-type-btn.active {
-            border-color: #0284c7;
-            background: #e0f2fe;
-            color: #0369a1;
+            border-color: #38bdf8;
+            background: rgba(56, 189, 248, 0.15);
+            color: #38bdf8;
         }
 
         /* --- ฝั่งร้านค้า (Admin POS Mode) --- */
@@ -346,10 +403,11 @@
             display: grid;
             grid-template-columns: 1fr 1.25fr 1.35fr 1fr;
             gap: 3px;
-            background: #e2e8f0;
+            background: #1e293b;
             padding: 3px;
             border-radius: 10px;
             margin-bottom: 6px;
+            border: 1px solid #334155;
         }
         .filter-btn {
             padding: 6px 2px;
@@ -359,21 +417,21 @@
             font-size: 0.72rem;
             font-weight: 500;
             cursor: pointer;
-            color: #64748b;
+            color: #94a3b8;
             white-space: nowrap;
         }
         .filter-btn.active {
-            background: #fff;
-            color: #0284c7;
+            background: #0284c7;
+            color: #fff;
             font-weight: 600;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
         }
 
         .custom-filter-box {
             display: none;
             margin-bottom: 10px;
-            background: #f8fafc;
-            border: 1px solid #cbd5e1;
+            background: #1e293b;
+            border: 1px solid #334155;
             border-radius: 10px;
             padding: 8px 10px;
         }
@@ -385,7 +443,7 @@
         .filter-input-group label {
             display: block;
             font-size: 0.7rem;
-            color: #475569;
+            color: #94a3b8;
             margin-bottom: 3px;
             font-weight: 600;
         }
@@ -396,25 +454,26 @@
             border: 1.5px solid #0284c7;
             font-size: 0.75rem;
             outline: none;
-            background: #fff;
-            color: #0f172a;
+            background: #0f172a;
+            color: #f8fafc;
         }
 
         .total-banner {
-            background: #0f172a;
+            background: #090d16;
             color: #fff;
             border-radius: 14px;
             padding: 14px 10px 10px 10px;
             text-align: center;
             margin-bottom: 10px;
+            border: 1px solid #1e293b;
         }
         .total-banner .amount { font-size: 2.3rem; font-weight: 600; color: #38bdf8; line-height: 1.1; }
         .total-banner .sub { font-size: 0.8rem; color: #94a3b8; margin-top: 4px; }
 
         .btn-toggle-profit {
-            background: rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.08);
             color: #e2e8f0;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.15);
             border-radius: 20px;
             padding: 4px 14px;
             font-size: 0.75rem;
@@ -429,10 +488,10 @@
             gap: 6px;
             margin-top: 10px;
             padding-top: 10px;
-            border-top: 1px dashed rgba(255, 255, 255, 0.2);
+            border-top: 1px dashed rgba(255, 255, 255, 0.15);
         }
         .secret-box {
-            background: rgba(255, 255, 255, 0.06);
+            background: rgba(255, 255, 255, 0.04);
             border-radius: 10px;
             padding: 8px 4px;
         }
@@ -450,14 +509,14 @@
             margin-bottom: 14px;
         }
         .cat-box {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
+            background: #1e293b;
+            border: 1px solid #334155;
             border-radius: 12px;
             padding: 8px 10px;
         }
-        .cat-title { font-size: 0.75rem; color: #64748b; font-weight: 500; }
-        .cat-val { font-size: 1.05rem; font-weight: 600; color: #0f172a; margin-top: 2px; }
-        .cat-count { font-size: 0.75rem; color: #0284c7; }
+        .cat-title { font-size: 0.75rem; color: #94a3b8; font-weight: 500; }
+        .cat-val { font-size: 1.05rem; font-weight: 600; color: #f8fafc; margin-top: 2px; }
+        .cat-count { font-size: 0.75rem; color: #38bdf8; }
 
         .cat-selector {
             display: grid;
@@ -466,16 +525,16 @@
             margin-bottom: 10px;
         }
         .cat-btn {
-            background: #e2e8f0;
-            border: none;
+            background: #1e293b;
+            border: 1px solid #334155;
             padding: 8px 2px;
             border-radius: 8px;
             font-size: 0.75rem;
             cursor: pointer;
             font-weight: 500;
-            color: #475569;
+            color: #94a3b8;
         }
-        .cat-btn.active { background: #0284c7; color: #fff; }
+        .cat-btn.active { background: #0284c7; color: #fff; border-color: #38bdf8; }
 
         .quick-input-box { margin-bottom: 14px; position: relative; }
         .input-btn-group { display: flex; gap: 6px; }
@@ -486,9 +545,10 @@
             border: 2px solid #0284c7;
             border-radius: 12px;
             outline: none;
-            background: #fff;
+            background: #1e293b;
+            color: #f8fafc;
         }
-        .input-btn-group input:focus { border-color: #0369a1; box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.2); }
+        .input-btn-group input:focus { border-color: #38bdf8; box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2); }
         .btn-order-submit {
             background: #0284c7;
             color: #fff;
@@ -512,8 +572,8 @@
         }
         .btn-toggle-backdate {
             background: transparent;
-            border: 1px solid #cbd5e1;
-            color: #64748b;
+            border: 1px solid #475569;
+            color: #94a3b8;
             padding: 3px 8px;
             border-radius: 8px;
             font-size: 0.72rem;
@@ -523,15 +583,15 @@
             gap: 4px;
         }
         .btn-toggle-backdate.active {
-            background: #fef3c7;
-            color: #b45309;
+            background: rgba(245, 158, 11, 0.2);
+            color: #fbbf24;
             border-color: #f59e0b;
             font-weight: 600;
         }
 
         .backdate-box {
             display: none;
-            background: #fffbeb;
+            background: #1e293b;
             border: 1.5px dashed #f59e0b;
             border-radius: 10px;
             padding: 8px;
@@ -539,7 +599,7 @@
         }
         .backdate-box-title {
             font-size: 0.72rem;
-            color: #b45309;
+            color: #fbbf24;
             font-weight: 600;
             margin-bottom: 4px;
         }
@@ -550,11 +610,12 @@
         .backdate-inputs input {
             flex: 1;
             padding: 6px 8px;
-            border: 1px solid #fcd34d;
+            border: 1px solid #475569;
             border-radius: 6px;
             font-size: 0.8rem;
             outline: none;
-            background: #fff;
+            background: #0f172a;
+            color: #f8fafc;
         }
 
         .suggest-box {
@@ -562,10 +623,10 @@
             top: 52px;
             left: 0;
             right: 110px;
-            background: #ffffff;
+            background: #1e293b;
             border: 1.5px solid #0284c7;
             border-radius: 12px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.5);
             max-height: 220px;
             overflow-y: auto;
             z-index: 1000;
@@ -573,36 +634,37 @@
         }
         .suggest-item {
             padding: 10px 14px;
-            border-bottom: 1px solid #f1f5f9;
+            border-bottom: 1px solid #334155;
             font-size: 0.95rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
             cursor: pointer;
+            color: #f8fafc;
         }
         .suggest-item:last-child { border-bottom: none; }
         .suggest-item:active, .suggest-item:hover {
-            background: #e0f2fe;
-            color: #0369a1;
+            background: #0f172a;
+            color: #38bdf8;
         }
         .suggest-price {
             font-weight: 600;
-            color: #0284c7;
+            color: #38bdf8;
             font-size: 0.85rem;
         }
 
         .tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 12px; }
         .tab-btn {
             padding: 8px 2px;
-            border: none;
-            background: #e2e8f0;
+            border: 1px solid #334155;
+            background: #1e293b;
             border-radius: 8px;
             font-size: 0.72rem;
             font-weight: 500;
             cursor: pointer;
-            color: #475569;
+            color: #94a3b8;
         }
-        .tab-btn.active { background: #0f172a; color: #fff; }
+        .tab-btn.active { background: #0284c7; color: #fff; border-color: #38bdf8; }
 
         .list-container { max-height: 320px; overflow-y: auto; }
         .item-row {
@@ -610,27 +672,27 @@
             justify-content: space-between;
             align-items: flex-start;
             padding: 8px 4px;
-            border-bottom: 1px solid #f1f5f9;
+            border-bottom: 1px solid #334155;
         }
-        .item-title { font-size: 0.9rem; font-weight: 500; }
-        .item-detail { font-size: 0.72rem; color: #64748b; margin-top: 1px; }
-        .item-delivery-info { font-size: 0.72rem; color: #c2410c; background: #fff7ed; padding: 2px 6px; border-radius: 4px; margin-top: 3px; display: inline-block; }
-        .item-pickup-info { font-size: 0.72rem; color: #15803d; background: #f0fdf4; padding: 2px 6px; border-radius: 4px; margin-top: 3px; display: inline-block; }
-        .item-price { font-size: 1rem; font-weight: 600; color: #0f172a; margin-right: 6px; }
+        .item-title { font-size: 0.9rem; font-weight: 500; color: #f8fafc; }
+        .item-detail { font-size: 0.72rem; color: #94a3b8; margin-top: 1px; }
+        .item-delivery-info { font-size: 0.72rem; color: #fdba74; background: rgba(234, 88, 12, 0.2); padding: 2px 6px; border-radius: 4px; margin-top: 3px; display: inline-block; }
+        .item-pickup-info { font-size: 0.72rem; color: #86efac; background: rgba(22, 163, 74, 0.2); padding: 2px 6px; border-radius: 4px; margin-top: 3px; display: inline-block; }
+        .item-price { font-size: 1rem; font-weight: 600; color: #38bdf8; margin-right: 6px; }
         .badge {
             display: inline-block;
             padding: 1px 5px;
             border-radius: 4px;
             font-size: 0.65rem;
             margin-left: 4px;
-            background: #e0f2fe;
-            color: #0369a1;
+            background: #0284c7;
+            color: #fff;
         }
 
         .delivery-badge {
-            background: #ffedd5;
-            color: #ea580c;
-            border: 1px solid #fdba74;
+            background: rgba(234, 88, 12, 0.2);
+            color: #fb923c;
+            border: 1px solid #ea580c;
             font-size: 0.65rem;
             padding: 1px 5px;
             border-radius: 4px;
@@ -638,9 +700,9 @@
             font-weight: 600;
         }
         .pickup-badge {
-            background: #dcfce7;
-            color: #16a34a;
-            border: 1px solid #86efac;
+            background: rgba(22, 163, 74, 0.2);
+            color: #4ade80;
+            border: 1px solid #16a34a;
             font-size: 0.65rem;
             padding: 1px 5px;
             border-radius: 4px;
@@ -661,61 +723,63 @@
             transition: all 0.15s;
         }
         .pay-badge.qr {
-            background: #e0f2fe;
-            color: #0369a1;
-            border: 1px solid #bae6fd;
+            background: rgba(56, 189, 248, 0.15);
+            color: #38bdf8;
+            border: 1px solid #0284c7;
         }
         .pay-badge.cash {
-            background: #ecfdf5;
-            color: #047857;
-            border: 1px solid #a7f3d0;
+            background: rgba(52, 211, 153, 0.15);
+            color: #34d399;
+            border: 1px solid #059669;
         }
         .pay-badge:active { transform: scale(0.95); }
 
         .btn-del {
-            background: #fee2e2;
-            color: #ef4444;
-            border: none;
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+            border: 1px solid #ef4444;
             border-radius: 6px;
             padding: 3px 6px;
             font-size: 0.7rem;
             cursor: pointer;
         }
         .summary-group-title {
-            background: #f1f5f9;
+            background: #1e293b;
             padding: 5px 8px;
             font-size: 0.8rem;
             font-weight: 600;
-            color: #475569;
+            color: #38bdf8;
             border-radius: 6px;
             margin: 8px 0 4px 0;
+            border: 1px solid #334155;
         }
         .summary-row {
             display: flex;
             justify-content: space-between;
             padding: 5px 6px;
-            border-bottom: 1px solid #f8fafc;
+            border-bottom: 1px solid #334155;
             font-size: 0.85rem;
             align-items: center;
+            color: #f8fafc;
         }
         .price-list-row {
             cursor: pointer;
             transition: background 0.15s;
         }
         .price-list-row:hover, .price-list-row:active {
-            background: #e0f2fe;
+            background: #1e293b;
         }
-        .empty-text { text-align: center; color: #94a3b8; padding: 20px 0; font-size: 0.85rem; }
+        .empty-text { text-align: center; color: #64748b; padding: 20px 0; font-size: 0.85rem; }
 
         .price-mgr-form-grid {
             display: flex;
             flex-direction: column;
             gap: 6px;
             margin-bottom: 10px;
-            background: #f8fafc;
+            background: #1e293b;
             padding: 8px;
             border-radius: 10px;
-            border: 1px solid #e2e8f0;
+            border: 1px solid #334155;
         }
         .price-mgr-form-grid .row-inputs {
             display: flex;
@@ -723,11 +787,12 @@
         }
         .price-mgr-form-grid input {
             padding: 8px;
-            border: 1px solid #cbd5e1;
+            border: 1px solid #334155;
             border-radius: 8px;
             font-size: 0.85rem;
             outline: none;
-            background: #fff;
+            background: #0f172a;
+            color: #f8fafc;
         }
         .price-mgr-form-grid button {
             background: #0284c7;
@@ -746,21 +811,22 @@
         .price-search-box input {
             width: 100%;
             padding: 7px 10px;
-            border: 1.5px solid #94a3b8;
+            border: 1.5px solid #334155;
             border-radius: 8px;
             font-size: 0.8rem;
             outline: none;
-            background: #f8fafc;
+            background: #1e293b;
+            color: #f8fafc;
         }
         .price-search-box input:focus {
-            border-color: #0284c7;
-            background: #fff;
+            border-color: #38bdf8;
+            background: #0f172a;
         }
 
         .export-section {
             margin-top: 16px;
             padding-top: 12px;
-            border-top: 1.5px dashed #cbd5e1;
+            border-top: 1.5px dashed #334155;
         }
         .btn-export {
             width: 100%;
@@ -799,46 +865,50 @@
             position: fixed;
             top: 0; left: 0;
             width: 100vw; height: 100vh;
-            background: rgba(15, 23, 42, 0.75);
-            backdrop-filter: blur(6px);
+            background: rgba(9, 13, 22, 0.85);
+            backdrop-filter: blur(8px);
             z-index: 9999;
             align-items: center;
             justify-content: center;
             padding: 16px;
         }
         .modal-card {
-            background: #fff;
+            background: #1e293b;
             border-radius: 20px;
             max-width: 380px;
             width: 100%;
             padding: 20px 16px;
             text-align: center;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            border: 1px solid #334155;
             animation: popIn 0.25s ease-out;
+            color: #f8fafc;
         }
         @keyframes popIn {
             0% { transform: scale(0.9); opacity: 0; }
             100% { transform: scale(1); opacity: 1; }
         }
-        .modal-title { font-size: 1.15rem; font-weight: 700; color: #0f172a; margin-bottom: 10px; }
+        .modal-title { font-size: 1.15rem; font-weight: 700; color: #f8fafc; margin-bottom: 10px; }
         .modal-input {
             width: 100%;
             padding: 8px 12px;
-            border: 1.5px solid #cbd5e1;
+            border: 1.5px solid #334155;
             border-radius: 10px;
             font-size: 0.85rem;
             margin-bottom: 8px;
             outline: none;
+            background: #0f172a;
+            color: #f8fafc;
         }
-        .modal-input:focus { border-color: #0284c7; }
+        .modal-input:focus { border-color: #38bdf8; }
         .modal-btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
         .btn-primary { background: #0284c7; color: #fff; border: none; padding: 10px; border-radius: 10px; font-size: 0.9rem; font-weight: 600; cursor: pointer; }
-        .btn-secondary { background: #e2e8f0; color: #475569; border: none; padding: 10px; border-radius: 10px; font-size: 0.9rem; font-weight: 500; cursor: pointer; }
+        .btn-secondary { background: #334155; color: #94a3b8; border: none; padding: 10px; border-radius: 10px; font-size: 0.9rem; font-weight: 500; cursor: pointer; }
 
         .btn-gps-loc {
-            background: #f1f5f9;
-            border: 1px solid #cbd5e1;
-            color: #0284c7;
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: #38bdf8;
             padding: 6px 10px;
             border-radius: 8px;
             font-size: 0.75rem;
@@ -849,7 +919,7 @@
         }
 
         .qr-img-box {
-            background: #f8fafc;
+            background: #ffffff;
             border: 2px dashed #0284c7;
             border-radius: 16px;
             padding: 10px;
@@ -874,14 +944,15 @@
     <div id="customerSection">
         <div class="delivery-banner-cust" id="custBannerText">
             <div class="delivery-main-text">🛵 สั่งเครื่องดื่ม & ของทานเล่น ส่งถึงหน้าบ้าน หรือสั่งล่วงหน้ารับหน้าร้าน แจ้งได้เลยครับ</div>
-            <div>
-                <a href="tel:0637975257" class="delivery-phone-text">📞 สั่งด่วนโทร 063-797-5257</a>
-            </div>
+        </div>
+        <div class="external-phone-box">
+            <a href="tel:0637975257" class="delivery-phone-text">📞 สั่งด่วน โทร 063-797-5257</a>
         </div>
 
-        <!-- ช่องค้นหาเมนู -->
+        <!-- ช่องค้นหาเมนูพร้อม Auto-suggest -->
         <div class="cust-search-box">
-            <input type="text" id="custSearchInput" placeholder="🔍 ค้นหาเมนูเครื่องดื่ม / ของทานเล่น..." oninput="renderCustomerMenu()">
+            <input type="text" id="custSearchInput" placeholder="🔍 พิมพ์ค้นหาเมนู (เช่น ชาไทย, เฟรนช์ฟรายส์)..." autocomplete="off" oninput="handleCustomerSearchInput(this.value)">
+            <div id="custSuggestDropdown" class="cust-suggest-dropdown"></div>
         </div>
 
         <!-- แถบเมนูแนะนำ / ยอดนิยม (สไลด์แนวนอน) -->
@@ -890,7 +961,7 @@
             <div class="rec-scroll-container" id="recMenuList"></div>
         </div>
         
-        <!-- แถบ 5 หมวดหมู่ (เรียง "ทั้งหมด" ไว้หน้าสุด) -->
+        <!-- แถบ 5 หมวดหมู่ -->
         <div class="cust-cat-nav">
             <button type="button" class="cust-cat-btn active" onclick="filterCustCategory('all', this)">📋 ทั้งหมด</button>
             <button type="button" class="cust-cat-btn" onclick="filterCustCategory('เครื่องดื่ม', this)">🧋 เครื่องดื่ม</button>
@@ -910,7 +981,7 @@
                 </div>
                 <div>
                     <div class="cart-total" id="cartTotalSum">฿0</div>
-                    <div style="font-size: 0.68rem; color: #38bdf8;">กดส่งออเดอร์ ➜</div>
+                    <div style="font-size: 0.68rem; color: #e0f2fe;">กดส่งออเดอร์ ➜</div>
                 </div>
             </div>
         </div>
@@ -1015,7 +1086,7 @@
             <div id="suggestBox" class="suggest-box"></div>
 
             <div class="backdate-control">
-                <span style="font-size:0.72rem; color:#64748b;">💡 พิมพ์รับออเดอร์หน้าร้านได้ทันที</span>
+                <span style="font-size:0.72rem; color:#94a3b8;">💡 พิมพ์รับออเดอร์หน้าร้านได้ทันที</span>
                 <button type="button" class="btn-toggle-backdate" id="btnToggleBackdate" onclick="toggleBackdateMode()">
                     🕒 บันทึกย้อนหลัง
                 </button>
@@ -1073,7 +1144,7 @@
             <div id="priceSettingList"></div>
 
             <div class="export-section">
-                <div style="font-size: 0.75rem; color: #64748b; font-weight: 600; margin-bottom: 6px;">📊 จัดการข้อมูล & รายงาน (Google Sheets / Excel)</div>
+                <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 600; margin-bottom: 6px;">📊 จัดการข้อมูล & รายงาน (Google Sheets / Excel)</div>
                 <button type="button" class="btn-sheets-link" onclick="openGoogleSheets()">🟢 เปิดดูข้อมูลบน Google Sheets</button>
                 <button type="button" class="btn-export" onclick="exportSalesToCSV()">📥 ดาวน์โหลดรายงานยอดขาย (CSV/Excel)</button>
                 <button type="button" class="btn-export" style="background:#6366f1;" onclick="exportExpensesToCSV()">📥 ดาวน์โหลดรายงานต้นทุน (CSV/Excel)</button>
@@ -1081,7 +1152,7 @@
         </div>
     </div>
 
-    <!-- ปุ่มสถานะการซิงค์ข้อมูลย้ายมาอยู่ตรงกลางล่างสุด แบบมินิมอล -->
+    <!-- ปุ่มสถานะการซิงค์ข้อมูลตรงกลางล่างสุด แบบมินิมอล -->
     <div class="sync-footer-box">
         <span id="syncStatus" class="sync-badge-bottom" onclick="loadFromCloud()">🔄 ซิงค์ข้อมูล Cloud</span>
     </div>
@@ -1111,8 +1182,8 @@
         <div class="qr-img-box">
             <img id="custQrImg" src="" alt="PromptPay QR">
         </div>
-        <div style="font-size: 0.75rem; color: #64748b;">สแกนชำระผ่าน PromptPay ยอดรวม:</div>
-        <div style="font-size: 1.6rem; font-weight: 700; color: #0284c7; margin-bottom: 8px;" id="custModalTotal">฿0</div>
+        <div style="font-size: 0.75rem; color: #94a3b8;">สแกนชำระผ่าน PromptPay ยอดรวม:</div>
+        <div style="font-size: 1.6rem; font-weight: 700; color: #38bdf8; margin-bottom: 8px;" id="custModalTotal">฿0</div>
 
         <div class="modal-btn-group">
             <button type="button" class="btn-primary" onclick="submitCustomerOrder()">✅ ยืนยันสั่งซื้อ</button>
@@ -1260,6 +1331,7 @@
     const recMenuList = document.getElementById('recMenuList');
     const recSection = document.getElementById('recSection');
     const custSearchInput = document.getElementById('custSearchInput');
+    const custSuggestDropdown = document.getElementById('custSuggestDropdown');
     const cartBarWrapper = document.getElementById('cartBarWrapper');
     const cartCount = document.getElementById('cartCount');
     const cartPreviewText = document.getElementById('cartPreviewText');
@@ -1398,6 +1470,57 @@
         return '🧋';
     }
 
+    // ฟังก์ชันจัดการ Auto-suggest ขณะพิมพ์ค้นหาเมนู
+    function handleCustomerSearchInput(val) {
+        renderCustomerMenu();
+        const query = val.trim().toLowerCase();
+        if (!query) {
+            custSuggestDropdown.style.display = 'none';
+            custSuggestDropdown.innerHTML = '';
+            return;
+        }
+
+        const matchedKeys = Object.keys(priceBook).filter(name => name.toLowerCase().includes(query));
+        if (matchedKeys.length === 0) {
+            custSuggestDropdown.style.display = 'none';
+            custSuggestDropdown.innerHTML = '';
+            return;
+        }
+
+        custSuggestDropdown.innerHTML = '';
+        matchedKeys.slice(0, 6).forEach(name => {
+            const cat = detectCategory(name);
+            const price = priceBook[name];
+            const imageUrl = imageBook[name] || '';
+            let imgContent = imageUrl ? `<img src="${imageUrl}" class="cust-suggest-img" onerror="this.outerHTML='<div>${getCategoryEmoji(cat)}</div>'">` : `<div>${getCategoryEmoji(cat)}</div>`;
+
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'cust-suggest-item';
+            itemDiv.innerHTML = `
+                <div class="cust-suggest-img">${imgContent}</div>
+                <div class="cust-suggest-info">
+                    <span class="cust-suggest-name">${name}</span>
+                    <span class="cust-suggest-cat">${cat}</span>
+                </div>
+                <span class="cust-suggest-price">฿${price}</span>
+            `;
+            itemDiv.onclick = () => {
+                addToCart(name, price);
+                custSearchInput.value = '';
+                custSuggestDropdown.style.display = 'none';
+                renderCustomerMenu();
+            };
+            custSuggestDropdown.appendChild(itemDiv);
+        });
+        custSuggestDropdown.style.display = 'block';
+    }
+
+    document.addEventListener('click', (e) => {
+        if (!custSearchInput.contains(e.target) && !custSuggestDropdown.contains(e.target)) {
+            custSuggestDropdown.style.display = 'none';
+        }
+    });
+
     function renderCustomerMenu() {
         custMenuList.innerHTML = '';
         recMenuList.innerHTML = '';
@@ -1449,7 +1572,7 @@
         });
 
         if (keys.length === 0) {
-            custMenuList.innerHTML = '<div style="grid-column: span 2; text-align:center; color:#94a3b8; padding:30px 0;">ไม่พบเมนูที่ค้นหา</div>';
+            custMenuList.innerHTML = '<div style="grid-column: span 2; text-align:center; color:#64748b; padding:30px 0;">ไม่พบเมนูที่ค้นหา</div>';
             return;
         }
 
@@ -1548,12 +1671,12 @@
             const sum = item.price * item.qty;
             totalSum += sum;
             const div = document.createElement('div');
-            div.style = 'display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px solid #f1f5f9;';
+            div.style = 'display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px solid #334155;';
             div.innerHTML = `
                 <div>${item.name} x${item.qty}</div>
                 <div>
                     <b>฿${sum}</b>
-                    <button type="button" style="background:#fee2e2; color:#ef4444; border:none; border-radius:4px; padding:2px 6px; margin-left:6px; cursor:pointer;" onclick="removeFromCart(${index})">ลบ</button>
+                    <button type="button" style="background:rgba(239,68,68,0.2); color:#f87171; border:1px solid #ef4444; border-radius:4px; padding:2px 6px; margin-left:6px; cursor:pointer;" onclick="removeFromCart(${index})">ลบ</button>
                 </div>
             `;
             cartItemsList.appendChild(div);
@@ -2075,12 +2198,12 @@
                 let orderDetail = '';
                 if (item.isDelivery) {
                     orderTypeTag = `<span class="delivery-badge">🛵 ส่งหน้าบ้าน</span>`;
-                    let gpsBtn = item.custGps ? `<a href="${item.custGps}" target="_blank" style="color:#0284c7; text-decoration:underline; margin-left:6px;">[🗺️ แผนที่]</a>` : '';
-                    let phoneLink = item.custPhone ? `<a href="tel:${item.custPhone}" style="color:#0284c7; font-weight:600; margin-left:4px;">📞 ${item.custPhone}</a>` : '';
+                    let gpsBtn = item.custGps ? `<a href="${item.custGps}" target="_blank" style="color:#38bdf8; text-decoration:underline; margin-left:6px;">[🗺️ แผนที่]</a>` : '';
+                    let phoneLink = item.custPhone ? `<a href="tel:${item.custPhone}" style="color:#38bdf8; font-weight:600; margin-left:4px;">📞 ${item.custPhone}</a>` : '';
                     orderDetail = `<div class="item-delivery-info">📍 ${item.custName || 'ลูกค้า'} ${phoneLink} | ${item.custAddress || ''} ${gpsBtn}</div>`;
                 } else if (item.custName) {
                     orderTypeTag = `<span class="pickup-badge">🛍️ รับหน้าร้าน</span>`;
-                    let phoneLink = item.custPhone ? `<a href="tel:${item.custPhone}" style="color:#15803d; font-weight:600; margin-left:4px;">📞 ${item.custPhone}</a>` : '';
+                    let phoneLink = item.custPhone ? `<a href="tel:${item.custPhone}" style="color:#4ade80; font-weight:600; margin-left:4px;">📞 ${item.custPhone}</a>` : '';
                     orderDetail = `<div class="item-pickup-info">👤 ผู้สั่ง: ${item.custName} ${phoneLink}</div>`;
                 }
 
@@ -2088,7 +2211,7 @@
                 row.className = 'item-row';
                 row.innerHTML = `
                     <div style="flex:1;">
-                        <div class="item-title">${item.name} <span style="color:#0284c7;">x${item.qty}</span> <span class="badge">${cat}</span> ${orderTypeTag}</div>
+                        <div class="item-title">${item.name} <span style="color:#38bdf8;">x${item.qty}</span> <span class="badge">${cat}</span> ${orderTypeTag}</div>
                         <div class="item-detail">(@${item.unitPrice} บ.) • ${formattedTime}</div>
                         ${orderDetail}
                     </div>
@@ -2112,11 +2235,11 @@
                 row.className = 'item-row';
                 row.innerHTML = `
                     <div>
-                        <div class="item-title" style="color:#ef4444;">💸 ${item.name}</div>
+                        <div class="item-title" style="color:#f87171;">💸 ${item.name}</div>
                         <div class="item-detail">${formattedExpTime}</div>
                     </div>
                     <div style="display:flex; align-items:center;">
-                        <span class="item-price" style="color:#ef4444;">-฿${Number(item.cost).toLocaleString()}</span>
+                        <span class="item-price" style="color:#f87171;">-฿${Number(item.cost).toLocaleString()}</span>
                         <button class="btn-del" onclick="deleteExpense('${item.id}')">ลบ</button>
                     </div>
                 `;
@@ -2195,7 +2318,7 @@
             row.innerHTML = `
                 <span onclick="fillEditPrice('${name}', ${priceBook[name]}, '${imageBook[name] || ''}')" style="flex:1;">${hasImg} ${name}</span>
                 <div style="display:flex; align-items:center; gap:8px;">
-                    <b onclick="fillEditPrice('${name}', ${priceBook[name]}, '${imageBook[name] || ''}')" style="color:#0284c7;">฿${priceBook[name]}</b>
+                    <b onclick="fillEditPrice('${name}', ${priceBook[name]}, '${imageBook[name] || ''}')" style="color:#38bdf8;">฿${priceBook[name]}</b>
                     <button class="btn-del" onclick="deletePrice('${name}')">✕</button>
                 </div>
             `;
