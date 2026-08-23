@@ -1836,15 +1836,11 @@
                 priceBook = { ...DEFAULT_PRESET_PRICES, ...data.prices };
                 localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
             }
-            // 🌟 ป้องกันรูปภาพในเครื่องหาย โดยใช้ข้อมูลรูปภาพจากเครื่องเป็นหลักถาวร
-            const localImages = JSON.parse(localStorage.getItem(MENU_IMAGES_KEY)) || {};
+            // 🌟 ซิงค์รูปภาพจาก Google Sheets มาแสดงผลตรงกันทุกเครื่อง
             if (data && data.images) {
-                imageBook = { ...data.images, ...localImages };
-            } else {
-                imageBook = { ...localImages };
+                imageBook = { ...data.images };
+                localStorage.setItem(MENU_IMAGES_KEY, JSON.stringify(imageBook));
             }
-            localStorage.setItem(MENU_IMAGES_KEY, JSON.stringify(imageBook));
-
             syncStatus.innerText = "☁️ ซิงค์ตรงกันทุกเครื่องแล้ว";
             if (currentMode === 'admin') renderUI();
             if (currentMode === 'customer') renderCustomerMenu();
@@ -2273,6 +2269,7 @@
             }
             localStorage.setItem(MENU_IMAGES_KEY, JSON.stringify(imageBook));
 
+            // 🌟 บันทึกรูปภาพขึ้นไปบน Google Sheets ทันที
             saveToCloud({ action: "update_price", name, price, imageUrl });
             
             document.getElementById('newMenuName').value = '';
