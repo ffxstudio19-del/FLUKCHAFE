@@ -36,14 +36,14 @@
         .brand-name-en { font-size: 1.55rem; font-weight: 700; color: #0f172a; margin-top: 4px; line-height: 1.1; }
         .brand-name-th { font-size: 0.9rem; font-weight: 400; color: #64748b; margin-top: 2px; }
 
-        /* ตัวเลือกช่วงเวลาสรุปยอด */
+        /* แถบเลือกช่วงเวลา */
         .time-filter {
             display: flex;
             gap: 4px;
             background: #e2e8f0;
             padding: 3px;
             border-radius: 10px;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
         .filter-btn {
             flex: 1;
@@ -51,7 +51,7 @@
             border: none;
             background: transparent;
             border-radius: 8px;
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             font-weight: 500;
             cursor: pointer;
             color: #64748b;
@@ -61,6 +61,22 @@
             color: #0284c7;
             font-weight: 600;
             box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+        }
+
+        /* ช่องเลือกวันที่/เดือนแบบกำหนดเอง */
+        .custom-date-picker {
+            display: none;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .custom-date-picker input {
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 1.5px solid #0284c7;
+            font-size: 0.85rem;
+            outline: none;
+            background: #fff;
+            color: #0f172a;
         }
 
         .total-banner {
@@ -135,7 +151,7 @@
         }
         .tab-btn.active { background: #0f172a; color: #fff; }
 
-        .list-container { max-height: 300px; overflow-y: auto; }
+        .list-container { max-height: 320px; overflow-y: auto; }
         .item-row {
             display: flex;
             justify-content: space-between;
@@ -204,28 +220,6 @@
             font-size: 0.8rem;
             font-weight: 500;
         }
-
-        /* ปุ่มจัดการข้อมูลและ Export */
-        .action-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 6px;
-            margin-top: 14px;
-        }
-        .btn-action {
-            background: #f8fafc;
-            border: 1px solid #cbd5e1;
-            color: #475569;
-            padding: 8px 4px;
-            border-radius: 8px;
-            font-size: 0.75rem;
-            cursor: pointer;
-            font-weight: 500;
-        }
-        .btn-action.danger {
-            color: #ef4444;
-            border-color: #fca5a5;
-        }
     </style>
 </head>
 <body>
@@ -237,11 +231,20 @@
         <div class="brand-name-th">ฟลุ๊ค ชาเฟ่</div>
     </div>
 
-    <!-- แถบเลือกช่วงเวลาสรุปยอด -->
+    <!-- แถบเลือกช่วงเวลา -->
     <div class="time-filter">
         <button type="button" class="filter-btn active" onclick="setTimeFilter('today', this)">☀️ วันนี้</button>
-        <button type="button" class="filter-btn" onclick="setTimeFilter('week', this)">📅 7 วันล่าสุด</button>
-        <button type="button" class="filter-btn" onclick="setTimeFilter('month', this)">🗓️ เดือนนี้</button>
+        <button type="button" class="filter-btn" onclick="setTimeFilter('week', this)">📅 7 วัน</button>
+        <button type="button" class="filter-btn" onclick="setTimeFilter('custom-day', this)">📆 เลือกวัน</button>
+        <button type="button" class="filter-btn" onclick="setTimeFilter('custom-month', this)">🗓️ เลือกเดือน</button>
+    </div>
+
+    <!-- ช่องเลือกวัน/เดือน -->
+    <div class="custom-date-picker" id="datePickerContainer">
+        <input type="date" id="selectDateInput" onchange="saveAndRender()">
+    </div>
+    <div class="custom-date-picker" id="monthPickerContainer">
+        <input type="month" id="selectMonthInput" onchange="saveAndRender()">
     </div>
 
     <div class="total-banner">
@@ -290,7 +293,7 @@
         >
         <datalist id="menuListOptions"></datalist>
         <div class="hint">
-            💡 <b>ตัวอย่าง:</b> <code>ชาไทยเย็น 25</code> (บันทึกราคาแรก) หรือ <code>ชาไทยเย็น 2</code>
+            💡 <b>ตัวอย่าง:</b> <code>ชาไทยเย็น 25</code> หรือ <code>ชาไทยเย็น 2</code>
         </div>
     </form>
 
@@ -315,14 +318,6 @@
             <button type="button" onclick="addOrUpdatePrice()">บันทึก</button>
         </div>
         <div id="priceSettingList"></div>
-    </div>
-
-    <!-- ปุ่ม Export และ จัดการฐานข้อมูล -->
-    <div class="action-grid">
-        <button type="button" class="btn-action" onclick="exportToCSV()">📊 โหลด Excel (.CSV)</button>
-        <button type="button" class="btn-action" onclick="backupData()">💾 สำรองข้อมูล (Backup)</button>
-        <button type="button" class="btn-action" onclick="restoreData()">🔄 กู้คืนข้อมูล (Restore)</button>
-        <button type="button" class="btn-action danger" onclick="clearAllData()">🗑️ ล้างยอดขายทั้งหมด</button>
     </div>
 </div>
 
@@ -354,7 +349,7 @@
     let sales = loadSales();
     let priceBook = loadPriceBook();
     let selectedCategory = 'auto';
-    let currentFilter = 'today'; // 'today', 'week', 'month'
+    let currentFilter = 'today'; 
 
     const quickInput = document.getElementById('quickInput');
     const totalAmount = document.getElementById('totalAmount');
@@ -363,11 +358,25 @@
     const menuSummaryList = document.getElementById('menuSummaryList');
     const menuListOptions = document.getElementById('menuListOptions');
     const priceSettingList = document.getElementById('priceSettingList');
+    const datePickerContainer = document.getElementById('datePickerContainer');
+    const monthPickerContainer = document.getElementById('monthPickerContainer');
+    const selectDateInput = document.getElementById('selectDateInput');
+    const selectMonthInput = document.getElementById('selectMonthInput');
+
+    // ตั้งค่าเริ่มต้นของตัวเลือกวันที่/เดือน
+    const initDate = new Date();
+    selectDateInput.value = formatDateStr(initDate);
+    selectMonthInput.value = `${initDate.getFullYear()}-${String(initDate.getMonth() + 1).padStart(2, '0')}`;
 
     function setTimeFilter(filter, btn) {
         currentFilter = filter;
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
+
+        // สลับแสดงกล่องเลือกวัน/เดือน
+        datePickerContainer.style.display = (filter === 'custom-day') ? 'block' : 'none';
+        monthPickerContainer.style.display = (filter === 'custom-month') ? 'block' : 'none';
+
         saveAndRender();
     }
 
@@ -444,7 +453,7 @@
         }
 
         if (!name || isNaN(unitPrice) || unitPrice <= 0 || qty <= 0) {
-            alert(`เมนู "${name || text}" ยังไม่มีราคาในระบบ\nกรุณาพิมพ์ชื่อพร้อมราคา เช่น "${name || text} 30" เพื่อให้ระบบจำราคา`);
+            alert(`เมนู "${name || text}" ยังไม่มีราคาในระบบ\nกรุณาพิมพ์ชื่อพร้อมราคา เช่น "${name || text} 30"`);
             return false;
         }
 
@@ -459,7 +468,6 @@
         sales.push({ 
             id: Date.now(),
             date: formatDateStr(now),
-            timestamp: now.getTime(),
             name, 
             unitPrice, 
             qty, 
@@ -487,17 +495,23 @@
             sevenDaysAgo.setDate(now.getDate() - 6);
             const sevenDaysAgoStr = formatDateStr(sevenDaysAgo);
             return {
-                label: 'ยอดขายรวม 7 วันล่าสุด',
+                label: 'ยอดขาย 7 วันล่าสุด',
                 data: sales.filter(item => item.date >= sevenDaysAgoStr && item.date <= todayStr)
             };
-        } else if (currentFilter === 'month') {
-            const monthPrefix = todayStr.substring(0, 7); // 'YYYY-MM'
+        } else if (currentFilter === 'custom-day') {
+            const selectedDate = selectDateInput.value;
             return {
-                label: `ยอดขายรวมเดือนนี้ (${monthPrefix})`,
-                data: sales.filter(item => item.date && item.date.startsWith(monthPrefix))
+                label: `ยอดขายวันที่ ${selectedDate}`,
+                data: sales.filter(item => item.date === selectedDate)
+            };
+        } else if (currentFilter === 'custom-month') {
+            const selectedMonth = selectMonthInput.value; // 'YYYY-MM'
+            return {
+                label: `ยอดขายเดือน ${selectedMonth}`,
+                data: sales.filter(item => item.date && item.date.startsWith(selectedMonth))
             };
         }
-        return { label: 'ยอดขายรวมทั้งหมด', data: sales };
+        return { label: 'ยอดขายรวม', data: sales };
     }
 
     function saveAndRender() {
@@ -598,7 +612,7 @@
         renderPriceSettingList();
 
         totalAmount.innerText = `฿${total.toLocaleString()}`;
-        totalItems.innerText = `${filterResult.label} • ${totalPieces} รายการ (${displaySales.length} ออเดอร์)`;
+        totalItems.innerText = `${filterResult.label} • รวม ${totalPieces} ชิ้น/แก้ว (${displaySales.length} ออเดอร์)`;
     }
 
     function renderPriceSettingList() {
@@ -649,13 +663,6 @@
         saveAndRender();
     }
 
-    function clearAllData() {
-        if (confirm('คำเตือน: คุณต้องการลบประวัติการขายทั้งหมดใช่หรือไม่? (แนะนำให้กดสำรองข้อมูลก่อน)')) {
-            sales = [];
-            saveAndRender();
-        }
-    }
-
     function switchTab(tab) {
         document.getElementById('tabHistory').className = `tab-btn ${tab === 'history' ? 'active' : ''}`;
         document.getElementById('tabSummary').className = `tab-btn ${tab === 'summary' ? 'active' : ''}`;
@@ -663,64 +670,6 @@
         document.getElementById('historyView').style.display = tab === 'history' ? 'block' : 'none';
         document.getElementById('summaryView').style.display = tab === 'summary' ? 'block' : 'none';
         document.getElementById('pricesView').style.display = tab === 'prices' ? 'block' : 'none';
-    }
-
-    // Export เป็น Excel CSV
-    function exportToCSV() {
-        if (sales.length === 0) {
-            alert('ยังไม่มีข้อมูลการขายสำหรับส่งออก');
-            return;
-        }
-        let csvContent = "\uFEFFวันที่,เวลา,หมวดหมู่,ชื่อเมนู,ราคาต่อหน่วย,จำนวน,ยอดรวม\n";
-        sales.forEach(row => {
-            csvContent += `"${row.date}","${row.time}","${row.category}","${row.name}",${row.unitPrice},${row.qty},${row.totalPrice}\n`;
-        });
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.setAttribute("href", url);
-        link.setAttribute("download", `FLUKCHAFE_Sales_${formatDateStr(new Date())}.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }
-
-    // สำรองข้อมูลเป็นไฟล์ JSON
-    function backupData() {
-        const backupDataObj = { sales, priceBook };
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupDataObj));
-        const dlAnchorElem = document.createElement('a');
-        dlAnchorElem.setAttribute("href", dataStr);
-        dlAnchorElem.setAttribute("download", `FLUKCHAFE_Backup_${formatDateStr(new Date())}.json`);
-        dlAnchorElem.click();
-    }
-
-    // กู้คืนข้อมูล
-    function restoreData() {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = '.json';
-        input.onchange = e => {
-            const file = e.target.files[0];
-            const reader = new FileReader();
-            reader.readAsText(file, 'UTF-8');
-            reader.onload = readerEvent => {
-                try {
-                    const content = JSON.parse(readerEvent.target.result);
-                    if (content.sales && Array.isArray(content.sales)) {
-                        sales = content.sales;
-                        if (content.priceBook) priceBook = content.priceBook;
-                        saveAndRender();
-                        alert('กู้คืนข้อมูลสำเร็จเรียบร้อยครับ!');
-                    } else {
-                        alert('รูปแบบไฟล์ไม่ถูกต้อง');
-                    }
-                } catch (err) {
-                    alert('เกิดข้อผิดพลาดในการอ่านไฟล์');
-                }
-            }
-        }
-        input.click();
     }
 
     window.addEventListener('DOMContentLoaded', () => {
