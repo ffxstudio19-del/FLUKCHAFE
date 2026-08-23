@@ -64,7 +64,7 @@
             box-shadow: 0 2px 8px rgba(34, 197, 94, 0.15);
         }
         .delivery-main-text {
-            font-size: 0.82rem;
+            font-size: 0.8rem;
             color: #86efac;
             font-weight: 500;
             line-height: 1.4;
@@ -871,6 +871,8 @@
             border: 1px solid #334155;
             animation: popIn 0.25s ease-out;
             color: #f8fafc;
+            max-height: 90vh;
+            overflow-y: auto;
         }
         @keyframes popIn {
             0% { transform: scale(0.9); opacity: 0; }
@@ -914,7 +916,7 @@
             display: inline-block;
             margin: 8px 0;
         }
-        .qr-img-box img { width: 170px; height: 170px; display: block; border-radius: 8px; }
+        .qr-img-box img { width: 160px; height: 160px; display: block; border-radius: 8px; }
     </style>
 </head>
 <body>
@@ -931,7 +933,7 @@
          ============================================== -->
     <div id="customerSection">
         <div class="delivery-banner-cust" id="custBannerText">
-            <div class="delivery-main-text">🛵 สั่งเครื่องดื่ม & ของทานเล่น ส่งถึงหน้าบ้าน หรือสั่งล่วงหน้ารับหน้าร้าน แจ้งได้เลยครับ</div>
+            <div class="delivery-main-text">🛵 ส่งฟรี! ใกล้ๆ ไม่เกิน 3 กม. (สั่งขั้นต่ำ 2 แก้วขึ้นไป)<br>⚠️ เกิน 3 กม. มีค่าส่งเพิ่ม 5-15 บาทตามระยะทาง</div>
         </div>
         <div class="external-phone-box">
             <a href="tel:0637975257" class="delivery-phone-text">📞 โทรสั่งด่วน: 063-797-5257</a>
@@ -943,7 +945,7 @@
             <div id="custSuggestDropdown" class="cust-suggest-dropdown"></div>
         </div>
 
-        <!-- แถบตะกร้าสินค้า (วางไว้ด้านบน ใต้ช่องค้นหา เพื่อไม่ให้บังเมนูด้านล่าง) -->
+        <!-- แถบตะกร้าสินค้า (วางไว้ด้านบน ใต้ช่องค้นหา) -->
         <div id="cartBarWrapper" style="display: none;">
             <div class="cart-top-banner" id="cartBar" onclick="openCartModal()">
                 <div>
@@ -1176,7 +1178,7 @@
             <div class="qr-img-box">
                 <img id="custQrImg" src="" alt="PromptPay QR">
             </div>
-            <div style="font-size: 0.75rem; color: #94a3b8;">สแกนชำระพร้อมเพย์เลขบัตร 1449100055527 ยอดรวม:</div>
+            <div style="font-size: 0.75rem; color: #94a3b8;">สแกนพร้อมเพย์ (เลขบัตร 1449100055527) ยอดรวม:</div>
         </div>
 
         <div style="font-size: 1.6rem; font-weight: 700; color: #38bdf8; margin-bottom: 8px;" id="custModalTotal">฿0</div>
@@ -1203,7 +1205,7 @@
 <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbzr8lEc78rzKvRvYsgKpBkiH-E7zrpdt8oj_o9oJ6PCvMh7gcfJUrUwmMo-J1uHHVXWJQ/exec";
     const GOOGLE_SHEETS_URL = "https://docs.google.com/spreadsheets/d/1EEU-LsVCzD8jbisYSVmy5jMjdTotGOgIW-4ASJlzqYU/edit";
-    const PROMPTPAY_ID = "1449100055527"; // เลขบัตรประชาชนพร้อมเพย์ใหม่
+    const PROMPTPAY_ID = "1449100055527"; // เลขบัตรประชาชนพร้อมเพย์
     const ADMIN_PIN = "2424";
 
     const STORAGE_KEY = 'FLUKCHAFE_SHARED_DB_V5';
