@@ -1217,7 +1217,6 @@
         "ข้าวเหนียว 10": 10
     };
 
-    // 🌟 ภาพตัวอย่างเมนูแยกตามหมวดหมู่ (คัดสรรมาอย่างดี ไม่ซ้ำกัน ดูพรีเมียม)
     const DEFAULT_CATEGORY_IMAGES = {
         "เครื่องดื่ม": "https://images.unsplash.com/photo-1541167760496-1628856ab772?w=300&q=80",
         "ของทอด/ทานเล่น": "https://images.unsplash.com/photo-1576107232684-1279f390859f?w=300&q=80",
@@ -1415,8 +1414,11 @@
         return 'เครื่องดื่ม';
     }
 
+    // 🌟 ฟังก์ชันดึงรูปภาพ: เช็กจากภาพที่คุณอัปเดตในหลังบ้านก่อน ถ้าไม่มีค่อยดึงภาพหมวดหมู่
     function getMenuImage(name) {
-        if (imageBook[name]) return imageBook[name];
+        if (imageBook[name] && imageBook[name].trim() !== '') {
+            return imageBook[name].trim();
+        }
         const cat = detectCategory(name);
         return DEFAULT_CATEGORY_IMAGES[cat] || '';
     }
@@ -2280,6 +2282,7 @@
             document.getElementById('newMenuImage').value = '';
             renderUI();
             renderCustomerMenu();
+            alert('บันทึกรูปภาพและราคาสำเร็จแล้วครับ!');
         } else {
             alert('กรุณากรอกชื่อเมนูและราคาให้ถูกต้อง');
         }
