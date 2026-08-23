@@ -1063,7 +1063,8 @@
                     <input type="text" id="newMenuName" placeholder="ชื่อเมนู เช่น ชาไทย ปั่น" style="flex:2;">
                     <input type="number" id="newMenuPrice" placeholder="ราคา" style="flex:1;">
                 </div>
-                <input type="url" id="newMenuImage" placeholder="🔗 ลิงก์รูปภาพเมนู (วางลิงก์ตรงที่ลงท้าย .jpg/.png)">
+                <!-- ปรับแก้ให้รองรับข้อความลิงก์ยาวๆ หรือ Direct Link ได้อย่างอิสระ -->
+                <input type="text" id="newMenuImage" placeholder="🔗 วางลิงก์รูปภาพตรงนี้ (Direct Link)">
                 <button type="button" onclick="addOrUpdatePrice()">💾 บันทึกเมนู & รูปภาพ</button>
             </div>
             <div class="price-search-box">
@@ -1407,7 +1408,6 @@
         return 'เครื่องดื่ม';
     }
 
-    // 🌟 ดึงรูปภาพจาก imageBook โดยตัดช่องว่างส่วนเกินออก
     function getMenuImage(name) {
         const cleanName = (name || '').trim();
         if (imageBook[cleanName] && imageBook[cleanName].trim() !== '') {
