@@ -11,50 +11,63 @@
     <style>
         * { box-sizing: border-box; font-family: 'Kanit', sans-serif; margin: 0; padding: 0; }
         
-        body { 
-            background-color: #090d16;
+        html, body {
+            width: 100%;
             min-height: 100vh;
-            padding: 12px; 
-            color: #1e293b; 
-            position: relative;
-            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+            background-color: #090d16;
+            color: #1e293b;
         }
 
-        /* เลเยอร์ภาพพื้นหลังเคลื่อนไหวแบบ GIF เล่นวนลูปตลอดเวลา */
-        .bg-gif-layer {
+        body {
+            padding: 12px;
+            position: relative;
+        }
+
+        /* เลเยอร์พื้นหลัง GIF คลุมเต็มจอ 100% (ตัวพิมพ์เล็กทั้งหมด) */
+        .bg-fixed-container {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            object-fit: cover;
-            z-index: -2;
-            pointer-events: none;
+            z-index: -10;
+            overflow: hidden;
+            background-color: #090d16;
         }
 
-        /* เลเยอร์กรองแสงจางๆ เพื่อให้อ่านตัวหนังสือชัดเจน */
+        .bg-fixed-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center center;
+            display: block;
+        }
+
         .bg-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: rgba(9, 13, 22, 0.25);
-            z-index: -1;
+            background: rgba(9, 13, 22, 0.2);
+            z-index: -5;
             pointer-events: none;
         }
 
-        /* เมนคอนเทนเนอร์แบบ Glassmorphism สวยงาม */
         .container { 
             max-width: 480px; 
             margin: 0 auto; 
-            background: rgba(255, 255, 255, 0.93); 
+            background: rgba(255, 255, 255, 0.94); 
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border-radius: 22px; 
             padding: 16px; 
-            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4); 
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45); 
             border: 1px solid rgba(255, 255, 255, 0.7);
+            position: relative;
+            z-index: 1;
         }
         
         .brand-header { text-align: center; margin-bottom: 12px; position: relative; }
@@ -419,8 +432,10 @@
 </head>
 <body>
 
-<!-- เลเยอร์ภาพ GIF เคลื่อนไหว -->
-<img src="bg.gif" class="bg-gif-layer" alt="Background" onerror="this.style.display='none'">
+<!-- เลเยอร์พื้นหลังรูปภาพ bg.gif (ตัวพิมพ์เล็กทั้งหมด) -->
+<div class="bg-fixed-container">
+    <img src="bg.gif" id="mainBgImg" alt="Background" onerror="this.onerror=null; this.src='bg.jpg';">
+</div>
 <div class="bg-overlay"></div>
 
 <div class="container">
@@ -544,7 +559,6 @@
         <div id="menuSummaryList"></div>
     </div>
 
-    <!-- หน้าบันทึกต้นทุนซื้อของเข้าร้าน -->
     <div class="list-container" id="expensesView" style="display: none;">
         <div class="price-mgr-form">
             <input type="text" id="newExpenseName" placeholder="รายการซื้อของ เช่น ชา/นม/ของทอด" style="flex:2;">
@@ -554,7 +568,6 @@
         <div id="expenseList"></div>
     </div>
 
-    <!-- หน้าจัดการราคาเมนู -->
     <div class="list-container" id="pricesView" style="display: none;">
         <div class="price-mgr-form">
             <input type="text" id="newMenuName" placeholder="ชื่อเมนู เช่น ชาไทย ปั่น" style="flex:2;">
