@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FLUKCHAFE - ฟลุ๊ค ชาเฟ่</title>
+    <title>FLUKCHAFE - ฟลุ๊ค ชาเฟ่ POS & Profit</title>
     
     <link rel="icon" type="image/png" href="logo.png">
     <link rel="apple-touch-icon" href="logo.png">
@@ -38,14 +38,15 @@
 
         .sync-badge {
             display: inline-block;
-            font-size: 0.72rem;
-            padding: 3px 10px;
-            border-radius: 12px;
-            background: #e0f2fe;
-            color: #0369a1;
-            margin-top: 6px;
-            font-weight: 500;
+            font-size: 0.65rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: #f1f5f9;
+            color: #64748b;
+            margin-top: 14px;
+            font-weight: 400;
             cursor: pointer;
+            border: 1px solid #e2e8f0;
         }
 
         .time-filter {
@@ -437,6 +438,7 @@
             margin-top: 16px;
             padding-top: 12px;
             border-top: 1.5px dashed #cbd5e1;
+            text-align: center;
         }
         .btn-export {
             width: 100%;
@@ -543,7 +545,6 @@
         <img src="logo.png" alt="FLUKCHAFE" class="brand-logo" onerror="this.style.display='none'">
         <div class="brand-name-en">FLUKCHAFE</div>
         <div class="brand-name-th">ฟลุ๊ค ชาเฟ่</div>
-        <div id="syncStatus" class="sync-badge" onclick="loadFromCloud()">🔄 ซิงค์ข้อมูล Cloud</div>
     </div>
 
     <!-- แถบเลือกช่วงเวลาแบบ 4 ปุ่ม -->
@@ -568,7 +569,7 @@
         </div>
     </div>
 
-    <!-- กล่องยอดขายรวม และสรุปผลประกอบการ (เพิ่มแยก รับเงินสด / สแกนจ่าย) -->
+    <!-- กล่องยอดขายรวม และสรุปผลประกอบการ -->
     <div class="total-banner">
         <div class="amount" id="totalSales">฿0</div>
         <div class="sub" id="totalSalesSub">ยอดขายรวม</div>
@@ -702,6 +703,9 @@
             <button type="button" class="btn-sheets-link" onclick="openGoogleSheets()">🟢 เปิดดูข้อมูลบน Google Sheets</button>
             <button type="button" class="btn-export" onclick="exportSalesToCSV()">📥 ดาวน์โหลดรายงานยอดขาย (CSV/Excel)</button>
             <button type="button" class="btn-export" style="background:#6366f1;" onclick="exportExpensesToCSV()">📥 ดาวน์โหลดรายงานต้นทุน (CSV/Excel)</button>
+            
+            <!-- ปุ่มซิงค์ข้อมูลย้ายมาไว้ด้านล่างสุด -->
+            <div id="syncStatus" class="sync-badge" onclick="loadFromCloud()">🔄 ซิงค์ข้อมูล Cloud</div>
         </div>
     </div>
 </div>
@@ -1008,10 +1012,10 @@
                 priceBook = { ...DEFAULT_PRESET_PRICES, ...data.prices };
                 localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
             }
-            syncStatus.innerText = "☁️ ซิงค์ตรงกันทุกเครื่องแล้ว";
+            syncStatus.innerText = "☁️ ซิงค์ข้อมูลล่าสุดแล้ว";
             renderUI();
         } catch (e) {
-            syncStatus.innerText = "💾 ใช้งานข้อมูลในเครื่อง";
+            syncStatus.innerText = "💾 ใช้งานข้อมูลในเครื่อง (ออฟไลน์)";
         }
     }
 
@@ -1287,7 +1291,7 @@
                 if (item.paymentMethod === 'cash') {
                     totalCashSum += price;
                 } else {
-                    totalQrSum += price; // ค่าเริ่มต้นเป็น promptpay
+                    totalQrSum += price;
                 }
 
                 const cat = catStats[item.category] ? item.category : 'อาหาร/กะเพรา';
@@ -1481,7 +1485,6 @@
     function exportExpensesToCSV() {
         if (expenses.length === 0) { alert('ไม่มีข้อมูลต้นทุนสำหรับดาวน์โหลด'); return; }
         let csv = '\uFEFFวันที่,เวลา,รายการซื้อของ,จำนวนเงินต้นทุน\n';
-        expenses.exportExpensesToCSV = true; // placeholder
         expenses.forEach(e => {
             csv += `"${e.date}","${e.time}","${e.name}",${e.cost}\n`;
         });
