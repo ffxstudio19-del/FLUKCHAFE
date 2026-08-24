@@ -3,8 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FLUKCHAFE - ฟลุ๊ค ชาเฟ่ POS & Profit</title>
+    <title>FLUKCHAFE ฟลุ๊ค ชาเฟ่</title>
     
+    <!-- PWA Settings -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#090d16">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="FLUKCHAFE">
+
     <link rel="icon" type="image/png" href="logo.png">
     <link rel="apple-touch-icon" href="logo.png">
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -12,51 +19,383 @@
         * { box-sizing: border-box; font-family: 'Kanit', sans-serif; margin: 0; padding: 0; }
         
         body { 
-            background: #0f172a url('bg.jpg') no-repeat center center fixed;
+            background: #090d16 url('bg.jpg') no-repeat center center fixed;
             background-size: cover;
             min-height: 100vh;
-            padding: 12px; 
-            color: #1e293b; 
+            padding: 12px 12px 30px 12px; 
+            color: #f1f5f9; 
         }
 
         .container { 
             max-width: 480px; 
             margin: 0 auto; 
-            background: rgba(255, 255, 255, 0.95); 
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+            background: rgba(15, 23, 42, 0.94); 
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
             border-radius: 20px; 
             padding: 16px; 
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25); 
-            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.5); 
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
         }
         
         .brand-header { text-align: center; margin-bottom: 12px; position: relative; }
-        .brand-logo { width: 75px; height: 75px; border-radius: 50%; object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 2px solid #0284c7; }
-        .brand-name-en { font-size: 1.55rem; font-weight: 700; color: #0f172a; margin-top: 4px; line-height: 1.1; }
-        .brand-name-th { font-size: 0.9rem; font-weight: 400; color: #64748b; margin-top: 2px; }
-
-        .sync-badge {
-            display: inline-block;
-            font-size: 0.65rem;
-            padding: 2px 8px;
-            border-radius: 10px;
-            background: #f1f5f9;
-            color: #64748b;
-            margin-top: 14px;
-            font-weight: 400;
+        .brand-logo { 
+            width: 75px; 
+            height: 75px; 
+            border-radius: 50%; 
+            object-fit: cover; 
+            box-shadow: 0 4px 14px rgba(56, 189, 248, 0.25); 
+            border: 2px solid #38bdf8; 
             cursor: pointer;
-            border: 1px solid #e2e8f0;
+            transition: transform 0.2s;
         }
+        .brand-logo:active { transform: scale(0.92); }
+        .brand-name-en { font-size: 1.55rem; font-weight: 700; color: #f8fafc; margin-top: 4px; line-height: 1.1; cursor: pointer; letter-spacing: 0.5px; }
+        .brand-name-th { font-size: 0.9rem; font-weight: 400; color: #94a3b8; margin-top: 2px; }
+
+        .delivery-banner-cust {
+            background: rgba(22, 101, 52, 0.2);
+            border: 1.5px solid #22c55e;
+            border-radius: 14px;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(34, 197, 94, 0.15);
+        }
+        .delivery-main-text {
+            font-size: 0.82rem;
+            color: #86efac;
+            font-weight: 500;
+            line-height: 1.4;
+        }
+
+        .external-phone-box {
+            text-align: center;
+            margin-bottom: 12px;
+        }
+        .delivery-phone-text {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 16px;
+            background: #16a34a;
+            color: #ffffff;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-decoration: none;
+            box-shadow: 0 3px 8px rgba(22, 163, 74, 0.35);
+            transition: transform 0.15s;
+        }
+        .delivery-phone-text:active { transform: scale(0.95); }
+
+        .sync-footer-box {
+            text-align: center;
+            margin-top: 14px;
+            padding-top: 8px;
+            border-top: 1px dashed rgba(255, 255, 255, 0.1);
+        }
+        .sync-badge-bottom {
+            display: inline-block;
+            font-size: 0.68rem;
+            color: #64748b;
+            cursor: pointer;
+            font-weight: 400;
+            transition: color 0.2s;
+            user-select: none;
+        }
+        .sync-badge-bottom:hover { color: #38bdf8; }
+
+        /* --- ฝั่งลูกค้า (Customer Mode) --- */
+        #customerSection { display: block; }
+
+        .cust-search-box {
+            margin-bottom: 10px;
+            position: relative;
+        }
+        .cust-search-box input {
+            width: 100%;
+            padding: 9px 14px;
+            border-radius: 12px;
+            border: 1.5px solid #334155;
+            font-size: 0.85rem;
+            outline: none;
+            background: #1e293b;
+            color: #f8fafc;
+        }
+        .cust-search-box input:focus {
+            border-color: #38bdf8;
+            background: #0f172a;
+        }
+
+        .cust-suggest-dropdown {
+            position: absolute;
+            top: 42px;
+            left: 0;
+            right: 0;
+            background: #1e293b;
+            border: 1.5px solid #0284c7;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+            max-height: 260px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+        .cust-suggest-item {
+            padding: 8px 12px;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .cust-suggest-item:last-child { border-bottom: none; }
+        .cust-suggest-item:hover, .cust-suggest-item:active {
+            background: #0f172a;
+        }
+        .cust-suggest-img {
+            width: 38px;
+            height: 38px;
+            border-radius: 8px;
+            object-fit: cover;
+            background: #0f172a;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        .cust-suggest-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .cust-suggest-name {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #f8fafc;
+        }
+        .cust-suggest-cat {
+            font-size: 0.68rem;
+            color: #94a3b8;
+        }
+        .cust-suggest-price {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #38bdf8;
+        }
+
+        .cart-top-banner {
+            background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%);
+            border: 1px solid #38bdf8;
+            border-radius: 12px;
+            padding: 10px 14px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+            animation: fadeIn 0.25s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .cart-info { font-size: 0.85rem; font-weight: 600; color: #fff; }
+        .cart-items-preview { font-size: 0.72rem; color: #e0f2fe; margin-top: 1px; }
+        .cart-total { font-size: 1.1rem; font-weight: 700; color: #fff; text-align: right; }
+
+        .rec-section-title {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #fb923c;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .rec-scroll-container {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+            scrollbar-width: thin;
+        }
+        .rec-card {
+            flex: 0 0 130px;
+            background: #1e293b;
+            border: 1.5px solid rgba(251, 146, 60, 0.5);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+        .rec-card:active { transform: scale(0.96); }
+        .rec-img-box {
+            width: 100%;
+            height: 75px;
+            background: #0f172a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .rec-img-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .rec-body {
+            padding: 6px;
+        }
+        .rec-name {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #f1f5f9;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .rec-price {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #fb923c;
+            margin-top: 2px;
+        }
+
+        .cust-cat-nav {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 3px;
+            margin-bottom: 10px;
+        }
+        .cust-cat-btn {
+            background: #1e293b;
+            border: 1px solid #334155;
+            padding: 8px 1px;
+            border-radius: 8px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            font-weight: 500;
+            color: #94a3b8;
+            white-space: nowrap;
+        }
+        .cust-cat-btn.active { 
+            background: #0284c7; 
+            color: #fff; 
+            font-weight: 600; 
+            border-color: #38bdf8;
+            box-shadow: 0 2px 6px rgba(2, 132, 199, 0.4);
+        }
+
+        .cust-menu-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 12px;
+            padding: 2px;
+        }
+        .cust-menu-card {
+            background: #1e293b;
+            border: 1.5px solid #334155;
+            border-radius: 14px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: all 0.15s;
+            position: relative;
+        }
+        .cust-menu-card:active { transform: scale(0.97); border-color: #38bdf8; background: #0f172a; }
+        
+        .bestseller-badge {
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            background: #ef4444;
+            color: #fff;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+            z-index: 2;
+        }
+
+        .cust-img-container {
+            width: 100%;
+            height: 105px;
+            background: #0f172a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .cust-menu-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .cust-img-fallback {
+            font-size: 2.2rem;
+        }
+
+        .cust-card-body {
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            flex: 1;
+        }
+        .cust-card-title { font-size: 0.85rem; font-weight: 600; color: #f8fafc; line-height: 1.2; }
+        .cust-card-price { font-size: 1.05rem; font-weight: 700; color: #38bdf8; margin-top: 6px; }
+
+        .order-type-selector, .pay-type-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+        .order-type-btn, .pay-type-btn {
+            padding: 7px 4px;
+            border-radius: 8px;
+            border: 1.5px solid #334155;
+            background: #1e293b;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #94a3b8;
+            cursor: pointer;
+            text-align: center;
+        }
+        .order-type-btn.active, .pay-type-btn.active {
+            border-color: #38bdf8;
+            background: rgba(56, 189, 248, 0.15);
+            color: #38bdf8;
+        }
+
+        /* --- ฝั่งร้านค้า (Admin POS Mode) --- */
+        #adminSection { display: none; }
 
         .time-filter {
             display: grid;
             grid-template-columns: 1fr 1.25fr 1.35fr 1fr;
             gap: 3px;
-            background: #e2e8f0;
+            background: #1e293b;
             padding: 3px;
             border-radius: 10px;
             margin-bottom: 6px;
+            border: 1px solid #334155;
         }
         .filter-btn {
             padding: 6px 2px;
@@ -66,21 +405,21 @@
             font-size: 0.72rem;
             font-weight: 500;
             cursor: pointer;
-            color: #64748b;
+            color: #94a3b8;
             white-space: nowrap;
         }
         .filter-btn.active {
-            background: #fff;
-            color: #0284c7;
+            background: #0284c7;
+            color: #fff;
             font-weight: 600;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
         }
 
         .custom-filter-box {
             display: none;
             margin-bottom: 10px;
-            background: #f8fafc;
-            border: 1px solid #cbd5e1;
+            background: #1e293b;
+            border: 1px solid #334155;
             border-radius: 10px;
             padding: 8px 10px;
         }
@@ -92,7 +431,7 @@
         .filter-input-group label {
             display: block;
             font-size: 0.7rem;
-            color: #475569;
+            color: #94a3b8;
             margin-bottom: 3px;
             font-weight: 600;
         }
@@ -103,36 +442,32 @@
             border: 1.5px solid #0284c7;
             font-size: 0.75rem;
             outline: none;
-            background: #fff;
-            color: #0f172a;
+            background: #0f172a;
+            color: #f8fafc;
         }
 
         .total-banner {
-            background: #0f172a;
+            background: #090d16;
             color: #fff;
             border-radius: 14px;
             padding: 14px 10px 10px 10px;
             text-align: center;
             margin-bottom: 10px;
+            border: 1px solid #1e293b;
         }
         .total-banner .amount { font-size: 2.3rem; font-weight: 600; color: #38bdf8; line-height: 1.1; }
         .total-banner .sub { font-size: 0.8rem; color: #94a3b8; margin-top: 4px; }
 
         .btn-toggle-profit {
-            background: rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.08);
             color: #e2e8f0;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.15);
             border-radius: 20px;
             padding: 4px 14px;
             font-size: 0.75rem;
             margin-top: 8px;
             cursor: pointer;
             transition: all 0.2s;
-        }
-        .btn-toggle-profit:hover, .btn-toggle-profit:active {
-            background: rgba(56, 189, 248, 0.2);
-            color: #38bdf8;
-            border-color: #38bdf8;
         }
 
         .secret-profit-panel {
@@ -141,10 +476,10 @@
             gap: 6px;
             margin-top: 10px;
             padding-top: 10px;
-            border-top: 1px dashed rgba(255, 255, 255, 0.2);
+            border-top: 1px dashed rgba(255, 255, 255, 0.15);
         }
         .secret-box {
-            background: rgba(255, 255, 255, 0.06);
+            background: rgba(255, 255, 255, 0.04);
             border-radius: 10px;
             padding: 8px 4px;
         }
@@ -162,14 +497,14 @@
             margin-bottom: 14px;
         }
         .cat-box {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
+            background: #1e293b;
+            border: 1px solid #334155;
             border-radius: 12px;
             padding: 8px 10px;
         }
-        .cat-title { font-size: 0.75rem; color: #64748b; font-weight: 500; }
-        .cat-val { font-size: 1.05rem; font-weight: 600; color: #0f172a; margin-top: 2px; }
-        .cat-count { font-size: 0.75rem; color: #0284c7; }
+        .cat-title { font-size: 0.75rem; color: #94a3b8; font-weight: 500; }
+        .cat-val { font-size: 1.05rem; font-weight: 600; color: #f8fafc; margin-top: 2px; }
+        .cat-count { font-size: 0.75rem; color: #38bdf8; }
 
         .cat-selector {
             display: grid;
@@ -178,16 +513,16 @@
             margin-bottom: 10px;
         }
         .cat-btn {
-            background: #e2e8f0;
-            border: none;
+            background: #1e293b;
+            border: 1px solid #334155;
             padding: 8px 2px;
             border-radius: 8px;
             font-size: 0.75rem;
             cursor: pointer;
             font-weight: 500;
-            color: #475569;
+            color: #94a3b8;
         }
-        .cat-btn.active { background: #0284c7; color: #fff; }
+        .cat-btn.active { background: #0284c7; color: #fff; border-color: #38bdf8; }
 
         .quick-input-box { margin-bottom: 14px; position: relative; }
         .input-btn-group { display: flex; gap: 6px; }
@@ -198,9 +533,10 @@
             border: 2px solid #0284c7;
             border-radius: 12px;
             outline: none;
-            background: #fff;
+            background: #1e293b;
+            color: #f8fafc;
         }
-        .input-btn-group input:focus { border-color: #0369a1; box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.2); }
+        .input-btn-group input:focus { border-color: #38bdf8; box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2); }
         .btn-order-submit {
             background: #0284c7;
             color: #fff;
@@ -224,8 +560,8 @@
         }
         .btn-toggle-backdate {
             background: transparent;
-            border: 1px solid #cbd5e1;
-            color: #64748b;
+            border: 1px solid #475569;
+            color: #94a3b8;
             padding: 3px 8px;
             border-radius: 8px;
             font-size: 0.72rem;
@@ -235,15 +571,15 @@
             gap: 4px;
         }
         .btn-toggle-backdate.active {
-            background: #fef3c7;
-            color: #b45309;
+            background: rgba(245, 158, 11, 0.2);
+            color: #fbbf24;
             border-color: #f59e0b;
             font-weight: 600;
         }
 
         .backdate-box {
             display: none;
-            background: #fffbeb;
+            background: #1e293b;
             border: 1.5px dashed #f59e0b;
             border-radius: 10px;
             padding: 8px;
@@ -251,7 +587,7 @@
         }
         .backdate-box-title {
             font-size: 0.72rem;
-            color: #b45309;
+            color: #fbbf24;
             font-weight: 600;
             margin-bottom: 4px;
         }
@@ -262,11 +598,12 @@
         .backdate-inputs input {
             flex: 1;
             padding: 6px 8px;
-            border: 1px solid #fcd34d;
+            border: 1px solid #475569;
             border-radius: 6px;
             font-size: 0.8rem;
             outline: none;
-            background: #fff;
+            background: #0f172a;
+            color: #f8fafc;
         }
 
         .suggest-box {
@@ -274,10 +611,10 @@
             top: 52px;
             left: 0;
             right: 110px;
-            background: #ffffff;
+            background: #1e293b;
             border: 1.5px solid #0284c7;
             border-radius: 12px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.5);
             max-height: 220px;
             overflow-y: auto;
             z-index: 1000;
@@ -285,125 +622,167 @@
         }
         .suggest-item {
             padding: 10px 14px;
-            border-bottom: 1px solid #f1f5f9;
+            border-bottom: 1px solid #334155;
             font-size: 0.95rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
             cursor: pointer;
+            color: #f8fafc;
         }
         .suggest-item:last-child { border-bottom: none; }
         .suggest-item:active, .suggest-item:hover {
-            background: #e0f2fe;
-            color: #0369a1;
+            background: #0f172a;
+            color: #38bdf8;
         }
         .suggest-price {
             font-weight: 600;
-            color: #0284c7;
+            color: #38bdf8;
             font-size: 0.85rem;
         }
 
         .tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 12px; }
         .tab-btn {
             padding: 8px 2px;
-            border: none;
-            background: #e2e8f0;
+            border: 1px solid #334155;
+            background: #1e293b;
             border-radius: 8px;
             font-size: 0.72rem;
             font-weight: 500;
             cursor: pointer;
-            color: #475569;
+            color: #94a3b8;
         }
-        .tab-btn.active { background: #0f172a; color: #fff; }
+        .tab-btn.active { background: #0284c7; color: #fff; border-color: #38bdf8; }
 
         .list-container { max-height: 320px; overflow-y: auto; }
         .item-row {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
             padding: 8px 4px;
-            border-bottom: 1px solid #f1f5f9;
+            border-bottom: 1px solid #334155;
         }
-        .item-title { font-size: 0.9rem; font-weight: 500; }
-        .item-detail { font-size: 0.7rem; color: #64748b; }
-        .item-price { font-size: 1rem; font-weight: 600; color: #0f172a; margin-right: 6px; }
+        .item-title { font-size: 0.9rem; font-weight: 500; color: #f8fafc; }
+        .item-detail { font-size: 0.72rem; color: #94a3b8; margin-top: 1px; }
+        .item-delivery-info { font-size: 0.72rem; color: #fdba74; background: rgba(234, 88, 12, 0.2); padding: 2px 6px; border-radius: 4px; margin-top: 3px; display: inline-block; }
+        .item-pickup-info { font-size: 0.72rem; color: #86efac; background: rgba(22, 163, 74, 0.2); padding: 2px 6px; border-radius: 4px; margin-top: 3px; display: inline-block; }
+        .item-price { font-size: 1rem; font-weight: 600; color: #38bdf8; margin-right: 6px; }
         .badge {
             display: inline-block;
             padding: 1px 5px;
             border-radius: 4px;
             font-size: 0.65rem;
             margin-left: 4px;
-            background: #e0f2fe;
-            color: #0369a1;
+            background: #0284c7;
+            color: #fff;
+        }
+
+        .delivery-badge {
+            background: rgba(234, 88, 12, 0.2);
+            color: #fb923c;
+            border: 1px solid #ea580c;
+            font-size: 0.65rem;
+            padding: 1px 5px;
+            border-radius: 4px;
+            margin-left: 4px;
+            font-weight: 600;
+        }
+        .pickup-badge {
+            background: rgba(22, 163, 74, 0.2);
+            color: #4ade80;
+            border: 1px solid #16a34a;
+            font-size: 0.65rem;
+            padding: 1px 5px;
+            border-radius: 4px;
+            margin-left: 4px;
+            font-weight: 600;
         }
 
         .pay-badge {
             display: inline-flex;
             align-items: center;
             gap: 2px;
-            padding: 3px 6px;
+            padding: 4px 8px;
             border-radius: 6px;
-            font-size: 0.68rem;
+            font-size: 0.7rem;
             font-weight: 500;
             cursor: pointer;
             margin-right: 6px;
-            border: none;
+            transition: all 0.15s;
         }
         .pay-badge.qr {
-            background: #e0f2fe;
-            color: #0369a1;
-            border: 1px solid #bae6fd;
+            background: rgba(56, 189, 248, 0.15);
+            color: #38bdf8;
+            border: 1px solid #0284c7;
         }
         .pay-badge.cash {
-            background: #ecfdf5;
-            color: #047857;
-            border: 1px solid #a7f3d0;
+            background: rgba(52, 211, 153, 0.15);
+            color: #34d399;
+            border: 1px solid #059669;
         }
+        .pay-badge:active { transform: scale(0.95); }
 
         .btn-del {
-            background: #fee2e2;
-            color: #ef4444;
-            border: none;
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+            border: 1px solid #ef4444;
             border-radius: 6px;
             padding: 3px 6px;
             font-size: 0.7rem;
             cursor: pointer;
         }
         .summary-group-title {
-            background: #f1f5f9;
+            background: #1e293b;
             padding: 5px 8px;
             font-size: 0.8rem;
             font-weight: 600;
-            color: #475569;
+            color: #38bdf8;
             border-radius: 6px;
             margin: 8px 0 4px 0;
+            border: 1px solid #334155;
         }
         .summary-row {
             display: flex;
             justify-content: space-between;
             padding: 5px 6px;
-            border-bottom: 1px solid #f8fafc;
+            border-bottom: 1px solid #334155;
             font-size: 0.85rem;
             align-items: center;
+            color: #f8fafc;
         }
         .price-list-row {
             cursor: pointer;
             transition: background 0.15s;
         }
         .price-list-row:hover, .price-list-row:active {
-            background: #e0f2fe;
+            background: #1e293b;
         }
-        .empty-text { text-align: center; color: #94a3b8; padding: 20px 0; font-size: 0.85rem; }
+        .empty-text { text-align: center; color: #64748b; padding: 20px 0; font-size: 0.85rem; }
 
-        .price-mgr-form { display: flex; gap: 6px; margin-bottom: 8px; }
-        .price-mgr-form input {
+        .price-mgr-form-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 10px;
+            background: #1e293b;
             padding: 8px;
-            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            border: 1px solid #334155;
+        }
+        .price-mgr-form-grid .row-inputs {
+            display: flex;
+            gap: 6px;
+        }
+        .price-mgr-form-grid input {
+            padding: 8px;
+            border: 1px solid #334155;
             border-radius: 8px;
             font-size: 0.85rem;
             outline: none;
+            background: #0f172a;
+            color: #f8fafc;
         }
-        .price-mgr-form button {
+        .price-mgr-form-grid button {
             background: #0284c7;
             color: #fff;
             border: none;
@@ -412,33 +791,30 @@
             cursor: pointer;
             font-size: 0.85rem;
             font-weight: 500;
-            white-space: nowrap;
         }
-        .btn-exp-add {
-            background: #ef4444 !important;
-        }
+
         .price-search-box {
             margin-bottom: 8px;
         }
         .price-search-box input {
             width: 100%;
             padding: 7px 10px;
-            border: 1.5px solid #94a3b8;
+            border: 1.5px solid #334155;
             border-radius: 8px;
             font-size: 0.8rem;
             outline: none;
-            background: #f8fafc;
+            background: #1e293b;
+            color: #f8fafc;
         }
         .price-search-box input:focus {
-            border-color: #0284c7;
-            background: #fff;
+            border-color: #38bdf8;
+            background: #0f172a;
         }
 
         .export-section {
             margin-top: 16px;
             padding-top: 12px;
-            border-top: 1.5px dashed #cbd5e1;
-            text-align: center;
+            border-top: 1.5px dashed #334155;
         }
         .btn-export {
             width: 100%;
@@ -471,257 +847,355 @@
         }
         .btn-sheets-link:active { background: #115e59; }
 
+        /* Modal Overlay */
         .modal-overlay {
             display: none;
             position: fixed;
             top: 0; left: 0;
             width: 100vw; height: 100vh;
-            background: rgba(15, 23, 42, 0.75);
-            backdrop-filter: blur(6px);
+            background: rgba(9, 13, 22, 0.85);
+            backdrop-filter: blur(8px);
             z-index: 9999;
             align-items: center;
             justify-content: center;
             padding: 16px;
         }
         .modal-card {
-            background: #fff;
+            background: #1e293b;
             border-radius: 20px;
-            max-width: 340px;
+            max-width: 380px;
             width: 100%;
             padding: 20px 16px;
             text-align: center;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            border: 1px solid #334155;
             animation: popIn 0.25s ease-out;
+            color: #f8fafc;
         }
         @keyframes popIn {
             0% { transform: scale(0.9); opacity: 0; }
             100% { transform: scale(1); opacity: 1; }
         }
-        .qr-header-title { font-size: 1.15rem; font-weight: 700; color: #0f172a; margin-top: 4px; }
-        .qr-header-sub { font-size: 0.8rem; color: #64748b; margin-bottom: 12px; }
+        .modal-title { font-size: 1.15rem; font-weight: 700; color: #f8fafc; margin-bottom: 10px; }
+        .modal-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1.5px solid #334155;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+            outline: none;
+            background: #0f172a;
+            color: #f8fafc;
+        }
+        .modal-input:focus { border-color: #38bdf8; }
+        .modal-btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+        .btn-primary { background: #0284c7; color: #fff; border: none; padding: 10px; border-radius: 10px; font-size: 0.9rem; font-weight: 600; cursor: pointer; }
+        .btn-secondary { background: #334155; color: #94a3b8; border: none; padding: 10px; border-radius: 10px; font-size: 0.9rem; font-weight: 500; cursor: pointer; }
+
+        .btn-gps-loc {
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: #38bdf8;
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 8px;
+        }
+
         .qr-img-box {
-            background: #f8fafc;
+            background: #ffffff;
             border: 2px dashed #0284c7;
             border-radius: 16px;
-            padding: 12px;
+            padding: 10px;
             display: inline-block;
-            margin-bottom: 12px;
+            margin: 8px 0;
         }
-        .qr-img-box img {
-            width: 200px;
-            height: 200px;
-            display: block;
-            border-radius: 8px;
-        }
-        .qr-amount-label { font-size: 0.85rem; color: #475569; }
-        .qr-amount-val { font-size: 2.2rem; font-weight: 700; color: #0284c7; line-height: 1.1; margin-bottom: 14px; }
-        .modal-btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .btn-modal-done {
-            background: #0284c7;
-            color: #fff;
-            border: none;
-            padding: 10px;
-            border-radius: 10px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        .btn-modal-close {
-            background: #10b981;
-            color: #fff;
-            border: none;
-            padding: 10px;
-            border-radius: 10px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-        }
+        .qr-img-box img { width: 170px; height: 170px; display: block; border-radius: 8px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="brand-header">
-        <img src="logo.png" alt="FLUKCHAFE" class="brand-logo" onerror="this.style.display='none'">
-        <div class="brand-name-en">FLUKCHAFE</div>
+        <img src="logo.png" alt="FLUKCHAFE" class="brand-logo" id="mainBrandLogo" onclick="handleLogoTap()" onerror="this.style.display='none'" title="แตะเพื่อจัดการระบบ">
+        <div class="brand-name-en" onclick="handleLogoTap()">FLUKCHAFE</div>
         <div class="brand-name-th">ฟลุ๊ค ชาเฟ่</div>
     </div>
 
-    <!-- แถบเลือกช่วงเวลาแบบ 4 ปุ่ม -->
-    <div class="time-filter">
-        <button type="button" class="filter-btn active" onclick="setTimeFilter('today', this)">☀️ วันนี้</button>
-        <button type="button" class="filter-btn" onclick="setTimeFilter('week', this)">📅 อาทิตย์นี้</button>
-        <button type="button" class="filter-btn" onclick="setTimeFilter('custom', this)">📆 กำหนดช่วงเวลา</button>
-        <button type="button" class="filter-btn" onclick="setTimeFilter('all', this)">📋 ทั้งหมด</button>
-    </div>
+    <!-- ==============================================
+         1. ฝั่งลูกค้า (Customer Order Section)
+         ============================================== -->
+    <div id="customerSection">
+        <div class="delivery-banner-cust" id="custBannerText">
+            <div class="delivery-main-text">🛵 สั่งเครื่องดื่ม & ของทานเล่น ส่งถึงหน้าบ้าน หรือสั่งล่วงหน้ารับหน้าร้าน แจ้งได้เลยครับ</div>
+        </div>
+        <div class="external-phone-box">
+            <a href="tel:0637975257" class="delivery-phone-text">📞 โทรสั่งด่วน: 063-797-5257</a>
+        </div>
 
-    <!-- กล่องเลือกวันที่และเดือนในแถวเดียว -->
-    <div class="custom-filter-box" id="customFilterBox">
-        <div class="custom-filter-grid">
-            <div class="filter-input-group">
-                <label>📆 ระบุวันที่:</label>
-                <input type="date" id="selectDateInput" onchange="applyCustomFilter('date')">
-            </div>
-            <div class="filter-input-group">
-                <label>🗓️ ระบุประจำเดือน:</label>
-                <input type="month" id="selectMonthInput" onchange="applyCustomFilter('month')">
+        <!-- ช่องค้นหาเมนูพร้อม Auto-suggest -->
+        <div class="cust-search-box">
+            <input type="text" id="custSearchInput" placeholder="🔍 พิมพ์ค้นหาเมนู (เช่น ชาไทย, เฟรนช์ฟรายส์)..." autocomplete="off" oninput="handleCustomerSearchInput(this.value)">
+            <div id="custSuggestDropdown" class="cust-suggest-dropdown"></div>
+        </div>
+
+        <!-- แถบตะกร้าสินค้า (วางไว้ด้านบน ใต้ช่องค้นหา เพื่อไม่ให้บังเมนูด้านล่าง) -->
+        <div id="cartBarWrapper" style="display: none;">
+            <div class="cart-top-banner" id="cartBar" onclick="openCartModal()">
+                <div>
+                    <div class="cart-info">🛒 เลือกแล้ว (<span id="cartCount">0</span> รายการ)</div>
+                    <div class="cart-items-preview" id="cartPreviewText">แตะเพื่อสรุปและจัดส่ง</div>
+                </div>
+                <div>
+                    <div class="cart-total" id="cartTotalSum">฿0</div>
+                    <div style="font-size: 0.68rem; color: #e0f2fe; text-align: right;">กดส่งออเดอร์ ➜</div>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- กล่องยอดขายรวม และสรุปผลประกอบการ -->
-    <div class="total-banner">
-        <div class="amount" id="totalSales">฿0</div>
-        <div class="sub" id="totalSalesSub">ยอดขายรวม</div>
+        <!-- แถบเมนูแนะนำ / ยอดนิยม (สไลด์แนวนอน) -->
+        <div id="recSection" style="display: none;">
+            <div class="rec-section-title">🔥 เมนูแนะนำยอดนิยม</div>
+            <div class="rec-scroll-container" id="recMenuList"></div>
+        </div>
         
-        <div>
-            <button type="button" class="btn-toggle-profit" id="btnToggleProfit" onclick="toggleProfitPanel()">
-                📊 สรุปผลประกอบการ
-            </button>
+        <!-- แถบ 5 หมวดหมู่ -->
+        <div class="cust-cat-nav">
+            <button type="button" class="cust-cat-btn active" onclick="filterCustCategory('all', this)">📋 ทั้งหมด</button>
+            <button type="button" class="cust-cat-btn" onclick="filterCustCategory('เครื่องดื่ม', this)">🧋 เครื่องดื่ม</button>
+            <button type="button" class="cust-cat-btn" onclick="filterCustCategory('ของทอด/ทานเล่น', this)">🍟 ทานเล่น</button>
+            <button type="button" class="cust-cat-btn" onclick="filterCustCategory('ขนมปังปิ้ง', this)">🍞 ปังปิ้ง</button>
+            <button type="button" class="cust-cat-btn" onclick="filterCustCategory('อาหาร/กะเพรา', this)">🍳 กะเพรา/อื่นๆ</button>
         </div>
 
-        <div class="secret-profit-panel" id="secretProfitPanel">
-            <div class="secret-box">
-                <div class="secret-title">💵 รับเงินสด</div>
-                <div class="secret-val cash" id="totalCash">฿0</div>
-            </div>
-            <div class="secret-box">
-                <div class="secret-title">📱 สแกนจ่าย</div>
-                <div class="secret-val qr" id="totalQr">฿0</div>
-            </div>
-            <div class="secret-box">
-                <div class="secret-title">💸 ต้นทุนซื้อของ</div>
-                <div class="secret-val cost" id="totalCost">฿0</div>
-            </div>
-            <div class="secret-box">
-                <div class="secret-title">📈 กำไรสุทธิ</div>
-                <div class="secret-val profit" id="totalProfit">฿0</div>
-            </div>
-        </div>
+        <div class="cust-menu-grid" id="custMenuList"></div>
     </div>
 
-    <div class="category-summary-grid">
-        <div class="cat-box">
-            <div class="cat-title">🧋 เครื่องดื่ม</div>
-            <div class="cat-val" id="catDrinkSum">฿0</div>
-            <div class="cat-count" id="catDrinkCount">0 แก้ว</div>
-        </div>
-        <div class="cat-box">
-            <div class="cat-title">🍟 ของทอด/ทานเล่น</div>
-            <div class="cat-val" id="catSnackSum">฿0</div>
-            <div class="cat-count" id="catSnackCount">0 รายการ</div>
-        </div>
-        <div class="cat-box">
-            <div class="cat-title">🍞 ปังปิ้ง</div>
-            <div class="cat-val" id="catBreadSum">฿0</div>
-            <div class="cat-count" id="catBreadCount">0 ชิ้น</div>
-        </div>
-        <div class="cat-box">
-            <div class="cat-title">🍳 กะเพรา/อาหาร/หมูปิ้ง</div>
-            <div class="cat-val" id="catFoodSum">฿0</div>
-            <div class="cat-count" id="catFoodCount">0 ชุด/จาน</div>
-        </div>
-    </div>
-
-    <div class="cat-selector">
-        <button type="button" class="cat-btn active" onclick="setCategory('auto', this)">🤖 ออโต้</button>
-        <button type="button" class="cat-btn" onclick="setCategory('เครื่องดื่ม', this)">🧋 น้ำ</button>
-        <button type="button" class="cat-btn" onclick="setCategory('ของทอด/ทานเล่น', this)">🍟 ของทอด</button>
-        <button type="button" class="cat-btn" onclick="setCategory('ขนมปังปิ้ง', this)">🍞 ปังปิ้ง</button>
-    </div>
-
-    <!-- ช่องพิมพ์รับออเดอร์ -->
-    <form id="quickForm" class="quick-input-box" onsubmit="return handleAdd(event)">
-        <div class="input-btn-group">
-            <input 
-                type="text" 
-                id="quickInput" 
-                placeholder="เช่น ชาไทย เย็น, นมสดสตอเบอรี่ ปั่น, ไส้กรอก 25..." 
-                autocomplete="off" 
-                autofocus
-                oninput="handleSearchSuggest(this.value)"
-            >
-            <button type="submit" class="btn-order-submit">รับออเดอร์</button>
-        </div>
-        <div id="suggestBox" class="suggest-box"></div>
-
-        <div class="backdate-control">
-            <span style="font-size:0.72rem; color:#64748b;">💡 พิมพ์ค้นหาแล้วแตะเลือกได้ทันที</span>
-            <button type="button" class="btn-toggle-backdate" id="btnToggleBackdate" onclick="toggleBackdateMode()">
-                🕒 บันทึกย้อนหลัง
-            </button>
+    <!-- ==============================================
+         2. ฝั่งร้านค้า (Admin POS Mode)
+         ============================================== -->
+    <div id="adminSection">
+        <div class="time-filter">
+            <button type="button" class="filter-btn active" onclick="setTimeFilter('today', this)">☀️ วันนี้</button>
+            <button type="button" class="filter-btn" onclick="setTimeFilter('week', this)">📅 อาทิตย์นี้</button>
+            <button type="button" class="filter-btn" onclick="setTimeFilter('custom', this)">📆 กำหนดช่วงเวลา</button>
+            <button type="button" class="filter-btn" onclick="setTimeFilter('all', this)">📋 ทั้งหมด</button>
         </div>
 
-        <div class="backdate-box" id="backdateBox">
-            <div class="backdate-box-title">⚠️ โหมดลงออเดอร์ย้อนหลัง (ระบุวันและเวลา)</div>
-            <div class="backdate-inputs">
-                <input type="date" id="backdateDateInput">
-                <input type="time" id="backdateTimeInput">
+        <div class="custom-filter-box" id="customFilterBox">
+            <div class="custom-filter-grid">
+                <div class="filter-input-group">
+                    <label>📆 ระบุวันที่:</label>
+                    <input type="date" id="selectDateInput" onchange="applyCustomFilter('date')">
+                </div>
+                <div class="filter-input-group">
+                    <label>🗓️ ระบุประจำเดือน:</label>
+                    <input type="month" id="selectMonthInput" onchange="applyCustomFilter('month')">
+                </div>
             </div>
         </div>
-    </form>
 
-    <div class="tabs">
-        <button type="button" class="tab-btn active" id="tabHistory" onclick="switchTab('history')">ประวัติการขาย</button>
-        <button type="button" class="tab-btn" id="tabSummary" onclick="switchTab('summary')">สรุปรายเมนู</button>
-        <button type="button" class="tab-btn" id="tabExpenses" onclick="switchTab('expenses')">💸 บันทึกต้นทุน</button>
-        <button type="button" class="tab-btn" id="tabPrices" onclick="switchTab('prices')">⚙️ ตั้งราคา</button>
-    </div>
-
-    <div class="list-container" id="historyView">
-        <div id="itemList"></div>
-    </div>
-
-    <div class="list-container" id="summaryView" style="display: none;">
-        <div id="menuSummaryList"></div>
-    </div>
-
-    <!-- หน้าบันทึกต้นทุนซื้อของเข้าร้าน -->
-    <div class="list-container" id="expensesView" style="display: none;">
-        <div class="price-mgr-form">
-            <input type="text" id="newExpenseName" placeholder="รายการซื้อของ เช่น ชา/นม/ของทอด" style="flex:2;">
-            <input type="number" id="newExpenseCost" placeholder="จำนวนเงิน" style="flex:1;">
-            <button type="button" class="btn-exp-add" onclick="addExpense()">บันทึกทุน</button>
-        </div>
-        <div id="expenseList"></div>
-    </div>
-
-    <!-- หน้าจัดการราคาเมนู + ส่วนซ่อน Export Excel / Google Sheets -->
-    <div class="list-container" id="pricesView" style="display: none;">
-        <div class="price-mgr-form">
-            <input type="text" id="newMenuName" placeholder="ชื่อเมนู เช่น ชาไทย ปั่น" style="flex:2;">
-            <input type="number" id="newMenuPrice" placeholder="ราคา" style="flex:1;">
-            <button type="button" onclick="addOrUpdatePrice()">บันทึก</button>
-        </div>
-        <div class="price-search-box">
-            <input type="text" id="priceSearchInput" placeholder="🔍 ค้นหาเมนูเพื่อแก้ไขราคา..." oninput="renderPriceSettingList()">
-        </div>
-        <div id="priceSettingList"></div>
-
-        <div class="export-section">
-            <div style="font-size: 0.75rem; color: #64748b; font-weight: 600; margin-bottom: 6px;">📊 จัดการข้อมูล & รายงาน (Google Sheets / Excel)</div>
-            <button type="button" class="btn-sheets-link" onclick="openGoogleSheets()">🟢 เปิดดูข้อมูลบน Google Sheets</button>
-            <button type="button" class="btn-export" onclick="exportSalesToCSV()">📥 ดาวน์โหลดรายงานยอดขาย (CSV/Excel)</button>
-            <button type="button" class="btn-export" style="background:#6366f1;" onclick="exportExpensesToCSV()">📥 ดาวน์โหลดรายงานต้นทุน (CSV/Excel)</button>
+        <div class="total-banner">
+            <div class="amount" id="totalSales">฿0</div>
+            <div class="sub" id="totalSalesSub">ยอดขายรวม</div>
             
-            <div id="syncStatus" class="sync-badge" onclick="loadFromCloud()">🔄 ซิงค์ข้อมูล Cloud</div>
+            <div>
+                <button type="button" class="btn-toggle-profit" id="btnToggleProfit" onclick="toggleProfitPanel()">
+                    📊 สรุปผลประกอบการ
+                </button>
+            </div>
+
+            <div class="secret-profit-panel" id="secretProfitPanel">
+                <div class="secret-box">
+                    <div class="secret-title">💵 รับเงินสด</div>
+                    <div class="secret-val cash" id="totalCash">฿0</div>
+                </div>
+                <div class="secret-box">
+                    <div class="secret-title">📱 สแกนจ่าย</div>
+                    <div class="secret-val qr" id="totalQr">฿0</div>
+                </div>
+                <div class="secret-box">
+                    <div class="secret-title">💸 ต้นทุนซื้อของ</div>
+                    <div class="secret-val cost" id="totalCost">฿0</div>
+                </div>
+                <div class="secret-box">
+                    <div class="secret-title">📈 กำไรสุทธิ</div>
+                    <div class="secret-val profit" id="totalProfit">฿0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="category-summary-grid">
+            <div class="cat-box">
+                <div class="cat-title">🧋 เครื่องดื่ม</div>
+                <div class="cat-val" id="catDrinkSum">฿0</div>
+                <div class="cat-count" id="catDrinkCount">0 แก้ว</div>
+            </div>
+            <div class="cat-box">
+                <div class="cat-title">🍟 ของทอด/ทานเล่น</div>
+                <div class="cat-val" id="catSnackSum">฿0</div>
+                <div class="cat-count" id="catSnackCount">0 รายการ</div>
+            </div>
+            <div class="cat-box">
+                <div class="cat-title">🍞 ปังปิ้ง</div>
+                <div class="cat-val" id="catBreadSum">฿0</div>
+                <div class="cat-count" id="catBreadCount">0 ชิ้น</div>
+            </div>
+            <div class="cat-box">
+                <div class="cat-title">🍳 กะเพรา/อาหาร/หมูปิ้ง</div>
+                <div class="cat-val" id="catFoodSum">฿0</div>
+                <div class="cat-count" id="catFoodCount">0 ชุด/จาน</div>
+            </div>
+        </div>
+
+        <div class="cat-selector">
+            <button type="button" class="cat-btn active" onclick="setCategory('auto', this)">🤖 ออโต้</button>
+            <button type="button" class="cat-btn" onclick="setCategory('เครื่องดื่ม', this)">🧋 น้ำ</button>
+            <button type="button" class="cat-btn" onclick="setCategory('ของทอด/ทานเล่น', this)">🍟 ของทอด</button>
+            <button type="button" class="cat-btn" onclick="setCategory('ขนมปังปิ้ง', this)">🍞 ปังปิ้ง</button>
+        </div>
+
+        <!-- ช่องพิมพ์รับออเดอร์หน้าร้านโดยตรง -->
+        <form id="quickForm" class="quick-input-box" onsubmit="return handleAdd(event)">
+            <div class="input-btn-group">
+                <input 
+                    type="text" 
+                    id="quickInput" 
+                    placeholder="เช่น ชาไทย เย็น, นมสดสตอเบอรี่ ปั่น, ไส้กรอก 25..." 
+                    autocomplete="off" 
+                    oninput="handleSearchSuggest(this.value)"
+                >
+                <button type="submit" class="btn-order-submit">รับออเดอร์</button>
+            </div>
+            <div id="suggestBox" class="suggest-box"></div>
+
+            <div class="backdate-control">
+                <span style="font-size:0.72rem; color:#94a3b8;">💡 พิมพ์รับออเดอร์หน้าร้านได้ทันที</span>
+                <button type="button" class="btn-toggle-backdate" id="btnToggleBackdate" onclick="toggleBackdateMode()">
+                    🕒 บันทึกย้อนหลัง
+                </button>
+            </div>
+
+            <div class="backdate-box" id="backdateBox">
+                <div class="backdate-box-title">⚠️ โหมดลงออเดอร์ย้อนหลัง (ระบุวันและเวลา)</div>
+                <div class="backdate-inputs">
+                    <input type="date" id="backdateDateInput">
+                    <input type="time" id="backdateTimeInput">
+                </div>
+            </div>
+        </form>
+
+        <div class="tabs">
+            <button type="button" class="tab-btn active" id="tabHistory" onclick="switchTab('history')">ประวัติการขาย</button>
+            <button type="button" class="tab-btn" id="tabSummary" onclick="switchTab('summary')">สรุปรายเมนู</button>
+            <button type="button" class="tab-btn" id="tabExpenses" onclick="switchTab('expenses')">💸 บันทึกต้นทุน</button>
+            <button type="button" class="tab-btn" id="tabPrices" onclick="switchTab('prices')">⚙️ ตั้งราคา & รูป</button>
+        </div>
+
+        <div class="list-container" id="historyView">
+            <div id="itemList"></div>
+        </div>
+
+        <div class="list-container" id="summaryView" style="display: none;">
+            <div id="menuSummaryList"></div>
+        </div>
+
+        <div class="list-container" id="expensesView" style="display: none;">
+            <div class="price-mgr-form-grid">
+                <div class="row-inputs">
+                    <input type="text" id="newExpenseName" placeholder="รายการซื้อของ เช่น ชา/นม/ของทอด" style="flex:2;">
+                    <input type="number" id="newExpenseCost" placeholder="จำนวนเงิน" style="flex:1;">
+                </div>
+                <button type="button" style="background:#ef4444;" onclick="addExpense()">💸 บันทึกต้นทุน</button>
+            </div>
+            <div id="expenseList"></div>
+        </div>
+
+        <!-- หน้าจัดการราคาและรูปภาพเมนู -->
+        <div class="list-container" id="pricesView" style="display: none;">
+            <div class="price-mgr-form-grid">
+                <div class="row-inputs">
+                    <input type="text" id="newMenuName" placeholder="ชื่อเมนู เช่น ชาไทย ปั่น" style="flex:2;">
+                    <input type="number" id="newMenuPrice" placeholder="ราคา" style="flex:1;">
+                </div>
+                <input type="url" id="newMenuImage" placeholder="🔗 ลิงก์รูปภาพเมนู (เช่น https://.../tea.jpg หรือเว้นว่างได้)">
+                <button type="button" onclick="addOrUpdatePrice()">💾 บันทึกเมนู & รูปภาพ</button>
+            </div>
+
+            <div class="price-search-box">
+                <input type="text" id="priceSearchInput" placeholder="🔍 ค้นหาเมนูเพื่อแก้ไขราคา/รูปภาพ..." oninput="renderPriceSettingList()">
+            </div>
+            <div id="priceSettingList"></div>
+
+            <div class="export-section">
+                <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 600; margin-bottom: 6px;">📊 จัดการข้อมูล & รายงาน (Google Sheets / Excel)</div>
+                <button type="button" class="btn-sheets-link" onclick="openGoogleSheets()">🟢 เปิดดูข้อมูลบน Google Sheets</button>
+                <button type="button" class="btn-export" onclick="exportSalesToCSV()">📥 ดาวน์โหลดรายงานยอดขาย (CSV/Excel)</button>
+                <button type="button" class="btn-export" style="background:#6366f1;" onclick="exportExpensesToCSV()">📥 ดาวน์โหลดรายงานต้นทุน (CSV/Excel)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ปุ่มสถานะการซิงค์ข้อมูลตรงกลางล่างสุด แบบมินิมอล -->
+    <div class="sync-footer-box">
+        <span id="syncStatus" class="sync-badge-bottom" onclick="loadFromCloud()">🔄 ซิงค์ข้อมูล Cloud</span>
+    </div>
+</div>
+
+<!-- Modal ตะกร้าสินค้า & เลือกว่าส่งบ้าน หรือ รับหน้าร้าน และเลือกวิธีจ่ายเงิน -->
+<div class="modal-overlay" id="cartModal">
+    <div class="modal-card">
+        <div class="modal-title">📋 สรุปรายการสั่งซื้อ</div>
+        
+        <div class="order-type-selector">
+            <button type="button" class="order-type-btn active" id="btnTypeDelivery" onclick="selectOrderType('delivery')">🛵 ส่งหน้าบ้าน</button>
+            <button type="button" class="order-type-btn" id="btnTypePickup" onclick="selectOrderType('pickup')">🛍️ รับที่หน้าร้าน</button>
+        </div>
+
+        <div class="pay-type-selector">
+            <button type="button" class="pay-type-btn active" id="btnPayQr" onclick="selectPaymentType('qr')">📱 สแกนจ่าย QR</button>
+            <button type="button" class="pay-type-btn" id="btnPayCash" onclick="selectPaymentType('cash')">💵 จ่ายเงินสด</button>
+        </div>
+
+        <div id="cartItemsList" style="max-height: 120px; overflow-y: auto; text-align: left; margin-bottom: 8px; font-size: 0.85rem;"></div>
+        
+        <input type="text" id="custNameInput" class="modal-input" placeholder="👤 ชื่อผู้สั่ง (เช่น คุณบาส)">
+        <input type="tel" id="custPhoneInput" class="modal-input" placeholder="📞 เบอร์โทรศัพท์ติดต่อ">
+        
+        <div id="deliveryAddressSection">
+            <input type="text" id="custAddressInput" class="modal-input" placeholder="🏠 บ้านเลขที่ / ซอย / จุดสังเกต">
+            <button type="button" class="btn-gps-loc" onclick="getCurrentLocation()">📍 แนบพิกัดแผนที่ปัจจุบัน (GPS)</button>
+            <input type="hidden" id="custGpsLink">
+        </div>
+
+        <div id="qrSectionContainer">
+            <div class="qr-img-box">
+                <img id="custQrImg" src="" alt="PromptPay QR">
+            </div>
+            <div style="font-size: 0.75rem; color: #94a3b8;">สแกนชำระพร้อมเพย์เลขบัตร 1449100055527 ยอดรวม:</div>
+        </div>
+
+        <div style="font-size: 1.6rem; font-weight: 700; color: #38bdf8; margin-bottom: 8px;" id="custModalTotal">฿0</div>
+
+        <div class="modal-btn-group">
+            <button type="button" class="btn-primary" onclick="submitCustomerOrder()">✅ ยืนยันสั่งซื้อ</button>
+            <button type="button" class="btn-secondary" onclick="closeCartModal()">ปิด</button>
         </div>
     </div>
 </div>
 
-<!-- Modal หน้าต่าง QR Code PromptPay -->
-<div class="modal-overlay" id="qrModal">
+<!-- Modal ใส่รหัส PIN เข้าหลังบ้าน (2424) -->
+<div class="modal-overlay" id="pinModal">
     <div class="modal-card">
-        <div class="qr-header-title">📲 สแกนจ่าย PromptPay</div>
-        <div class="qr-header-sub" id="qrMenuDesc">ฟลุ๊ค ชาเฟ่</div>
-        <div class="qr-img-box">
-            <img id="qrImageTag" src="" alt="PromptPay QR">
-        </div>
-        <div class="qr-amount-label">ยอดชำระเงินทั้งหมด</div>
-        <div class="qr-amount-val" id="qrAmountDisplay">฿0</div>
+        <div class="modal-title">🔒 เข้าสู่ระบบร้านค้า</div>
+        <input type="password" id="pinInput" class="modal-input" placeholder="ใส่รหัส PIN 4 หลัก" maxlength="8" style="text-align: center; font-size: 1.2rem; letter-spacing: 4px;">
         <div class="modal-btn-group">
-            <button type="button" class="btn-modal-done" onclick="confirmPaymentMethod('promptpay')">📱 สแกนจ่ายแล้ว</button>
-            <button type="button" class="btn-modal-close" onclick="confirmPaymentMethod('cash')">💵 รับเงินสด</button>
+            <button type="button" class="btn-primary" onclick="verifyAdminPin()">เข้าสู่ระบบ</button>
+            <button type="button" class="btn-secondary" onclick="closePinModal()">ยกเลิก</button>
         </div>
     </div>
 </div>
@@ -729,11 +1203,14 @@
 <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbzr8lEc78rzKvRvYsgKpBkiH-E7zrpdt8oj_o9oJ6PCvMh7gcfJUrUwmMo-J1uHHVXWJQ/exec";
     const GOOGLE_SHEETS_URL = "https://docs.google.com/spreadsheets/d/1EEU-LsVCzD8jbisYSVmy5jMjdTotGOgIW-4ASJlzqYU/edit";
-    const PROMPTPAY_PHONE = "0637975257";
+    const PROMPTPAY_ID = "1449100055527"; // เลขบัตรประชาชนพร้อมเพย์ใหม่
+    const ADMIN_PIN = "2424";
 
     const STORAGE_KEY = 'FLUKCHAFE_SHARED_DB_V5';
     const MENU_PRICES_KEY = 'FLUKCHAFE_SHARED_PRICES_V5';
+    const MENU_IMAGES_KEY = 'FLUKCHAFE_SHARED_IMAGES_V5';
     const EXPENSES_KEY = 'FLUKCHAFE_SHARED_EXP_V5';
+    const ADMIN_AUTH_KEY = 'FLUKCHAFE_AUTH_STATUS';
     
     const DEFAULT_PRESET_PRICES = {
         "เอสเพรสโซ่ เย็น": 30, "เอสเพรสโซ่ ปั่น": 35,
@@ -828,14 +1305,50 @@
     let sales = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
     let expenses = JSON.parse(localStorage.getItem(EXPENSES_KEY)) || [];
     let savedPrices = JSON.parse(localStorage.getItem(MENU_PRICES_KEY)) || {};
+    let savedImages = JSON.parse(localStorage.getItem(MENU_IMAGES_KEY)) || {};
     let priceBook = { ...DEFAULT_PRESET_PRICES, ...savedPrices };
+    let imageBook = { ...savedImages };
     
+    let currentMode = localStorage.getItem(ADMIN_AUTH_KEY) === 'true' ? 'admin' : 'customer';
+    let cart = [];
+    let custCurrentCat = 'all';
+    let selectedOrderType = 'delivery';
+    let selectedPaymentType = 'qr';
+    let previousSalesCount = sales.length;
+
     let selectedCategory = 'auto';
     let currentFilter = 'today';
     let customFilterType = 'date';
     let isProfitShown = false;
     let isBackdateActive = false;
-    let currentActiveItemId = null;
+
+    const customerSection = document.getElementById('customerSection');
+    const adminSection = document.getElementById('adminSection');
+    const custMenuList = document.getElementById('custMenuList');
+    const recMenuList = document.getElementById('recMenuList');
+    const recSection = document.getElementById('recSection');
+    const custSearchInput = document.getElementById('custSearchInput');
+    const custSuggestDropdown = document.getElementById('custSuggestDropdown');
+    const cartBarWrapper = document.getElementById('cartBarWrapper');
+    const cartCount = document.getElementById('cartCount');
+    const cartPreviewText = document.getElementById('cartPreviewText');
+    const cartTotalSum = document.getElementById('cartTotalSum');
+    const cartModal = document.getElementById('cartModal');
+    const cartItemsList = document.getElementById('cartItemsList');
+    const custModalTotal = document.getElementById('custModalTotal');
+    const custQrImg = document.getElementById('custQrImg');
+    const qrSectionContainer = document.getElementById('qrSectionContainer');
+    const custNameInput = document.getElementById('custNameInput');
+    const custPhoneInput = document.getElementById('custPhoneInput');
+    const custAddressInput = document.getElementById('custAddressInput');
+    const custGpsLink = document.getElementById('custGpsLink');
+    const deliveryAddressSection = document.getElementById('deliveryAddressSection');
+    const btnTypeDelivery = document.getElementById('btnTypeDelivery');
+    const btnTypePickup = document.getElementById('btnTypePickup');
+    const btnPayQr = document.getElementById('btnPayQr');
+    const btnPayCash = document.getElementById('btnPayCash');
+    const pinModal = document.getElementById('pinModal');
+    const pinInput = document.getElementById('pinInput');
 
     const quickInput = document.getElementById('quickInput');
     const suggestBox = document.getElementById('suggestBox');
@@ -862,10 +1375,440 @@
     const backdateDateInput = document.getElementById('backdateDateInput');
     const backdateTimeInput = document.getElementById('backdateTimeInput');
 
-    const qrModal = document.getElementById('qrModal');
-    const qrImageTag = document.getElementById('qrImageTag');
-    const qrAmountDisplay = document.getElementById('qrAmountDisplay');
-    const qrMenuDesc = document.getElementById('qrMenuDesc');
+    const THAI_MONTHS_SHORT = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+
+    function playAlertSound() {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(880, ctx.currentTime);
+            gain.gain.setValueAtTime(0.5, ctx.currentTime);
+            osc.start();
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.6);
+            osc.stop(ctx.currentTime + 0.6);
+        } catch (e) {}
+    }
+
+    function handleLogoTap() {
+        if (currentMode === 'customer') {
+            pinModal.style.display = 'flex';
+            pinInput.value = '';
+            pinInput.focus();
+        } else {
+            if (confirm('ต้องการออกจากระบบร้านค้าเพื่อกลับสู่หน้าสั่งซื้อของลูกค้าหรือไม่?')) {
+                setAppMode('customer');
+            }
+        }
+    }
+
+    function verifyAdminPin() {
+        if (pinInput.value.trim() === ADMIN_PIN) {
+            closePinModal();
+            setAppMode('admin');
+        } else {
+            alert('รหัส PIN ไม่ถูกต้องครับ');
+            pinInput.value = '';
+            pinInput.focus();
+        }
+    }
+
+    function closePinModal() {
+        pinModal.style.display = 'none';
+    }
+
+    function setAppMode(mode) {
+        currentMode = mode;
+        localStorage.setItem(ADMIN_AUTH_KEY, mode === 'admin' ? 'true' : 'false');
+        if (mode === 'admin') {
+            customerSection.style.display = 'none';
+            adminSection.style.display = 'block';
+            renderUI();
+        } else {
+            adminSection.style.display = 'none';
+            customerSection.style.display = 'block';
+            renderCustomerMenu();
+        }
+    }
+
+    function getMenuPopularityMap() {
+        const counts = {};
+        sales.forEach(s => {
+            const cleanName = (s.name || '').split(' (')[0].trim();
+            counts[cleanName] = (counts[cleanName] || 0) + (Number(s.qty) || 1);
+        });
+        return counts;
+    }
+
+    function selectOrderType(type) {
+        selectedOrderType = type;
+        if (type === 'delivery') {
+            btnTypeDelivery.classList.add('active');
+            btnTypePickup.classList.remove('active');
+            deliveryAddressSection.style.display = 'block';
+        } else {
+            btnTypePickup.classList.add('active');
+            btnTypeDelivery.classList.remove('active');
+            deliveryAddressSection.style.display = 'none';
+        }
+    }
+
+    function selectPaymentType(type) {
+        selectedPaymentType = type;
+        if (type === 'qr') {
+            btnPayQr.classList.add('active');
+            btnPayCash.classList.remove('active');
+            qrSectionContainer.style.display = 'block';
+        } else {
+            btnPayCash.classList.add('active');
+            btnPayQr.classList.remove('active');
+            qrSectionContainer.style.display = 'none';
+        }
+    }
+
+    function filterCustCategory(cat, btn) {
+        custCurrentCat = cat;
+        document.querySelectorAll('.cust-cat-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderCustomerMenu();
+    }
+
+    function getCategoryEmoji(cat) {
+        if (cat === 'ขนมปังปิ้ง') return '🍞';
+        if (cat === 'ของทอด/ทานเล่น') return '🍟';
+        if (cat === 'อาหาร/กะเพรา') return '🍳';
+        return '🧋';
+    }
+
+    function handleCustomerSearchInput(val) {
+        renderCustomerMenu();
+        const query = val.trim().toLowerCase();
+        if (!query) {
+            custSuggestDropdown.style.display = 'none';
+            custSuggestDropdown.innerHTML = '';
+            return;
+        }
+
+        const matchedKeys = Object.keys(priceBook).filter(name => name.toLowerCase().includes(query));
+        if (matchedKeys.length === 0) {
+            custSuggestDropdown.style.display = 'none';
+            custSuggestDropdown.innerHTML = '';
+            return;
+        }
+
+        custSuggestDropdown.innerHTML = '';
+        matchedKeys.slice(0, 6).forEach(name => {
+            const cat = detectCategory(name);
+            const price = priceBook[name];
+            const imageUrl = imageBook[name] || '';
+            let imgContent = imageUrl ? `<img src="${imageUrl}" class="cust-suggest-img" onerror="this.outerHTML='<div>${getCategoryEmoji(cat)}</div>'">` : `<div>${getCategoryEmoji(cat)}</div>`;
+
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'cust-suggest-item';
+            itemDiv.innerHTML = `
+                <div class="cust-suggest-img">${imgContent}</div>
+                <div class="cust-suggest-info">
+                    <span class="cust-suggest-name">${name}</span>
+                    <span class="cust-suggest-cat">${cat}</span>
+                </div>
+                <span class="cust-suggest-price">฿${price}</span>
+            `;
+            itemDiv.onclick = () => {
+                addToCart(name, price);
+                custSearchInput.value = '';
+                custSuggestDropdown.style.display = 'none';
+                renderCustomerMenu();
+            };
+            custSuggestDropdown.appendChild(itemDiv);
+        });
+        custSuggestDropdown.style.display = 'block';
+    }
+
+    document.addEventListener('click', (e) => {
+        if (!custSearchInput.contains(e.target) && !custSuggestDropdown.contains(e.target)) {
+            custSuggestDropdown.style.display = 'none';
+        }
+    });
+
+    function renderCustomerMenu() {
+        custMenuList.innerHTML = '';
+        recMenuList.innerHTML = '';
+        const searchKeyword = (custSearchInput ? custSearchInput.value : '').trim().toLowerCase();
+        const popularity = getMenuPopularityMap();
+
+        let allKeys = Object.keys(priceBook);
+
+        const sortedByPopularity = [...allKeys].sort((a, b) => (popularity[b] || 0) - (popularity[a] || 0));
+        const topRecommended = sortedByPopularity.filter(name => (popularity[name] || 0) > 0).slice(0, 6);
+
+        if (topRecommended.length > 0 && !searchKeyword && custCurrentCat === 'all') {
+            recSection.style.display = 'block';
+            topRecommended.forEach(name => {
+                const cat = detectCategory(name);
+                const imageUrl = imageBook[name] || '';
+                let imgHtml = imageUrl ? `<img src="${imageUrl}" alt="${name}" onerror="this.outerHTML='<div style=\\'font-size:1.8rem;\\'>${getCategoryEmoji(cat)}</div>'">` : `<div style="font-size:1.8rem;">${getCategoryEmoji(cat)}</div>`;
+                
+                const recCard = document.createElement('div');
+                recCard.className = 'rec-card';
+                recCard.innerHTML = `
+                    <div class="rec-img-box">${imgHtml}</div>
+                    <div class="rec-body">
+                        <div class="rec-name">${name}</div>
+                        <div class="rec-price">฿${priceBook[name]}</div>
+                    </div>
+                `;
+                recCard.onclick = () => addToCart(name, priceBook[name]);
+                recMenuList.appendChild(recCard);
+            });
+        } else {
+            recSection.style.display = 'none';
+        }
+
+        let keys = [...allKeys];
+        if (searchKeyword) {
+            keys = keys.filter(k => k.toLowerCase().includes(searchKeyword));
+        }
+
+        if (custCurrentCat !== 'all') {
+            keys = keys.filter(name => detectCategory(name) === custCurrentCat);
+        }
+
+        keys.sort((a, b) => {
+            const countA = popularity[a] || 0;
+            const countB = popularity[b] || 0;
+            if (countB !== countA) return countB - countA;
+            return a.localeCompare(b, 'th');
+        });
+
+        if (keys.length === 0) {
+            custMenuList.innerHTML = '<div style="grid-column: span 2; text-align:center; color:#64748b; padding:30px 0;">ไม่พบเมนูที่ค้นหา</div>';
+            return;
+        }
+
+        keys.forEach((name, index) => {
+            const cat = detectCategory(name);
+            const card = document.createElement('div');
+            card.className = 'cust-menu-card';
+            
+            const imageUrl = imageBook[name] || '';
+            let imgHtml = '';
+            if (imageUrl) {
+                imgHtml = `<img src="${imageUrl}" alt="${name}" class="cust-menu-img" onerror="this.outerHTML='<div class=\\'cust-img-fallback\\'>${getCategoryEmoji(cat)}</div>'">`;
+            } else {
+                imgHtml = `<div class="cust-img-fallback">${getCategoryEmoji(cat)}</div>`;
+            }
+
+            let bestsellerTag = '';
+            if ((popularity[name] || 0) > 0 && index < 4 && !searchKeyword) {
+                bestsellerTag = `<div class="bestseller-badge">🔥 ขายดี</div>`;
+            }
+
+            card.innerHTML = `
+                ${bestsellerTag}
+                <div class="cust-img-container">
+                    ${imgHtml}
+                </div>
+                <div class="cust-card-body">
+                    <div>
+                        <div class="cust-card-title">${name}</div>
+                        <span class="badge">${cat}</span>
+                    </div>
+                    <div class="cust-card-price">฿${priceBook[name]}</div>
+                </div>
+            `;
+            card.onclick = () => addToCart(name, priceBook[name]);
+            custMenuList.appendChild(card);
+        });
+    }
+
+    function addToCart(name, price) {
+        const found = cart.find(item => item.name === name);
+        if (found) {
+            found.qty += 1;
+        } else {
+            cart.push({ name, price, qty: 1 });
+        }
+        updateCartUI();
+    }
+
+    function updateCartUI() {
+        let totalCount = 0;
+        let totalSum = 0;
+        let lastItemName = '';
+        
+        cart.forEach(item => {
+            totalCount += item.qty;
+            totalSum += (item.price * item.qty);
+            lastItemName = item.name;
+        });
+
+        cartCount.innerText = totalCount;
+        cartTotalSum.innerText = `฿${totalSum.toLocaleString()}`;
+        
+        if (totalCount > 0) {
+            cartPreviewText.innerText = `ล่าสุด: ${lastItemName} (แตะเพื่อสรุปออเดอร์)`;
+            cartBarWrapper.style.display = 'block';
+        } else {
+            cartBarWrapper.style.display = 'none';
+        }
+    }
+
+    function getCurrentLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    const lat = pos.coords.latitude;
+                    const lng = pos.coords.longitude;
+                    const mapUrl = `https://www.google.com/maps?q=${lat},${lng}`;
+                    custGpsLink.value = mapUrl;
+                    alert('📍 แนบพิกัดแผนที่สำเร็จเรียบร้อยครับ');
+                },
+                () => {
+                    alert('ไม่สามารถดึงพิกัดได้ กรุณาระบุที่อยู่และจุดสังเกตในช่องด้านบนครับ');
+                }
+            );
+        } else {
+            alert('อุปกรณ์ไม่รองรับการแชร์พิกัด GPS');
+        }
+    }
+
+    function openCartModal() {
+        if (cart.length === 0) return;
+        cartItemsList.innerHTML = '';
+        let totalSum = 0;
+        cart.forEach((item, index) => {
+            const sum = item.price * item.qty;
+            totalSum += sum;
+            const div = document.createElement('div');
+            div.style = 'display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px solid #334155;';
+            div.innerHTML = `
+                <div>${item.name} x${item.qty}</div>
+                <div>
+                    <b>฿${sum}</b>
+                    <button type="button" style="background:rgba(239,68,68,0.2); color:#f87171; border:1px solid #ef4444; border-radius:4px; padding:2px 6px; margin-left:6px; cursor:pointer;" onclick="removeFromCart(${index})">ลบ</button>
+                </div>
+            `;
+            cartItemsList.appendChild(div);
+        });
+
+        custModalTotal.innerText = `฿${totalSum.toLocaleString()}`;
+        custQrImg.src = `https://promptpay.io/${PROMPTPAY_ID}/${totalSum}.png`;
+        selectOrderType(selectedOrderType);
+        selectPaymentType(selectedPaymentType);
+        cartModal.style.display = 'flex';
+    }
+
+    function removeFromCart(idx) {
+        cart.splice(idx, 1);
+        updateCartUI();
+        if (cart.length === 0) {
+            closeCartModal();
+        } else {
+            openCartModal();
+        }
+    }
+
+    function closeCartModal() {
+        cartModal.style.display = 'none';
+    }
+
+    function submitCustomerOrder() {
+        if (cart.length === 0) return;
+        const name = custNameInput.value.trim();
+        const phone = custPhoneInput.value.trim();
+        const addr = custAddressInput.value.trim();
+        const gps = custGpsLink.value.trim();
+
+        if (!name || !phone) {
+            alert('⚠️ กรุณากรอก "ชื่อ" และ "เบอร์โทรติดต่อ" ครับ');
+            return;
+        }
+
+        if (selectedOrderType === 'delivery' && !addr) {
+            alert('⚠️ กรุณาระบุ "ที่อยู่จัดส่ง" สำหรับการส่งหน้าบ้านครับ');
+            return;
+        }
+
+        const now = new Date();
+        const dateStr = formatDateYMD(now);
+        const timeStr = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+        const isDel = (selectedOrderType === 'delivery');
+        const payMethod = (selectedPaymentType === 'qr') ? 'promptpay' : 'cash';
+
+        cart.forEach(item => {
+            const newItem = {
+                id: String(Date.now() + Math.floor(Math.random() * 100)),
+                ts: Date.now(),
+                date: dateStr,
+                name: item.name,
+                unitPrice: item.price,
+                qty: item.qty,
+                totalPrice: item.price * item.qty,
+                category: detectCategory(item.name),
+                paymentMethod: payMethod,
+                isDelivery: isDel,
+                orderType: isDel ? 'ส่งหน้าบ้าน' : 'รับหน้าร้าน',
+                custName: name,
+                custPhone: phone,
+                custAddress: isDel ? addr : 'รับที่หน้าร้าน',
+                custGps: isDel ? gps : '',
+                time: timeStr
+            };
+            sales.push(newItem);
+            saveToCloud({ action: "add_sale", item: newItem });
+        });
+
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
+        
+        if (isDel) {
+            alert(`🎉 ทางร้านได้รับออเดอร์เรียบร้อยแล้ว!\nกำลังจัดเตรียมและจัดส่งไปที่: ${addr}\nเบอร์ติดต่อ: ${phone}`);
+        } else {
+            alert(`🎉 ทางร้านได้รับออเดอร์เรียบร้อยแล้ว!\nกรุณามารับเครื่องดื่มที่หน้าร้านได้เลยครับ (ชื่อ: ${name})`);
+        }
+
+        cart = [];
+        custNameInput.value = '';
+        custPhoneInput.value = '';
+        custAddressInput.value = '';
+        custGpsLink.value = '';
+        updateCartUI();
+        closeCartModal();
+        renderCustomerMenu();
+    }
+
+    function formatThaiDateTime(rawDate, rawTime, ts = null) {
+        let d = null;
+        if (ts && !isNaN(ts)) {
+            d = new Date(Number(ts));
+        } else if (rawDate && typeof rawDate === 'string' && rawDate.includes('-')) {
+            const parts = rawDate.split('T')[0].split('-');
+            if (parts.length === 3) {
+                d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+            }
+        }
+        if (!d || isNaN(d.getTime())) d = new Date();
+
+        const now = new Date();
+        const isToday = (d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate());
+        
+        const yesterday = new Date();
+        yesterday.setDate(now.getDate() - 1);
+        const isYesterday = (d.getFullYear() === yesterday.getFullYear() && d.getMonth() === yesterday.getMonth() && d.getDate() === yesterday.getDate());
+
+        let cleanTime = '';
+        if (rawTime && typeof rawTime === 'string') {
+            const timeMatch = rawTime.match(/\d{1,2}:\d{2}/);
+            if (timeMatch) cleanTime = timeMatch[0];
+        }
+        if (!cleanTime) cleanTime = d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', hour12: false });
+
+        if (isToday) return `วันนี้ • ${cleanTime} น.`;
+        if (isYesterday) return `เมื่อวานนี้ • ${cleanTime} น.`;
+        return `${d.getDate()} ${THAI_MONTHS_SHORT[d.getMonth()] || ''} ${String(d.getFullYear() + 543).slice(-2)} • ${cleanTime} น.`;
+    }
 
     function formatDateYMD(d) {
         const year = d.getFullYear();
@@ -874,43 +1817,11 @@
         return `${year}-${month}-${day}`;
     }
 
-    const initD = new Date();
-    selectDateInput.value = formatDateYMD(initD);
-    selectMonthInput.value = `${initD.getFullYear()}-${String(initD.getMonth() + 1).padStart(2, '0')}`;
-    backdateDateInput.value = formatDateYMD(initD);
-    backdateTimeInput.value = initD.toTimeString().substring(0, 5);
-
-    function showPromptPayQR(name, qty, totalAmount, itemId = null) {
-        currentActiveItemId = itemId;
-        qrMenuDesc.innerText = `${name} (x${qty})`;
-        qrAmountDisplay.innerText = `฿${Number(totalAmount).toLocaleString()}`;
-        qrImageTag.src = `https://promptpay.io/${PROMPTPAY_PHONE}/${totalAmount}.png`;
-        qrModal.style.display = 'flex';
-    }
-
-    function confirmPaymentMethod(method) {
-        if (currentActiveItemId) {
-            const idx = sales.findIndex(s => String(s.id) === String(currentActiveItemId));
-            if (idx !== -1) {
-                sales[idx].paymentMethod = method;
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
-                saveToCloud({ action: "update_sale", item: sales[idx] });
-                renderUI();
-            }
-        }
-        closeQrModal();
-    }
-
-    function closeQrModal() {
-        qrModal.style.display = 'none';
-        currentActiveItemId = null;
-    }
-
     function togglePayMethod(id) {
         const idx = sales.findIndex(s => String(s.id) === String(id));
         if (idx !== -1) {
-            const current = sales[idx].paymentMethod || 'promptpay';
-            sales[idx].paymentMethod = (current === 'promptpay') ? 'cash' : 'promptpay';
+            const current = sales[idx].paymentMethod || 'cash';
+            sales[idx].paymentMethod = (current === 'cash') ? 'promptpay' : 'cash';
             localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
             saveToCloud({ action: "update_sale", item: sales[idx] });
             renderUI();
@@ -927,26 +1838,15 @@
 
     function toggleProfitPanel() {
         isProfitShown = !isProfitShown;
-        if (isProfitShown) {
-            secretProfitPanel.style.display = 'grid';
-            btnToggleProfit.innerText = '🔒 ปิดผลประกอบการ';
-        } else {
-            secretProfitPanel.style.display = 'none';
-            btnToggleProfit.innerText = '📊 สรุปผลประกอบการ';
-        }
+        secretProfitPanel.style.display = isProfitShown ? 'grid' : 'none';
+        btnToggleProfit.innerText = isProfitShown ? '🔒 ปิดผลประกอบการ' : '📊 สรุปผลประกอบการ';
     }
 
     function toggleBackdateMode() {
         isBackdateActive = !isBackdateActive;
-        if (isBackdateActive) {
-            backdateBox.style.display = 'block';
-            btnToggleBackdate.classList.add('active');
-            btnToggleBackdate.innerText = '🕒 เปิดโหมดลงย้อนหลังอยู่';
-        } else {
-            backdateBox.style.display = 'none';
-            btnToggleBackdate.classList.remove('active');
-            btnToggleBackdate.innerText = '🕒 บันทึกย้อนหลัง';
-        }
+        backdateBox.style.display = isBackdateActive ? 'block' : 'none';
+        btnToggleBackdate.classList.toggle('active', isBackdateActive);
+        btnToggleBackdate.innerText = isBackdateActive ? '🕒 เปิดโหมดลงย้อนหลังอยู่' : '🕒 บันทึกย้อนหลัง';
     }
 
     function handleSearchSuggest(val) {
@@ -959,9 +1859,7 @@
 
         const matched = [];
         for (const [name, price] of Object.entries(priceBook)) {
-            if (name.toLowerCase().includes(query)) {
-                matched.push({ name, price });
-            }
+            if (name.toLowerCase().includes(query)) matched.push({ name, price });
         }
 
         if (matched.length === 0) {
@@ -974,10 +1872,7 @@
         matched.slice(0, 8).forEach(item => {
             const div = document.createElement('div');
             div.className = 'suggest-item';
-            div.innerHTML = `
-                <span>${item.name}</span>
-                <span class="suggest-price">฿${item.price}</span>
-            `;
+            div.innerHTML = `<span>${item.name}</span><span class="suggest-price">฿${item.price}</span>`;
             div.onclick = () => {
                 quickInput.value = item.name;
                 suggestBox.style.display = 'none';
@@ -1000,29 +1895,30 @@
             const res = await fetch(API_URL);
             const data = await res.json();
             if (data && data.sales) {
-                sales = data.sales.map(s => ({
-                    ...s,
-                    qty: Number(s.qty) || 1,
-                    unitPrice: Number(s.unitPrice) || 0,
-                    totalPrice: Number(s.totalPrice) || (Number(s.qty || 1) * Number(s.unitPrice || 0))
-                }));
+                if (data.sales.length > previousSalesCount && currentMode === 'admin') {
+                    playAlertSound();
+                }
+                sales = data.sales;
+                previousSalesCount = sales.length;
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
             }
             if (data && data.expenses) {
-                expenses = data.expenses.map(e => ({
-                    ...e,
-                    cost: Number(e.cost) || 0
-                }));
+                expenses = data.expenses;
                 localStorage.setItem(EXPENSES_KEY, JSON.stringify(expenses));
             }
             if (data && data.prices) {
                 priceBook = { ...DEFAULT_PRESET_PRICES, ...data.prices };
                 localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
             }
-            syncStatus.innerText = "☁️ ซิงค์ข้อมูลล่าสุดแล้ว";
-            renderUI();
+            if (data && data.images) {
+                imageBook = { ...data.images };
+                localStorage.setItem(MENU_IMAGES_KEY, JSON.stringify(imageBook));
+            }
+            syncStatus.innerText = "☁️ ซิงค์ตรงกันทุกเครื่องแล้ว";
+            if (currentMode === 'admin') renderUI();
+            if (currentMode === 'customer') renderCustomerMenu();
         } catch (e) {
-            syncStatus.innerText = "💾 ใช้งานข้อมูลในเครื่อง (ออฟไลน์)";
+            syncStatus.innerText = "💾 ใช้งานข้อมูลในเครื่อง";
         }
     }
 
@@ -1041,9 +1937,7 @@
         currentFilter = filter;
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-
         customFilterBox.style.display = (filter === 'custom') ? 'block' : 'none';
-
         renderUI();
     }
 
@@ -1079,19 +1973,17 @@
         let qty = 1;
 
         const parts = text.split(/\s+/);
-
         if (priceBook[text]) {
             name = text;
-            unitPrice = Number(priceBook[text]);
+            unitPrice = priceBook[text];
             qty = 1;
         } else if (parts.length >= 2 && !isNaN(parts[parts.length - 1])) {
             const potentialQty = parseInt(parts[parts.length - 1]);
             const potentialName = parts.slice(0, parts.length - 1).join(' ');
-
             if (priceBook[potentialName]) {
                 name = potentialName;
                 qty = potentialQty;
-                unitPrice = Number(priceBook[name]);
+                unitPrice = priceBook[name];
             } else {
                 name = text;
             }
@@ -1100,7 +1992,7 @@
         }
 
         if ((isNaN(unitPrice) || unitPrice <= 0) && priceBook[name]) {
-            unitPrice = Number(priceBook[name]);
+            unitPrice = priceBook[name];
         }
 
         if (!name || isNaN(unitPrice) || unitPrice <= 0 || qty <= 0) {
@@ -1134,29 +2026,25 @@
         const newId = String(Date.now() + Math.floor(Math.random() * 100));
         const newItem = { 
             id: newId,
-            ts: Number(recordTs),
+            ts: recordTs,
             date: recordDate,
             name, 
-            unitPrice: Number(unitPrice), 
-            qty: Number(qty), 
-            totalPrice: Number(totalPrice), 
+            unitPrice, 
+            qty, 
+            totalPrice, 
             category,
-            paymentMethod: 'promptpay',
+            paymentMethod: 'cash',
+            isDelivery: false,
+            orderType: 'หน้าร้าน',
             time: recordTime 
         };
 
         sales.push(newItem);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
-        
         saveToCloud({ action: "add_sale", item: newItem });
 
         renderUI();
         quickInput.value = '';
-
-        if (!isBackdateActive) {
-            showPromptPayQR(name, qty, totalPrice, newId);
-        }
-
         return false;
     }
 
@@ -1187,10 +2075,10 @@
 
         const newExp = {
             id: String(Date.now() + Math.floor(Math.random() * 100)),
-            ts: Number(recordTs),
+            ts: recordTs,
             date: recordDate,
             name,
-            cost: Number(cost),
+            cost,
             time: recordTime
         };
 
@@ -1269,7 +2157,7 @@
         let totalQrSum = 0;
         let totalPieces = 0;
         
-        displayExpenses.forEach(e => totalC += Number(e.cost || 0));
+        displayExpenses.forEach(e => totalC += Number(e.cost));
 
         const catStats = {
             'เครื่องดื่ม': { sum: 0, count: 0 },
@@ -1291,41 +2179,53 @@
             itemList.innerHTML = '<div class="empty-text">ยังไม่มีรายการขายในช่วงนี้</div>';
         } else {
             displaySales.slice().reverse().forEach((item) => {
-                const qty = Number(item.qty) || 1;
-                const unitPrice = Number(item.unitPrice) || Number(priceBook[item.name]) || 0;
-                const price = Number(item.totalPrice) || (unitPrice * qty);
-                
+                const price = Number(item.totalPrice);
                 totalS += price;
-                totalPieces += qty;
+                totalPieces += Number(item.qty);
 
-                if (item.paymentMethod === 'cash') {
-                    totalCashSum += price;
-                } else {
+                if (item.paymentMethod === 'promptpay') {
                     totalQrSum += price;
+                } else {
+                    totalCashSum += price;
                 }
 
                 const cat = catStats[item.category] ? item.category : 'อาหาร/กะเพรา';
                 catStats[cat].sum += price;
-                catStats[cat].count += qty;
+                catStats[cat].count += Number(item.qty);
 
                 if (!menuGrouped[cat][item.name]) menuGrouped[cat][item.name] = { qty: 0, sum: 0 };
-                menuGrouped[cat][item.name].qty += qty;
+                menuGrouped[cat][item.name].qty += Number(item.qty);
                 menuGrouped[cat][item.name].sum += price;
 
-                const isQr = (item.paymentMethod !== 'cash');
+                const isQr = (item.paymentMethod === 'promptpay');
                 const badgeClass = isQr ? 'pay-badge qr' : 'pay-badge cash';
                 const badgeText = isQr ? '📱 สแกนจ่าย' : '💵 เงินสด';
+                const formattedTime = formatThaiDateTime(item.date, item.time, item.ts);
+
+                let orderTypeTag = '';
+                let orderDetail = '';
+                if (item.isDelivery) {
+                    orderTypeTag = `<span class="delivery-badge">🛵 ส่งหน้าบ้าน</span>`;
+                    let gpsBtn = item.custGps ? `<a href="${item.custGps}" target="_blank" style="color:#38bdf8; text-decoration:underline; margin-left:6px;">[🗺️ แผนที่]</a>` : '';
+                    let phoneLink = item.custPhone ? `<a href="tel:${item.custPhone}" style="color:#38bdf8; font-weight:600; margin-left:4px;">📞 ${item.custPhone}</a>` : '';
+                    orderDetail = `<div class="item-delivery-info">📍 ${item.custName || 'ลูกค้า'} ${phoneLink} | ${item.custAddress || ''} ${gpsBtn}</div>`;
+                } else if (item.custName) {
+                    orderTypeTag = `<span class="pickup-badge">🛍️ รับหน้าร้าน</span>`;
+                    let phoneLink = item.custPhone ? `<a href="tel:${item.custPhone}" style="color:#4ade80; font-weight:600; margin-left:4px;">📞 ${item.custPhone}</a>` : '';
+                    orderDetail = `<div class="item-pickup-info">👤 ผู้สั่ง: ${item.custName} ${phoneLink}</div>`;
+                }
 
                 const row = document.createElement('div');
                 row.className = 'item-row';
                 row.innerHTML = `
-                    <div>
-                        <div class="item-title">${item.name} <span style="color:#0284c7;">x${qty}</span> <span class="badge">${cat}</span></div>
-                        <div class="item-detail">(@${unitPrice} บ.) • ${item.date} ${item.time || ''} น.</div>
+                    <div style="flex:1;">
+                        <div class="item-title">${item.name} <span style="color:#38bdf8;">x${item.qty}</span> <span class="badge">${cat}</span> ${orderTypeTag}</div>
+                        <div class="item-detail">(@${item.unitPrice} บ.) • ${formattedTime}</div>
+                        ${orderDetail}
                     </div>
-                    <div style="display:flex; align-items:center;">
+                    <div style="display:flex; align-items:center; margin-left:8px;">
                         <span class="item-price">฿${price.toLocaleString()}</span>
-                        <button class="${badgeClass}" onclick="togglePayMethod('${item.id}')" title="แตะเพื่อสลับประเภทการรับเงิน">${badgeText}</button>
+                        <button class="${badgeClass}" onclick="togglePayMethod('${item.id}')" title="แตะเพื่อสลับเป็น ${isQr ? 'เงินสด' : 'สแกนจ่าย'}">${badgeText}</button>
                         <button class="btn-del" onclick="deleteItem('${item.id}')">ลบ</button>
                     </div>
                 `;
@@ -1338,15 +2238,16 @@
             expenseList.innerHTML = '<div class="empty-text">ยังไม่มีรายการต้นทุนในช่วงนี้</div>';
         } else {
             displayExpenses.slice().reverse().forEach((item) => {
+                const formattedExpTime = formatThaiDateTime(item.date, item.time, item.ts);
                 const row = document.createElement('div');
                 row.className = 'item-row';
                 row.innerHTML = `
                     <div>
-                        <div class="item-title" style="color:#ef4444;">💸 ${item.name}</div>
-                        <div class="item-detail">${item.date} • ${item.time || ''} น.</div>
+                        <div class="item-title" style="color:#f87171;">💸 ${item.name}</div>
+                        <div class="item-detail">${formattedExpTime}</div>
                     </div>
                     <div style="display:flex; align-items:center;">
-                        <span class="item-price" style="color:#ef4444;">-฿${Number(item.cost || 0).toLocaleString()}</span>
+                        <span class="item-price" style="color:#f87171;">-฿${Number(item.cost).toLocaleString()}</span>
                         <button class="btn-del" onclick="deleteExpense('${item.id}')">ลบ</button>
                     </div>
                 `;
@@ -1356,15 +2257,7 @@
 
         const profit = totalS - totalC;
         totalSales.innerText = `฿${totalS.toLocaleString()}`;
-        
-        let filterLabel = "วันนี้";
-        if (currentFilter === 'week') filterLabel = "อาทิตย์นี้";
-        else if (currentFilter === 'all') filterLabel = "ทั้งหมด";
-        else if (currentFilter === 'custom') {
-            filterLabel = (customFilterType === 'date') ? `วันที่ ${selectDateInput.value}` : `เดือน ${selectMonthInput.value}`;
-        }
-        
-        totalSalesSub.innerText = `ยอดขายรวม${filterLabel} • รวม ${totalPieces} ชิ้น (${displaySales.length} ออเดอร์)`;
+        totalSalesSub.innerText = `ยอดขายรวม • ${totalPieces} ชิ้น (${displaySales.length} ออเดอร์)`;
         
         document.getElementById('totalCash').innerText = `฿${totalCashSum.toLocaleString()}`;
         document.getElementById('totalQr').innerText = `฿${totalQrSum.toLocaleString()}`;
@@ -1382,7 +2275,7 @@
         document.getElementById('catBreadCount').innerText = `${catStats['ขนมปังปิ้ง'].count} ชิ้น`;
 
         document.getElementById('catFoodSum').innerText = `฿${catStats['อาหาร/กะเพรา'].sum.toLocaleString()}`;
-        document.getElementById('catFoodCount').innerText = `${catStats['อาหาร/กะเพรา'].count} จาน/ชุด`;
+        document.getElementById('catFoodCount').innerText = `${catStats['อาหาร/กะเพรา'].count} ชุด/จาน`;
 
         menuSummaryList.innerHTML = '';
         let hasMenu = false;
@@ -1416,7 +2309,6 @@
     function renderPriceSettingList() {
         priceSettingList.innerHTML = '';
         const searchKeyword = (priceSearchInput ? priceSearchInput.value : '').trim().toLowerCase();
-        
         let keys = Object.keys(priceBook);
         if (searchKeyword) {
             keys = keys.filter(k => k.toLowerCase().includes(searchKeyword));
@@ -1430,10 +2322,11 @@
         keys.sort().forEach(name => {
             const row = document.createElement('div');
             row.className = 'summary-row price-list-row';
+            const hasImg = imageBook[name] ? '🖼️' : '📝';
             row.innerHTML = `
-                <span onclick="fillEditPrice('${name}', ${priceBook[name]})" style="flex:1;">📝 ${name}</span>
+                <span onclick="fillEditPrice('${name}', ${priceBook[name]}, '${imageBook[name] || ''}')" style="flex:1;">${hasImg} ${name}</span>
                 <div style="display:flex; align-items:center; gap:8px;">
-                    <b onclick="fillEditPrice('${name}', ${priceBook[name]})" style="color:#0284c7;">฿${priceBook[name]}</b>
+                    <b onclick="fillEditPrice('${name}', ${priceBook[name]}, '${imageBook[name] || ''}')" style="color:#38bdf8;">฿${priceBook[name]}</b>
                     <button class="btn-del" onclick="deletePrice('${name}')">✕</button>
                 </div>
             `;
@@ -1441,33 +2334,50 @@
         });
     }
 
-    function fillEditPrice(name, price) {
+    function fillEditPrice(name, price, imgUrl) {
         document.getElementById('newMenuName').value = name;
         document.getElementById('newMenuPrice').value = price;
+        document.getElementById('newMenuImage').value = imgUrl || '';
         document.getElementById('newMenuPrice').focus();
     }
 
     function addOrUpdatePrice() {
         const name = document.getElementById('newMenuName').value.trim();
         const price = parseFloat(document.getElementById('newMenuPrice').value);
+        const imageUrl = document.getElementById('newMenuImage').value.trim();
+
         if (name && !isNaN(price) && price > 0) {
             priceBook[name] = price;
             localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
-            saveToCloud({ action: "update_price", name, price });
+
+            if (imageUrl) {
+                imageBook[name] = imageUrl;
+            } else {
+                delete imageBook[name];
+            }
+            localStorage.setItem(MENU_IMAGES_KEY, JSON.stringify(imageBook));
+
+            saveToCloud({ action: "update_price", name, price, imageUrl });
+            
             document.getElementById('newMenuName').value = '';
             document.getElementById('newMenuPrice').value = '';
+            document.getElementById('newMenuImage').value = '';
             renderUI();
+            renderCustomerMenu();
         } else {
             alert('กรุณากรอกชื่อเมนูและราคาให้ถูกต้อง');
         }
     }
 
     function deletePrice(name) {
-        if (confirm(`ต้องการลบราคาของเมนู "${name}" หรือไม่?`)) {
+        if (confirm(`ต้องการลบเมนู "${name}" หรือไม่?`)) {
             delete priceBook[name];
+            delete imageBook[name];
             localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
+            localStorage.setItem(MENU_IMAGES_KEY, JSON.stringify(imageBook));
             saveToCloud({ action: "delete_price", name });
             renderUI();
+            renderCustomerMenu();
         }
     }
 
@@ -1492,10 +2402,14 @@
 
     function exportSalesToCSV() {
         if (sales.length === 0) { alert('ไม่มีข้อมูลยอดขายสำหรับดาวน์โหลด'); return; }
-        let csv = '\uFEFFวันที่,เวลา,ชื่อเมนู,หมวดหมู่,ประเภทการชำระ,ราคาต่อหน่วย,จำนวน,ราคารวม\n';
+        let csv = '\uFEFFวันที่,เวลา,ชื่อเมนู,หมวดหมู่,ประเภทการชำระ,รูปแบบการรับ,ผู้สั่ง,เบอร์โทร,ที่อยู่จัดส่ง,ราคาต่อหน่วย,จำนวน,ราคารวม\n';
         sales.forEach(s => {
-            const payText = (s.paymentMethod === 'cash') ? 'เงินสด' : 'สแกนจ่าย';
-            csv += `"${s.date}","${s.time || ''}","${s.name}","${s.category}","${payText}",${s.unitPrice || 0},${s.qty || 1},${s.totalPrice || 0}\n`;
+            const payText = (s.paymentMethod === 'promptpay') ? 'สแกนจ่าย' : 'เงินสด';
+            const orderType = s.orderType || (s.isDelivery ? 'ส่งหน้าบ้าน' : 'หน้าร้าน');
+            const cName = s.custName || '-';
+            const cPhone = s.custPhone || '-';
+            const cAddr = s.custAddress ? s.custAddress.replace(/"/g, '""') : '-';
+            csv += `"${s.date}","${s.time}","${s.name}","${s.category}","${payText}",${orderType},"${cName}","${cPhone}","${cAddr}",${s.unitPrice},${s.qty},${s.totalPrice}\n`;
         });
         downloadBlob(csv, `FLUKCHAFE_Sales_${formatDateYMD(new Date())}.csv`);
     }
@@ -1504,7 +2418,7 @@
         if (expenses.length === 0) { alert('ไม่มีข้อมูลต้นทุนสำหรับดาวน์โหลด'); return; }
         let csv = '\uFEFFวันที่,เวลา,รายการซื้อของ,จำนวนเงินต้นทุน\n';
         expenses.forEach(e => {
-            csv += `"${e.date}","${e.time || ''}","${e.name}",${e.cost || 0}\n`;
+            csv += `"${e.date}","${e.time}","${e.name}",${e.cost}\n`;
         });
         downloadBlob(csv, `FLUKCHAFE_Expenses_${formatDateYMD(new Date())}.csv`);
     }
@@ -1520,9 +2434,11 @@
         document.body.removeChild(link);
     }
 
-    renderUI();
+    // เริ่มต้นระบบตามสถานะ Session ที่บันทึกไว้
+    setAppMode(currentMode);
     window.addEventListener('DOMContentLoaded', () => {
         loadFromCloud();
+        setInterval(loadFromCloud, 5000);
     });
 </script>
 </body>
