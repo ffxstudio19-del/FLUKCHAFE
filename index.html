@@ -934,7 +934,7 @@
             <div class="delivery-main-text">🛵 สั่งเครื่องดื่ม & ของทานเล่น ส่งถึงหน้าบ้าน หรือสั่งล่วงหน้ารับหน้าร้าน แจ้งได้เลยครับ</div>
         </div>
         <div class="external-phone-box">
-            <a href="tel:0637975257" class="delivery-phone-text">📞 โทรสั่งด่วน: 063-797-5257</a>
+            <a href="tel:0637975257" class="delivery-phone-text">🤎 อยากกินอะไร สั่งเลยส่งไวทันใจ: 063-797-5257</a>
         </div>
 
         <!-- ช่องค้นหาเมนูพร้อม Auto-suggest -->
@@ -1156,6 +1156,7 @@
             <button type="button" class="order-type-btn" id="btnTypePickup" onclick="selectOrderType('pickup')">🛍️ รับที่หน้าร้าน</button>
         </div>
 
+        <!-- ตัวเลือกวิธีชำระเงิน (สแกนจ่าย QR หรือ เงินสด) -->
         <div class="pay-type-selector">
             <button type="button" class="pay-type-btn active" id="btnPayQr" onclick="selectPaymentType('qr')">📱 สแกนจ่าย QR</button>
             <button type="button" class="pay-type-btn" id="btnPayCash" onclick="selectPaymentType('cash')">💵 จ่ายเงินสด</button>
@@ -1172,11 +1173,12 @@
             <input type="hidden" id="custGpsLink">
         </div>
 
+        <!-- ส่วนแสดง QR Code เฉพาะเมื่อเลือกสแกนจ่าย -->
         <div id="qrSectionContainer">
             <div class="qr-img-box">
                 <img id="custQrImg" src="" alt="PromptPay QR">
             </div>
-            <div style="font-size: 0.75rem; color: #94a3b8;">สแกนชำระพร้อมเพย์เลขบัตร 1449100055527 ยอดรวม:</div>
+            <div style="font-size: 0.75rem; color: #94a3b8;">สแกนชำระผ่าน PromptPay ยอดรวม:</div>
         </div>
 
         <div style="font-size: 1.6rem; font-weight: 700; color: #38bdf8; margin-bottom: 8px;" id="custModalTotal">฿0</div>
@@ -1203,7 +1205,7 @@
 <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbzr8lEc78rzKvRvYsgKpBkiH-E7zrpdt8oj_o9oJ6PCvMh7gcfJUrUwmMo-J1uHHVXWJQ/exec";
     const GOOGLE_SHEETS_URL = "https://docs.google.com/spreadsheets/d/1EEU-LsVCzD8jbisYSVmy5jMjdTotGOgIW-4ASJlzqYU/edit";
-    const PROMPTPAY_ID = "1449100055527"; // เลขบัตรประชาชนพร้อมเพย์ใหม่
+    const PROMPTPAY_PHONE = "0637975257";
     const ADMIN_PIN = "2424";
 
     const STORAGE_KEY = 'FLUKCHAFE_SHARED_DB_V5';
@@ -1313,7 +1315,7 @@
     let cart = [];
     let custCurrentCat = 'all';
     let selectedOrderType = 'delivery';
-    let selectedPaymentType = 'qr';
+    let selectedPaymentType = 'qr'; // 'qr' or 'cash'
     let previousSalesCount = sales.length;
 
     let selectedCategory = 'auto';
@@ -1695,7 +1697,7 @@
         });
 
         custModalTotal.innerText = `฿${totalSum.toLocaleString()}`;
-        custQrImg.src = `https://promptpay.io/${PROMPTPAY_ID}/${totalSum}.png`;
+        custQrImg.src = `https://promptpay.io/${PROMPTPAY_PHONE}/${totalSum}.png`;
         selectOrderType(selectedOrderType);
         selectPaymentType(selectedPaymentType);
         cartModal.style.display = 'flex';
