@@ -516,7 +516,7 @@
             to { opacity: 1; }
         }
 
-        /* Modal หน้าต่างแก้ไขออเดอร์ */
+        /* Modal แก้ไขออเดอร์ */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -1013,15 +1013,15 @@
     backdateDateInput.value = formatDateYMD(initD);
     backdateTimeInput.value = initD.toTimeString().substring(0, 5);
 
-    function togglePayMethod(id) {
+    async function togglePayMethod(id) {
         const targetId = String(id);
         const idx = sales.findIndex(s => String(s.id) === targetId);
         if (idx !== -1) {
             const currentMethod = sales[idx].paymentMethod || 'cash';
             sales[idx].paymentMethod = (currentMethod === 'cash') ? 'promptpay' : 'cash';
             localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
-            saveToCloud({ action: "update_sale", item: sales[idx] });
             renderUI();
+            await saveToCloud({ action: "update_sale", item: sales[idx] });
         }
     }
 
@@ -1140,17 +1140,15 @@
         }
     }
 
-    function saveToCloud(payload) {
+    async function saveToCloud(payload) {
         if (syncDot) syncDot.className = 'status-dot syncing';
         try {
-            fetch(API_URL, {
+            await fetch(API_URL, {
                 method: "POST",
-                mode: "no-cors",
-                headers: { "Content-Type": "text/plain" },
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
                 body: JSON.stringify(payload)
-            }).then(() => {
-                setTimeout(() => loadFromCloud(), 1000);
             });
+            await loadFromCloud();
         } catch (e) {
             if (syncDot) syncDot.className = 'status-dot';
         }
@@ -1187,7 +1185,7 @@
         return 'เครื่องดื่ม';
     }
 
-    function handleAdd(e) {
+    async function handleAdd(e) {
         if (e) e.preventDefault();
         suggestBox.style.display = 'none';
         const text = quickInput.value.trim();
@@ -1266,15 +1264,14 @@
 
         sales.push(newItem);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
-        
-        saveToCloud({ action: "add_sale", item: newItem });
-
         renderUI();
         quickInput.value = '';
+
+        await saveToCloud({ action: "add_sale", item: newItem });
         return false;
     }
 
-    function addExpense() {
+    async function addExpense() {
         const name = document.getElementById('newExpenseName').value.trim();
         const cost = parseFloat(document.getElementById('newExpenseCost').value);
         if (!name || isNaN(cost) || cost <= 0) {
@@ -1310,14 +1307,14 @@
 
         expenses.push(newExp);
         localStorage.setItem(EXPENSES_KEY, JSON.stringify(expenses));
-        saveToCloud({ action: "add_expense", item: newExp });
-
         document.getElementById('newExpenseName').value = '';
         document.getElementById('newExpenseCost').value = '';
         renderUI();
+
+        await saveToCloud({ action: "add_expense", item: newExp });
     }
 
-    function deleteExpense(id) {
+    async function deleteExpense(id) {
         const targetId = String(id);
         const item = expenses.find(e => String(e.id) === targetId);
         const name = item ? item.name : '';
@@ -1328,12 +1325,13 @@
 
             expenses = expenses.filter(item => item && String(item.id) !== targetId);
             localStorage.setItem(EXPENSES_KEY, JSON.stringify(expenses));
-            saveToCloud({ action: "delete_expense", id: targetId });
             renderUI();
+
+            await saveToCloud({ action: "delete_expense", id: targetId });
         }
     }
 
-    function deleteItem(id) {
+    async function deleteItem(id) {
         const targetId = String(id);
         const item = sales.find(s => String(s.id) === targetId);
         const name = item ? item.name : '';
@@ -1344,12 +1342,12 @@
 
             sales = sales.filter(item => item && String(item.id) !== targetId);
             localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
-            saveToCloud({ action: "delete_sale", id: targetId });
             renderUI();
+
+            await saveToCloud({ action: "delete_sale", id: targetId });
         }
     }
 
-    /* ระบบ Modal แก้ไขออเดอร์ */
     function openEditModal(id) {
         const item = sales.find(s => String(s.id) === String(id));
         if (!item) return;
@@ -1367,7 +1365,7 @@
         editModal.style.display = 'none';
     }
 
-    function saveEditedItem() {
+    async function saveEditedItem() {
         const id = editItemId.value;
         const name = editItemName.value.trim();
         const category = editItemCategory.value;
@@ -1388,9 +1386,9 @@
             sales[idx].totalPrice = unitPrice * qty;
 
             localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
-            saveToCloud({ action: "update_sale", item: sales[idx] });
             renderUI();
             closeEditModal();
+            await saveToCloud({ action: "update_sale", item: sales[idx] });
         }
     }
 
@@ -1443,8 +1441,8 @@
         }
 
         return {
-            sales: sales.filter(item => item && typeof item === 'object').filter(filterFn),
-            expenses: expenses.filter(item => item && typeof item === 'object').filter(filterFn)
+            sales: sales.filter(item => item && typeof item === 'object' && !deletedSalesIds.has(String(item.id))).filter(filterFn),
+            expenses: expenses.filter(item => item && typeof item === 'object' && !deletedExpensesIds.has(String(item.id))).filter(filterFn)
         };
     }
 
@@ -1637,27 +1635,27 @@
         document.getElementById('newMenuPrice').focus();
     }
 
-    function addOrUpdatePrice() {
+    async function addOrUpdatePrice() {
         const name = document.getElementById('newMenuName').value.trim();
         const price = parseFloat(document.getElementById('newMenuPrice').value);
         if (name && !isNaN(price) && price > 0) {
             priceBook[name] = price;
             localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
-            saveToCloud({ action: "update_price", name, price });
             document.getElementById('newMenuName').value = '';
             document.getElementById('newMenuPrice').value = '';
             renderUI();
+            await saveToCloud({ action: "update_price", name, price });
         } else {
             alert('กรุณากรอกชื่อเมนูและราคาให้ถูกต้อง');
         }
     }
 
-    function deletePrice(name) {
+    async function deletePrice(name) {
         if (confirm(`ท่านต้องการยืนยันการลบเมนู "${name}" ออกจากระบบใช่หรือไม่?`)) {
             delete priceBook[name];
             localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
-            saveToCloud({ action: "delete_price", name });
             renderUI();
+            await saveToCloud({ action: "delete_price", name });
         }
     }
 
