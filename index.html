@@ -903,7 +903,7 @@
             <div id="priceSettingList"></div>
 
             <div class="export-section">
-                <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 600; margin-bottom: 6px;">📊 จัดการข้อมูล & รายงาน (Google Sheets / Excel)</div>
+                <div style="font-size: 0.75rem; color: #64748b; font-weight: 600; margin-bottom: 6px;">📊 จัดการข้อมูล & รายงาน (Google Sheets / Excel)</div>
                 <button type="button" class="btn-sheets-link" onclick="openGoogleSheets()">🟢 เปิดดูข้อมูลบน Google Sheets</button>
                 <button type="button" class="btn-export" onclick="exportSalesToCSV()">📥 ดาวน์โหลดรายงานยอดขาย (CSV/Excel)</button>
                 <button type="button" class="btn-export" style="background:#6366f1;" onclick="exportExpensesToCSV()">📥 ดาวน์โหลดรายงานต้นทุน (CSV/Excel)</button>
@@ -1218,6 +1218,19 @@
         }
     }
 
+    function selectPaymentType(type) {
+        selectedPaymentType = type;
+        if (type === 'qr') {
+            btnPayQr.classList.add('active');
+            btnPayCash.classList.remove('active');
+            qrSectionContainer.style.display = 'block';
+        } else {
+            btnPayCash.classList.add('active');
+            btnPayQr.classList.remove('active');
+            qrSectionContainer.style.display = 'none';
+        }
+    }
+
     function filterCustCategory(cat, btn) {
         custCurrentCat = cat;
         document.querySelectorAll('.cust-cat-btn').forEach(b => b.classList.remove('active'));
@@ -1527,14 +1540,14 @@
             const data = await res.json();
             
             if (data && data.sales && Array.isArray(data.sales)) {
-                // 🛡️ กรองและทำความสะอาดข้อมูลที่หลุดรอดจาก Google Sheets ทันที
-                let cleanedSales = data.sales.filter(item => {
-                    const dateStr = String(item.date || '');
-                    // กรองเฉพาะแถวที่วันที่เป็นรูปแบบปี YYYY-MM-DD ที่ถูกต้องเท่านั้น
-                    return dateStr.includes('-') && !dateStr.includes('178749') && !isNaN(Number(item.unitPrice));
-                });
+                let cleanedSales = [];
+                data.sales.forEach(item => {
+                    const nameStr = String(item.name || '').trim();
+                    // 🛡️ ระบบอัตโนมัติ: ข้ามหรือซ่อมแซมแถวข้อมูลที่เป็นตัวเลขล้วน (ข้อมูลขยะ)
+                    if (!nameStr || !isNaN(Number(nameStr))) {
+                        return; // ข้ามแถวข้อมูลขยะ
+                    }
 
-                cleanedSales.forEach(item => {
                     let up = Number(item.unitPrice) || 0;
                     let q = Number(item.qty) || 1;
                     
@@ -1546,6 +1559,13 @@
                         item.qty = q;
                     }
                     item.totalPrice = up * q;
+
+                    // กำหนดหมวดหมู่อัตโนมัติหากแถวไหนหมวดหมู่ว่างหรือผิดเพี้ยน
+                    if (!item.category || item.category === 'อาหาร/กะเพรา') {
+                        item.category = detectCategory(item.name);
+                    }
+
+                    cleanedSales.push(item);
                 });
 
                 if (cleanedSales.length > 0) {
@@ -1614,8 +1634,9 @@
     }
 
     function detectCategory(name) {
-        if (selectedCategory !== 'auto') return selectedCategory;
-        const n = name.toLowerCase();
+        if (selectedCategory !== 'auto' && selectedCategory !== 'all') return selectedCategory;
+        const n = String(name || '').toLowerCase();
+        if (!isNaN(Number(n))) return 'เครื่องดื่ม'; // ป้องกันกรณีชื่อเป็นตัวเลข
         if (n.includes('ปัง') || n.includes('โทสต์') || n.includes('เนยนม') || n.includes('สังขยา') || n.includes('เนยน้ำตาล')) return 'ขนมปังปิ้ง';
         if (n.includes('เฟรน') || n.includes('ฟราย') || n.includes('ชีส') || n.includes('บอล') || n.includes('ป๊อบ') || n.includes('เก็ต') || n.includes('ไส้กรอก') || n.includes('ทอด') || n.includes('ลูกชิ้น')) return 'ของทอด/ทานเล่น';
         if (n.includes('กะเพรา') || n.includes('ข้าว') || n.includes('หมูปิ้ง') || n.includes('ไก่ย่าง') || n.includes('ไข่ดาว') || n.includes('ผัด') || n.includes('มาม่า') || n.includes('ยำ')) return 'อาหาร/กะเพรา';
@@ -1818,6 +1839,9 @@
                 item.qty = q;
             }
             item.totalPrice = up * q;
+            if (!item.category || item.category === 'อาหาร/กะเพรา') {
+                item.category = detectCategory(item.name);
+            }
         });
 
         const data = getFilteredData();
@@ -1852,6 +1876,9 @@
             itemList.innerHTML = '<div class="empty-text">ยังไม่มีรายการขายในช่วงนี้</div>';
         } else {
             displaySales.slice().reverse().forEach((item) => {
+                const nameStr = String(item.name || '').trim();
+                if (!nameStr || !isNaN(Number(nameStr))) return; // ข้ามแถวข้อมูลขยะ
+
                 const price = Number(item.totalPrice);
                 totalS += price;
                 totalPieces += Number(item.qty);
@@ -1862,7 +1889,7 @@
                     totalCashSum += price;
                 }
 
-                const cat = catStats[item.category] ? item.category : 'อาหาร/กะเพรา';
+                const cat = catStats[item.category] ? item.category : detectCategory(item.name);
                 catStats[cat].sum += price;
                 catStats[cat].count += Number(item.qty);
 
