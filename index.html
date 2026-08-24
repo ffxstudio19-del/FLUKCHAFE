@@ -954,12 +954,12 @@
     const API_URL = "https://script.google.com/macros/s/AKfycbzr8lEc78rzKvRvYsgKpBkiH-E7zrpdt8oj_o9oJ6PCvMh7gcfJUrUwmMo-J1uHHVXWJQ/exec";
     const GOOGLE_SHEETS_URL = "https://docs.google.com/spreadsheets/d/1EEU-LsVCzD8jbisYSVmy5jMjdTotGOgIW-4ASJlzqYU/edit";
 
-    const STORAGE_KEY = 'FLUKCHAFE_SHARED_DB_V17';
-    const MENU_PRICES_KEY = 'FLUKCHAFE_SHARED_PRICES_V17';
-    const RECIPES_KEY = 'FLUKCHAFE_SHARED_RECIPES_V17';
-    const EXPENSES_KEY = 'FLUKCHAFE_SHARED_EXP_V17';
-    const DELETED_SALES_KEY = 'FLUKCHAFE_DELETED_SALES_IDS_V17';
-    const DELETED_EXP_KEY = 'FLUKCHAFE_DELETED_EXP_IDS_V17';
+    const STORAGE_KEY = 'FLUKCHAFE_SHARED_DB_V18';
+    const MENU_PRICES_KEY = 'FLUKCHAFE_SHARED_PRICES_V18';
+    const RECIPES_KEY = 'FLUKCHAFE_SHARED_RECIPES_V18';
+    const EXPENSES_KEY = 'FLUKCHAFE_SHARED_EXP_V18';
+    const DELETED_SALES_KEY = 'FLUKCHAFE_DELETED_SALES_IDS_V18';
+    const DELETED_EXP_KEY = 'FLUKCHAFE_DELETED_EXP_IDS_V18';
 
     const DEFAULT_RECIPES = {
         "เอสเพรสโซ่ เย็น": "📍 เอสเพรสโซ่ • เย็น 20 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 60 ml\n⁃ กาแฟ 3 ช้อนกาแฟ (15g)\n⁃ นมจืด 100 ml\n⁃ นมข้นหวาน 20 ml\n⁃ นมข้นจืด 20 ml\n⁃ น้ำเชื่อม 10 ml ( ถ้าหวานน้อยไม่ต้องใส่ )",
@@ -1274,13 +1274,11 @@
         const idx = sales.findIndex(s => String(s.id) === targetId);
         if (idx === -1) return;
 
-        const isCurrentlyDone = sales[idx].name.includes('**');
-        const nextDone = !isCurrentlyDone;
-        
-        let cleanName = sales[idx].name.replace(/\s*\*\*\s*/g, '').trim();
-        sales[idx].name = nextDone ? `${cleanName} **` : cleanName;
+        const currentStatus = sales[idx].status || 'pending';
+        const nextStatus = (currentStatus === 'done') ? 'pending' : 'done';
+        sales[idx].status = nextStatus;
 
-        if (nextDone) {
+        if (nextStatus === 'done') {
             row.classList.add('item-done');
             el.innerText = '✓';
         } else {
@@ -1545,7 +1543,8 @@
             totalPrice: Number(totalPrice), 
             category: String(category),
             paymentMethod: 'cash',
-            time: String(recordTime)
+            time: String(recordTime),
+            status: 'pending'
         };
 
         sales.push(newItem);
@@ -1665,8 +1664,7 @@
 
         const idx = sales.findIndex(s => String(s.id) === String(id));
         if (idx !== -1) {
-            const isDone = sales[idx].name.includes('**');
-            sales[idx].name = isDone ? `${name} **` : name;
+            sales[idx].name = name;
             sales[idx].category = category;
             sales[idx].unitPrice = unitPrice;
             sales[idx].qty = qty;
@@ -1838,7 +1836,7 @@
                     const badgeClass = isQr ? 'pay-badge qr' : 'pay-badge cash';
                     const badgeText = isQr ? '📱 สแกน' : '💵 สด';
                     
-                    const isDone = item.name.includes('**');
+                    const isDone = (item.status === 'done');
                     const doneClass = isDone ? 'item-done' : '';
                     const cleanName = item.name.replace(/\s*\*\*\s*/g, '').trim();
                     const isDrink = isDrinkCategory(item.category);
@@ -2051,7 +2049,7 @@
     function exportExpensesToCSV() {
         if (expenses.length === 0) { alert('ไม่มีข้อมูลต้นทุนสำหรับดาวน์โหลด'); return; }
         let csv = '\uFEFFวันที่,เวลา,รายการซื้อของ,จำนวนเงินต้นทุน\n';
-        expenses.expenses.forEach(e => {
+        expenses.forEach(e => {
             csv += `"${e.date}","${e.time}","${e.name}",${e.cost}\n`;
         });
         downloadBlob(csv, `FLUKCHAFE_Expenses_${formatDateYMD(new Date())}.csv`);
