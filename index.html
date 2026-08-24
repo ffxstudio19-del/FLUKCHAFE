@@ -960,8 +960,6 @@
     const EXPENSES_KEY = 'FLUKCHAFE_SHARED_EXP_V17';
     const DELETED_SALES_KEY = 'FLUKCHAFE_DELETED_SALES_IDS_V17';
     const DELETED_EXP_KEY = 'FLUKCHAFE_DELETED_EXP_IDS_V17';
-    const PAY_METHODS_LOCK_KEY = 'FLUKCHAFE_PAY_LOCK_V17';
-    const DONE_MAP_KEY = 'FLUKCHAFE_SHARED_DONE_MAP_V17';
 
     const DEFAULT_RECIPES = {
         "เอสเพรสโซ่ เย็น": "📍 เอสเพรสโซ่ • เย็น 20 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 60 ml\n⁃ กาแฟ 3 ช้อนกาแฟ (15g)\n⁃ นมจืด 100 ml\n⁃ นมข้นหวาน 20 ml\n⁃ นมข้นจืด 20 ml\n⁃ น้ำเชื่อม 10 ml ( ถ้าหวานน้อยไม่ต้องใส่ )",
@@ -1117,8 +1115,6 @@
     
     let deletedSalesIds = new Set(JSON.parse(localStorage.getItem(DELETED_SALES_KEY)) || []);
     let deletedExpensesIds = new Set(JSON.parse(localStorage.getItem(DELETED_EXP_KEY)) || []);
-    let payMethodsLock = JSON.parse(localStorage.getItem(PAY_METHODS_LOCK_KEY)) || {};
-    let doneStateMap = JSON.parse(localStorage.getItem(DONE_MAP_KEY)) || {};
 
     let selectedCategory = 'auto';
     let currentFilter = 'today';
@@ -1278,10 +1274,9 @@
         const idx = sales.findIndex(s => String(s.id) === targetId);
         if (idx === -1) return;
 
-        const isCurrentlyDone = doneStateMap[targetId] === true;
+        const isCurrentlyDone = sales[idx].name.includes('**');
         const nextDone = !isCurrentlyDone;
-        doneStateMap[targetId] = nextDone;
-
+        
         let cleanName = sales[idx].name.replace(/\s*\*\*\s*/g, '').trim();
         sales[idx].name = nextDone ? `${cleanName} **` : cleanName;
 
@@ -1293,14 +1288,8 @@
             el.innerText = '';
         }
 
-        localStorage.setItem(DONE_MAP_KEY, JSON.stringify(doneStateMap));
         localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
-
-        fetch(API_URL, {
-            method: "POST",
-            headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify({ action: "update_sale", item: sales[idx] })
-        }).catch(() => {});
+        saveToCloud({ action: "update_sale", item: sales[idx] });
     }
 
     function togglePayMethod(id) {
@@ -1311,17 +1300,10 @@
             const nextMethod = (currentMethod === 'cash') ? 'promptpay' : 'cash';
             sales[idx].paymentMethod = nextMethod;
 
-            payMethodsLock[targetId] = nextMethod;
-            localStorage.setItem(PAY_METHODS_LOCK_KEY, JSON.stringify(payMethodsLock));
             localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
-            
             renderUI();
             
-            fetch(API_URL, {
-                method: "POST",
-                headers: { "Content-Type": "text/plain;charset=utf-8" },
-                body: JSON.stringify({ action: "update_sale", item: sales[idx] })
-            }).catch(() => {});
+            saveToCloud({ action: "update_sale", item: sales[idx] });
         }
     }
 
@@ -1417,20 +1399,8 @@
             const data = await res.json();
             if (data) {
                 if (Array.isArray(data.sales)) {
-                    sales = data.sales
-                        .filter(item => item && item.id && !deletedSalesIds.has(String(item.id)))
-                        .map(item => {
-                            const tid = String(item.id);
-                            if (payMethodsLock[tid]) {
-                                item.paymentMethod = payMethodsLock[tid];
-                            }
-                            if (item.name && item.name.includes('**')) {
-                                doneStateMap[tid] = true;
-                            }
-                            return item;
-                        });
+                    sales = data.sales.filter(item => item && item.id && !deletedSalesIds.has(String(item.id)));
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
-                    localStorage.setItem(DONE_MAP_KEY, JSON.stringify(doneStateMap));
                 }
                 if (Array.isArray(data.expenses)) {
                     expenses = data.expenses.filter(item => item && item.id && !deletedExpensesIds.has(String(item.id)));
@@ -1655,8 +1625,6 @@
         if (confirm(`ท่านต้องการยืนยันการลบรายการออเดอร์ "${name}" ออกจากระบบใช่หรือไม่?`)) {
             deletedSalesIds.add(targetId);
             localStorage.setItem(DELETED_SALES_KEY, JSON.stringify(Array.from(deletedSalesIds)));
-            delete doneStateMap[targetId];
-            localStorage.setItem(DONE_MAP_KEY, JSON.stringify(doneStateMap));
 
             sales = sales.filter(item => item && String(item.id) !== targetId);
             localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
@@ -1697,7 +1665,7 @@
 
         const idx = sales.findIndex(s => String(s.id) === String(id));
         if (idx !== -1) {
-            const isDone = doneStateMap[id] === true || sales[idx].name.includes('**');
+            const isDone = sales[idx].name.includes('**');
             sales[idx].name = isDone ? `${name} **` : name;
             sales[idx].category = category;
             sales[idx].unitPrice = unitPrice;
@@ -1870,9 +1838,7 @@
                     const badgeClass = isQr ? 'pay-badge qr' : 'pay-badge cash';
                     const badgeText = isQr ? '📱 สแกน' : '💵 สด';
                     
-                    const isDone = item.name.includes('**') || doneStateMap[String(item.id)] === true;
-                    if (isDone) doneStateMap[String(item.id)] = true;
-
+                    const isDone = item.name.includes('**');
                     const doneClass = isDone ? 'item-done' : '';
                     const cleanName = item.name.replace(/\s*\*\*\s*/g, '').trim();
                     const isDrink = isDrinkCategory(item.category);
@@ -2085,7 +2051,7 @@
     function exportExpensesToCSV() {
         if (expenses.length === 0) { alert('ไม่มีข้อมูลต้นทุนสำหรับดาวน์โหลด'); return; }
         let csv = '\uFEFFวันที่,เวลา,รายการซื้อของ,จำนวนเงินต้นทุน\n';
-        expenses.forEach(e => {
+        expenses.expenses.forEach(e => {
             csv += `"${e.date}","${e.time}","${e.name}",${e.cost}\n`;
         });
         downloadBlob(csv, `FLUKCHAFE_Expenses_${formatDateYMD(new Date())}.csv`);
