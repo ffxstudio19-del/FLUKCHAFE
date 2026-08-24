@@ -1,223 +1,1508 @@
-const SHEET_NAME_SALES = "Sales";
-const EXPENSE_SHEET = "Expenses";
-const PRICE_SHEET = "Prices";
-const IMAGE_SHEET = "Images"; // เผื่อไว้เก็บรูปภาพตามต้องการ
-
-function doGet(e) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  
-  var sales = [];
-  var salesSheet = ss.getSheetByName(SHEET_NAME_SALES);
-  if (salesSheet) {
-    var data = salesSheet.getDataRange().getValues();
-    for (var i = 1; i < data.length; i++) {
-      if (data[i][0]) {
-        var dateVal = String(data[i][1] || '').trim();
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FLUKCHAFE - ฟลุ๊ค ชาเฟ่ POS & Profit</title>
+    
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; font-family: 'Kanit', sans-serif; margin: 0; padding: 0; }
         
-        // 🛡️ ระบบกรอง: ข้ามแถวข้อมูลที่วันที่รวน หรือข้อมูลหลุดตำแหน่ง
-        if (!dateVal.includes('-') || dateVal.includes('178749') || dateVal.length > 15) {
-          continue; 
+        body { 
+            background: #0f172a url('bg.jpg') no-repeat center center fixed;
+            background-size: cover;
+            min-height: 100vh;
+            padding: 12px; 
+            color: #1e293b; 
         }
 
-        var up = Number(data[i][4]) || 0;
-        var q = Number(data[i][5]) || 1;
+        .container { 
+            max-width: 480px; 
+            margin: 0 auto; 
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 20px; 
+            padding: 16px; 
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25); 
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
         
-        // ป้องกันกรณีสลับช่องราคาและจำนวนในข้อมูลเก่า
-        if (up > 50 && q <= 5 && up % 5 !== 0 && q > 1) {
-          var temp = up;
-          up = q;
-          q = temp;
+        .brand-header { text-align: center; margin-bottom: 12px; position: relative; }
+        .brand-logo { width: 75px; height: 75px; border-radius: 50%; object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 2px solid #0284c7; }
+        .brand-name-en { font-size: 1.55rem; font-weight: 700; color: #0f172a; margin-top: 4px; line-height: 1.1; }
+        .brand-name-th { font-size: 0.9rem; font-weight: 400; color: #64748b; margin-top: 2px; }
+
+        .sync-badge {
+            display: inline-block;
+            font-size: 0.72rem;
+            padding: 3px 10px;
+            border-radius: 12px;
+            background: #e0f2fe;
+            color: #0369a1;
+            margin-top: 6px;
+            font-weight: 500;
+            cursor: pointer;
         }
 
-        sales.push({
-          id: String(data[i][0]),
-          ts: Number(data[i][1]) || Date.now(),
-          date: dateVal,
-          name: String(data[i][2] || ''),
-          unitPrice: up,
-          qty: q,
-          totalPrice: up * q,
-          category: String(data[i][7] || 'เครื่องดื่ม'),
-          paymentMethod: String(data[i][8] || 'cash'),
-          isDelivery: String(data[i][9]) === 'true',
-          orderType: String(data[i][10] || 'หน้าร้าน'),
-          custName: String(data[i][11] || ''),
-          custPhone: String(data[i][12] || ''),
-          custAddress: String(data[i][13] || ''),
-          custGps: String(data[i][14] || ''),
-          time: String(data[i][15] || '12:00')
+        .time-filter {
+            display: grid;
+            grid-template-columns: 1fr 1.25fr 1.35fr 1fr;
+            gap: 3px;
+            background: #e2e8f0;
+            padding: 3px;
+            border-radius: 10px;
+            margin-bottom: 6px;
+        }
+        .filter-btn {
+            padding: 6px 2px;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            font-size: 0.72rem;
+            font-weight: 500;
+            cursor: pointer;
+            color: #64748b;
+            white-space: nowrap;
+        }
+        .filter-btn.active {
+            background: #fff;
+            color: #0284c7;
+            font-weight: 600;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+        }
+
+        .custom-filter-box {
+            display: none;
+            margin-bottom: 10px;
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 8px 10px;
+        }
+        .custom-filter-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .filter-input-group label {
+            display: block;
+            font-size: 0.7rem;
+            color: #475569;
+            margin-bottom: 3px;
+            font-weight: 600;
+        }
+        .filter-input-group input {
+            width: 100%;
+            padding: 5px 6px;
+            border-radius: 6px;
+            border: 1.5px solid #0284c7;
+            font-size: 0.75rem;
+            outline: none;
+            background: #fff;
+            color: #0f172a;
+        }
+
+        .total-banner {
+            background: #0f172a;
+            color: #fff;
+            border-radius: 14px;
+            padding: 14px 10px 10px 10px;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .total-banner .amount { font-size: 2.3rem; font-weight: 600; color: #38bdf8; line-height: 1.1; }
+        .total-banner .sub { font-size: 0.8rem; color: #94a3b8; margin-top: 4px; }
+
+        .btn-toggle-profit {
+            background: rgba(255, 255, 255, 0.12);
+            color: #e2e8f0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 4px 14px;
+            font-size: 0.75rem;
+            margin-top: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-toggle-profit:hover, .btn-toggle-profit:active {
+            background: rgba(56, 189, 248, 0.2);
+            color: #38bdf8;
+            border-color: #38bdf8;
+        }
+
+        .secret-profit-panel {
+            display: none;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed rgba(255, 255, 255, 0.2);
+        }
+        .secret-box {
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+            padding: 8px 4px;
+        }
+        .secret-title { font-size: 0.7rem; color: #94a3b8; }
+        .secret-val { font-size: 1.1rem; font-weight: 600; margin-top: 2px; }
+        .secret-val.cost { color: #f87171; }
+        .secret-val.profit { color: #4ade80; }
+        .secret-val.cash { color: #34d399; }
+        .secret-val.qr { color: #38bdf8; }
+
+        .category-summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+        .cat-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 8px 10px;
+        }
+        .cat-title { font-size: 0.75rem; color: #64748b; font-weight: 500; }
+        .cat-val { font-size: 1.05rem; font-weight: 600; color: #0f172a; margin-top: 2px; }
+        .cat-count { font-size: 0.75rem; color: #0284c7; }
+
+        .cat-selector {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+        .cat-btn {
+            background: #e2e8f0;
+            border: none;
+            padding: 8px 2px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            font-weight: 500;
+            color: #475569;
+        }
+        .cat-btn.active { background: #0284c7; color: #fff; }
+
+        .quick-input-box { margin-bottom: 14px; position: relative; }
+        .input-btn-group { display: flex; gap: 6px; }
+        .input-btn-group input {
+            flex: 1;
+            padding: 12px 14px;
+            font-size: 1.05rem;
+            border: 2px solid #0284c7;
+            border-radius: 12px;
+            outline: none;
+            background: #fff;
+        }
+        .input-btn-group input:focus { border-color: #0369a1; box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.2); }
+        .btn-order-submit {
+            background: #0284c7;
+            color: #fff;
+            border: none;
+            padding: 0 16px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            white-space: nowrap;
+            box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);
+        }
+        .btn-order-submit:active { background: #0369a1; transform: scale(0.98); }
+
+        .backdate-control {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 6px;
+            padding: 0 2px;
+        }
+        .btn-toggle-backdate {
+            background: transparent;
+            border: 1px solid #cbd5e1;
+            color: #64748b;
+            padding: 3px 8px;
+            border-radius: 8px;
+            font-size: 0.72rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .btn-toggle-backdate.active {
+            background: #fef3c7;
+            color: #b45309;
+            border-color: #f59e0b;
+            font-weight: 600;
+        }
+
+        .backdate-box {
+            display: none;
+            background: #fffbeb;
+            border: 1.5px dashed #f59e0b;
+            border-radius: 10px;
+            padding: 8px;
+            margin-top: 6px;
+        }
+        .backdate-box-title {
+            font-size: 0.72rem;
+            color: #b45309;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .backdate-inputs {
+            display: flex;
+            gap: 6px;
+        }
+        .backdate-inputs input {
+            flex: 1;
+            padding: 6px 8px;
+            border: 1px solid #fcd34d;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            outline: none;
+            background: #fff;
+        }
+
+        .suggest-box {
+            position: absolute;
+            top: 52px;
+            left: 0;
+            right: 110px;
+            background: #ffffff;
+            border: 1.5px solid #0284c7;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            max-height: 220px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+        .suggest-item {
+            padding: 10px 14px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.95rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        .suggest-item:last-child { border-bottom: none; }
+        .suggest-item:active, .suggest-item:hover {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+        .suggest-price {
+            font-weight: 600;
+            color: #0284c7;
+            font-size: 0.85rem;
+        }
+
+        .tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 12px; }
+        .tab-btn {
+            padding: 8px 2px;
+            border: none;
+            background: #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.72rem;
+            font-weight: 500;
+            cursor: pointer;
+            color: #475569;
+        }
+        .tab-btn.active { background: #0f172a; color: #fff; }
+
+        .list-container { max-height: 320px; overflow-y: auto; }
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 4px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .item-title { font-size: 0.9rem; font-weight: 500; }
+        .item-detail { font-size: 0.7rem; color: #64748b; }
+        .item-price { font-size: 1rem; font-weight: 600; color: #0f172a; margin-right: 6px; }
+        .badge {
+            display: inline-block;
+            padding: 1px 5px;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            margin-left: 4px;
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+
+        .pay-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            padding: 3px 6px;
+            border-radius: 6px;
+            font-size: 0.68rem;
+            font-weight: 500;
+            cursor: pointer;
+            margin-right: 6px;
+            border: none;
+        }
+        .pay-badge.qr {
+            background: #e0f2fe;
+            color: #0369a1;
+            border: 1px solid #bae6fd;
+        }
+        .pay-badge.cash {
+            background: #ecfdf5;
+            color: #047857;
+            border: 1px solid #a7f3d0;
+        }
+
+        .btn-del {
+            background: #fee2e2;
+            color: #ef4444;
+            border: none;
+            border-radius: 6px;
+            padding: 3px 6px;
+            font-size: 0.7rem;
+            cursor: pointer;
+        }
+        .summary-group-title {
+            background: #f1f5f9;
+            padding: 5px 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #475569;
+            border-radius: 6px;
+            margin: 8px 0 4px 0;
+        }
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 6px;
+            border-bottom: 1px solid #f8fafc;
+            font-size: 0.85rem;
+            align-items: center;
+        }
+        .price-list-row {
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .price-list-row:hover, .price-list-row:active {
+            background: #e0f2fe;
+        }
+        .empty-text { text-align: center; color: #94a3b8; padding: 20px 0; font-size: 0.85rem; }
+
+        .price-mgr-form { display: flex; gap: 6px; margin-bottom: 8px; }
+        .price-mgr-form input {
+            padding: 8px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            outline: none;
+        }
+        .price-mgr-form button {
+            background: #0284c7;
+            color: #fff;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        .btn-exp-add {
+            background: #ef4444 !important;
+        }
+        .price-search-box {
+            margin-bottom: 8px;
+        }
+        .price-search-box input {
+            width: 100%;
+            padding: 7px 10px;
+            border: 1.5px solid #94a3b8;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            outline: none;
+            background: #f8fafc;
+        }
+        .price-search-box input:focus {
+            border-color: #0284c7;
+            background: #fff;
+        }
+
+        .export-section {
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 1.5px dashed #cbd5e1;
+        }
+        .btn-export {
+            width: 100%;
+            background: #10b981;
+            color: #fff;
+            border: none;
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-bottom: 6px;
+            cursor: pointer;
+        }
+        .btn-export:active { background: #059669; }
+        
+        .btn-sheets-link {
+            width: 100%;
+            background: #0f766e;
+            color: #fff;
+            border: none;
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-bottom: 6px;
+            cursor: pointer;
+            display: block;
+            text-align: center;
+            text-decoration: none;
+        }
+        .btn-sheets-link:active { background: #115e59; }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(6px);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .modal-card {
+            background: #fff;
+            border-radius: 20px;
+            max-width: 340px;
+            width: 100%;
+            padding: 20px 16px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            animation: popIn 0.25s ease-out;
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .qr-header-title { font-size: 1.15rem; font-weight: 700; color: #0f172a; margin-top: 4px; }
+        .qr-header-sub { font-size: 0.8rem; color: #64748b; margin-bottom: 12px; }
+        .qr-img-box {
+            background: #f8fafc;
+            border: 2px dashed #0284c7;
+            border-radius: 16px;
+            padding: 12px;
+            display: inline-block;
+            margin-bottom: 12px;
+        }
+        .qr-img-box img {
+            width: 200px;
+            height: 200px;
+            display: block;
+            border-radius: 8px;
+        }
+        .qr-amount-label { font-size: 0.85rem; color: #475569; }
+        .qr-amount-val { font-size: 2.2rem; font-weight: 700; color: #0284c7; line-height: 1.1; margin-bottom: 14px; }
+        .modal-btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .btn-modal-done {
+            background: #0284c7;
+            color: #fff;
+            border: none;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-modal-close {
+            background: #10b981;
+            color: #fff;
+            border: none;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="brand-header">
+        <img src="logo.png" alt="FLUKCHAFE" class="brand-logo" onerror="this.style.display='none'">
+        <div class="brand-name-en">FLUKCHAFE</div>
+        <div class="brand-name-th">ฟลุ๊ค ชาเฟ่</div>
+        <div id="syncStatus" class="sync-badge" onclick="loadFromCloud()">🔄 ซิงค์ข้อมูล Cloud</div>
+    </div>
+
+    <!-- แถบเลือกช่วงเวลาแบบ 4 ปุ่ม -->
+    <div class="time-filter">
+        <button type="button" class="filter-btn active" onclick="setTimeFilter('today', this)">☀️ วันนี้</button>
+        <button type="button" class="filter-btn" onclick="setTimeFilter('week', this)">📅 อาทิตย์นี้</button>
+        <button type="button" class="filter-btn" onclick="setTimeFilter('custom', this)">📆 กำหนดช่วงเวลา</button>
+        <button type="button" class="filter-btn" onclick="setTimeFilter('all', this)">📋 ทั้งหมด</button>
+    </div>
+
+    <!-- กล่องเลือกวันที่และเดือนในแถวเดียว -->
+    <div class="custom-filter-box" id="customFilterBox">
+        <div class="custom-filter-grid">
+            <div class="filter-input-group">
+                <label>📆 ระบุวันที่:</label>
+                <input type="date" id="selectDateInput" onchange="applyCustomFilter('date')">
+            </div>
+            <div class="filter-input-group">
+                <label>🗓️ ระบุประจำเดือน:</label>
+                <input type="month" id="selectMonthInput" onchange="applyCustomFilter('month')">
+            </div>
+        </div>
+    </div>
+
+    <!-- กล่องยอดขายรวม และสรุปผลประกอบการ (เพิ่มแยก รับเงินสด / สแกนจ่าย) -->
+    <div class="total-banner">
+        <div class="amount" id="totalSales">฿0</div>
+        <div class="sub" id="totalSalesSub">ยอดขายรวม</div>
+        
+        <div>
+            <button type="button" class="btn-toggle-profit" id="btnToggleProfit" onclick="toggleProfitPanel()">
+                📊 สรุปผลประกอบการ
+            </button>
+        </div>
+
+        <div class="secret-profit-panel" id="secretProfitPanel">
+            <div class="secret-box">
+                <div class="secret-title">💵 รับเงินสด</div>
+                <div class="secret-val cash" id="totalCash">฿0</div>
+            </div>
+            <div class="secret-box">
+                <div class="secret-title">📱 สแกนจ่าย</div>
+                <div class="secret-val qr" id="totalQr">฿0</div>
+            </div>
+            <div class="secret-box">
+                <div class="secret-title">💸 ต้นทุนซื้อของ</div>
+                <div class="secret-val cost" id="totalCost">฿0</div>
+            </div>
+            <div class="secret-box">
+                <div class="secret-title">📈 กำไรสุทธิ</div>
+                <div class="secret-val profit" id="totalProfit">฿0</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="category-summary-grid">
+        <div class="cat-box">
+            <div class="cat-title">🧋 เครื่องดื่ม</div>
+            <div class="cat-val" id="catDrinkSum">฿0</div>
+            <div class="cat-count" id="catDrinkCount">0 แก้ว</div>
+        </div>
+        <div class="cat-box">
+            <div class="cat-title">🍟 ของทอด/ทานเล่น</div>
+            <div class="cat-val" id="catSnackSum">฿0</div>
+            <div class="cat-count" id="catSnackCount">0 รายการ</div>
+        </div>
+        <div class="cat-box">
+            <div class="cat-title">🍞 ปังปิ้ง</div>
+            <div class="cat-val" id="catBreadSum">฿0</div>
+            <div class="cat-count" id="catBreadCount">0 ชิ้น</div>
+        </div>
+        <div class="cat-box">
+            <div class="cat-title">🍳 กะเพรา/อาหาร/หมูปิ้ง</div>
+            <div class="cat-val" id="catFoodSum">฿0</div>
+            <div class="cat-count" id="catFoodCount">0 ชุด/จาน</div>
+        </div>
+    </div>
+
+    <div class="cat-selector">
+        <button type="button" class="cat-btn active" onclick="setCategory('auto', this)">🤖 ออโต้</button>
+        <button type="button" class="cat-btn" onclick="setCategory('เครื่องดื่ม', this)">🧋 น้ำ</button>
+        <button type="button" class="cat-btn" onclick="setCategory('ของทอด/ทานเล่น', this)">🍟 ของทอด</button>
+        <button type="button" class="cat-btn" onclick="setCategory('ขนมปังปิ้ง', this)">🍞 ปังปิ้ง</button>
+    </div>
+
+    <!-- ช่องพิมพ์รับออเดอร์ -->
+    <form id="quickForm" class="quick-input-box" onsubmit="return handleAdd(event)">
+        <div class="input-btn-group">
+            <input 
+                type="text" 
+                id="quickInput" 
+                placeholder="เช่น ชาไทย เย็น, นมสดสตอเบอรี่ ปั่น, ไส้กรอก 25..." 
+                autocomplete="off" 
+                autofocus
+                oninput="handleSearchSuggest(this.value)"
+            >
+            <button type="submit" class="btn-order-submit">รับออเดอร์</button>
+        </div>
+        <div id="suggestBox" class="suggest-box"></div>
+
+        <div class="backdate-control">
+            <span style="font-size:0.72rem; color:#64748b;">💡 พิมพ์ค้นหาแล้วแตะเลือกได้ทันที</span>
+            <button type="button" class="btn-toggle-backdate" id="btnToggleBackdate" onclick="toggleBackdateMode()">
+                🕒 บันทึกย้อนหลัง
+            </button>
+        </div>
+
+        <div class="backdate-box" id="backdateBox">
+            <div class="backdate-box-title">⚠️ โหมดลงออเดอร์ย้อนหลัง (ระบุวันและเวลา)</div>
+            <div class="backdate-inputs">
+                <input type="date" id="backdateDateInput">
+                <input type="time" id="backdateTimeInput">
+            </div>
+        </div>
+    </form>
+
+    <div class="tabs">
+        <button type="button" class="tab-btn active" id="tabHistory" onclick="switchTab('history')">ประวัติการขาย</button>
+        <button type="button" class="tab-btn" id="tabSummary" onclick="switchTab('summary')">สรุปรายเมนู</button>
+        <button type="button" class="tab-btn" id="tabExpenses" onclick="switchTab('expenses')">💸 บันทึกต้นทุน</button>
+        <button type="button" class="tab-btn" id="tabPrices" onclick="switchTab('prices')">⚙️ ตั้งราคา</button>
+    </div>
+
+    <div class="list-container" id="historyView">
+        <div id="itemList"></div>
+    </div>
+
+    <div class="list-container" id="summaryView" style="display: none;">
+        <div id="menuSummaryList"></div>
+    </div>
+
+    <!-- หน้าบันทึกต้นทุนซื้อของเข้าร้าน -->
+    <div class="list-container" id="expensesView" style="display: none;">
+        <div class="price-mgr-form">
+            <input type="text" id="newExpenseName" placeholder="รายการซื้อของ เช่น ชา/นม/ของทอด" style="flex:2;">
+            <input type="number" id="newExpenseCost" placeholder="จำนวนเงิน" style="flex:1;">
+            <button type="button" class="btn-exp-add" onclick="addExpense()">บันทึกทุน</button>
+        </div>
+        <div id="expenseList"></div>
+    </div>
+
+    <!-- หน้าจัดการราคาเมนู + ส่วนซ่อน Export Excel / Google Sheets -->
+    <div class="list-container" id="pricesView" style="display: none;">
+        <div class="price-mgr-form">
+            <input type="text" id="newMenuName" placeholder="ชื่อเมนู เช่น ชาไทย ปั่น" style="flex:2;">
+            <input type="number" id="newMenuPrice" placeholder="ราคา" style="flex:1;">
+            <button type="button" onclick="addOrUpdatePrice()">บันทึก</button>
+        </div>
+        <div class="price-search-box">
+            <input type="text" id="priceSearchInput" placeholder="🔍 ค้นหาเมนูเพื่อแก้ไขราคา..." oninput="renderPriceSettingList()">
+        </div>
+        <div id="priceSettingList"></div>
+
+        <div class="export-section">
+            <div style="font-size: 0.75rem; color: #64748b; font-weight: 600; margin-bottom: 6px;">📊 จัดการข้อมูล & รายงาน (Google Sheets / Excel)</div>
+            <button type="button" class="btn-sheets-link" onclick="openGoogleSheets()">🟢 เปิดดูข้อมูลบน Google Sheets</button>
+            <button type="button" class="btn-export" onclick="exportSalesToCSV()">📥 ดาวน์โหลดรายงานยอดขาย (CSV/Excel)</button>
+            <button type="button" class="btn-export" style="background:#6366f1;" onclick="exportExpensesToCSV()">📥 ดาวน์โหลดรายงานต้นทุน (CSV/Excel)</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal หน้าต่าง QR Code PromptPay -->
+<div class="modal-overlay" id="qrModal">
+    <div class="modal-card">
+        <div class="qr-header-title">📲 สแกนจ่าย PromptPay</div>
+        <div class="qr-header-sub" id="qrMenuDesc">ฟลุ๊ค ชาเฟ่</div>
+        <div class="qr-img-box">
+            <img id="qrImageTag" src="" alt="PromptPay QR">
+        </div>
+        <div class="qr-amount-label">ยอดชำระเงินทั้งหมด</div>
+        <div class="qr-amount-val" id="qrAmountDisplay">฿0</div>
+        <div class="modal-btn-group">
+            <button type="button" class="btn-modal-done" onclick="confirmPaymentMethod('promptpay')">📱 สแกนจ่ายแล้ว</button>
+            <button type="button" class="btn-modal-close" onclick="confirmPaymentMethod('cash')">💵 รับเงินสด</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbzr8lEc78rzKvRvYsgKpBkiH-E7zrpdt8oj_o9oJ6PCvMh7gcfJUrUwmMo-J1uHHVXWJQ/exec";
+    const GOOGLE_SHEETS_URL = "https://docs.google.com/spreadsheets/d/1EEU-LsVCzD8jbisYSVmy5jMjdTotGOgIW-4ASJlzqYU/edit";
+    const PROMPTPAY_PHONE = "0637975257";
+
+    const STORAGE_KEY = 'FLUKCHAFE_SHARED_DB_V5';
+    const MENU_PRICES_KEY = 'FLUKCHAFE_SHARED_PRICES_V5';
+    const EXPENSES_KEY = 'FLUKCHAFE_SHARED_EXP_V5';
+    
+    const DEFAULT_PRESET_PRICES = {
+        "เอสเพรสโซ่ เย็น": 30, "เอสเพรสโซ่ ปั่น": 35,
+        "คาปูชิโน่ เย็น": 30, "คาปูชิโน่ ปั่น": 35,
+        "ลาเต้ เย็น": 30, "ลาเต้ ปั่น": 35,
+        "มอคค่า เย็น": 30, "มอคค่า ปั่น": 35,
+        "คาราเมล มัคคิอาโต เย็น": 30, "คาราเมล มัคคิอาโต ปั่น": 35,
+        "อเมริกาโน่ เย็น": 35, "อเมริกาโน่ ปั่น": 40,
+        "อเมริกาโน่น้ำส้ม เย็น": 40, "อเมริกาโน่น้ำส้ม ปั่น": 45,
+        "อเมริกาโน่น้ำผึ้ง เย็น": 40, "อเมริกาโน่น้ำผึ้ง ปั่น": 45,
+        "อเมริกาโน่น้ำผึ้งมะนาว เย็น": 40, "อเมริกาโน่น้ำผึ้งมะนาว ปั่น": 45,
+        "อเมริกาโน่ลิ้นจี่ เย็น": 40, "อเมริกาโน่ลิ้นจี่ ปั่น": 45,
+
+        "ชาไทย เย็น": 25, "ชาไทย ปั่น": 30,
+        "ชาเขียว เย็น": 25, "ชาเขียว ปั่น": 30,
+        "ชานม เย็น": 25, "ชานม ปั่น": 30,
+        "ชามะนาว เย็น": 25, "ชามะนาว ปั่น": 30,
+        "ชามะนาวน้ำผึ้ง เย็น": 25, "ชามะนาวน้ำผึ้ง ปั่น": 30,
+        "ชาดำ เย็น": 25, "ชาดำ ปั่น": 30,
+        "ชาดำมะนาว เย็น": 25, "ชาดำมะนาว ปั่น": 30,
+        "ชาดำน้ำผึ้ง เย็น": 25, "ชาดำน้ำผึ้ง ปั่น": 30,
+        "ชาเขียวมัทฉะลาเต้ เย็น": 30, "ชาเขียวมัทฉะลาเต้ ปั่น": 35,
+        "ชาไทยโกโก้ เย็น": 30, "ชาเขียวโกโก้ เย็น": 30,
+        "ชาไทยนมสดสตรอว์เบอร์รี เย็น": 35, "ชาเขียวนมสดสตรอว์เบอร์รี เย็น": 35,
+        "นมสด เย็น": 25, "นมสด ปั่น": 30,
+        "นมชมพู เย็น": 25, "นมชมพู ปั่น": 30,
+        "โกโก้ เย็น": 25, "โกโก้ ปั่น": 30,
+        "โอวัลติน เย็น": 25, "โอวัลติน ปั่น": 30,
+        "นมแคนตาลูป เย็น": 25, "นมแคนตาลูป ปั่น": 30,
+        "นมเผือก เย็น": 25, "นมเผือก ปั่น": 30,
+        "นมเผือกหอม เย็น": 25, "นมเผือกหอม ปั่น": 30,
+        "นมสดคาราเมล เย็น": 25, "นมสดคาราเมล ปั่น": 30,
+        "นมสดบราวน์ชูการ์ เย็น": 25, "นมสดบราวน์ชูการ์ ปั่น": 30,
+        "มะพร้าวนมสด เย็น": 25, "มะพร้าวนมสด ปั่น": 30,
+        "โอริโอ้ ปั่น": 30,
+
+        "นมสดสตรอว์เบอร์รี เย็น": 30, "นมสดสตรอว์เบอร์รี ปั่น": 35,
+        "นมสดสตอเบอรี่ เย็น": 30, "นมสดสตอเบอรี่ ปั่น": 35,
+        "สตรอว์เบอร์รี เย็น": 25, "สตรอว์เบอร์รี ปั่น": 30,
+        "สตอเบอรี่ เย็น": 25, "สตอเบอรี่ ปั่น": 30,
+        "สตรอว์เบอร์รีโซดา เย็น": 25, "สตรอว์เบอร์รีโซดา ปั่น": 30,
+        "สตอเบอรี่โซดา เย็น": 25, "สตอเบอรี่โซดา ปั่น": 30,
+        "สตรอว์เบอร์รีโยเกิร์ต ปั่น": 35, "สตอเบอรี่โยเกิร์ต ปั่น": 35,
+
+        "แอปเปิ้ล ปั่น": 30, "บลูฮาวาย ปั่น": 30, "ลิ้นจี่ ปั่น": 30, "กีวี่ ปั่น": 30,
+        "ส้ม ปั่น": 30, "องุ่น ปั่น": 30, "บลูเบอร์รี่ ปั่น": 30,
+
+        "แดงโซดา เย็น": 25, "แดงโซดา ปั่น": 30,
+        "แดงมะนาวโซดา เย็น": 25, "แดงมะนาวโซดา ปั่น": 30,
+        "เขียวโซดา เย็น": 25, "เขียวโซดา ปั่น": 30,
+        "เขียวมะนาวโซดา เย็น": 25, "เขียวมะนาวโซดา ปั่น": 30,
+        "ชามะนาวโซดา เย็น": 25, "ชามะนาวโซดา ปั่น": 30,
+        "บลูฮาวายโซดา เย็น": 25, "บลูฮาวายโซดา ปั่น": 30,
+        "ลิ้นจี่โซดา เย็น": 25, "ลิ้นจี่โซดา ปั่น": 30,
+        "กีวี่โซดา เย็น": 25, "กีวี่โซดา ปั่น": 30,
+        "ส้มโซดา เย็น": 25, "ส้มโซดา ปั่น": 30,
+        "แอปเปิ้ลโซดา เย็น": 25, "แอปเปิ้ลโซดา ปั่น": 30,
+        "องุ่นโซดา เย็น": 25, "องุ่นโซดา ปั่น": 30,
+        "บลูเบอร์รี่โซดา เย็น": 25, "บลูเบอร์รี่โซดา ปั่น": 30,
+        "น้ำผึ้งมะนาวโซดา เย็น": 25, "น้ำผึ้งมะนาวโซดา ปั่น": 30,
+
+        "นมสดโอริโอ้ ปั่น": 35,
+        "ชาไทยโอริโอ้ ปั่น": 35,
+        "ชาเขียวโอริโอ้ ปั่น": 35,
+        "โกโก้โอริโอ้ ปั่น": 35,
+        "นมชมพูโอริโอ้ ปั่น": 30,
+        "กาแฟโอริโอ้ ปั่น": 30,
+        "โอวัลตินโอริโอ้ ปั่น": 35,
+        "นมเผือกโอริโอ้ ปั่น": 30,
+        "นมสดโอริโอ้คาราเมล ปั่น": 35,
+
+        "ปังเนยนมน้ำตาล": 20, "ปังเนยนม": 20,
+        "ปังโอวัลติน": 25, "ปังโอริโอ้": 30,
+
+        "เฟรนช์ฟรายส์": 29,
+        "ชีสบอล": 39,
+        "ไก่ป๊อบ": 39,
+        "นักเก็ตไก่": 39,
+        "ไส้กรอกแดง 20": 20,
+        "ไส้กรอกแดง 25": 25,
+        "ไส้กรอกแดง 30": 30,
+
+        "ข้าวกะเพรา 35": 35,
+        "ข้าวกะเพรา 40": 40,
+        "ข้าวกะเพรา 45": 45,
+        "หมูปิ้ง": 5,
+        "ไก่ย่างแดง": 5,
+        "ข้าวเหนียว 5": 5,
+        "ข้าวเหนียว 10": 10
+    };
+
+    let sales = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    let expenses = JSON.parse(localStorage.getItem(EXPENSES_KEY)) || [];
+    let savedPrices = JSON.parse(localStorage.getItem(MENU_PRICES_KEY)) || {};
+    let priceBook = { ...DEFAULT_PRESET_PRICES, ...savedPrices };
+    
+    let selectedCategory = 'auto';
+    let currentFilter = 'today';
+    let customFilterType = 'date';
+    let isProfitShown = false;
+    let isBackdateActive = false;
+    let currentActiveItemId = null;
+
+    const quickInput = document.getElementById('quickInput');
+    const suggestBox = document.getElementById('suggestBox');
+    const totalSales = document.getElementById('totalSales');
+    const totalSalesSub = document.getElementById('totalSalesSub');
+    const totalCash = document.getElementById('totalCash');
+    const totalQr = document.getElementById('totalQr');
+    const totalCost = document.getElementById('totalCost');
+    const totalProfit = document.getElementById('totalProfit');
+    const secretProfitPanel = document.getElementById('secretProfitPanel');
+    const btnToggleProfit = document.getElementById('btnToggleProfit');
+    const itemList = document.getElementById('itemList');
+    const menuSummaryList = document.getElementById('menuSummaryList');
+    const expenseList = document.getElementById('expenseList');
+    const priceSettingList = document.getElementById('priceSettingList');
+    const syncStatus = document.getElementById('syncStatus');
+    const customFilterBox = document.getElementById('customFilterBox');
+    const selectDateInput = document.getElementById('selectDateInput');
+    const selectMonthInput = document.getElementById('selectMonthInput');
+    const priceSearchInput = document.getElementById('priceSearchInput');
+
+    const btnToggleBackdate = document.getElementById('btnToggleBackdate');
+    const backdateBox = document.getElementById('backdateBox');
+    const backdateDateInput = document.getElementById('backdateDateInput');
+    const backdateTimeInput = document.getElementById('backdateTimeInput');
+
+    const qrModal = document.getElementById('qrModal');
+    const qrImageTag = document.getElementById('qrImageTag');
+    const qrAmountDisplay = document.getElementById('qrAmountDisplay');
+    const qrMenuDesc = document.getElementById('qrMenuDesc');
+
+    function formatDateYMD(d) {
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    const initD = new Date();
+    selectDateInput.value = formatDateYMD(initD);
+    selectMonthInput.value = `${initD.getFullYear()}-${String(initD.getMonth() + 1).padStart(2, '0')}`;
+    backdateDateInput.value = formatDateYMD(initD);
+    backdateTimeInput.value = initD.toTimeString().substring(0, 5);
+
+    function showPromptPayQR(name, qty, totalAmount, itemId = null) {
+        currentActiveItemId = itemId;
+        qrMenuDesc.innerText = `${name} (x${qty})`;
+        qrAmountDisplay.innerText = `฿${Number(totalAmount).toLocaleString()}`;
+        qrImageTag.src = `https://promptpay.io/${PROMPTPAY_PHONE}/${totalAmount}.png`;
+        qrModal.style.display = 'flex';
+    }
+
+    function confirmPaymentMethod(method) {
+        if (currentActiveItemId) {
+            const idx = sales.findIndex(s => String(s.id) === String(currentActiveItemId));
+            if (idx !== -1) {
+                sales[idx].paymentMethod = method;
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
+                saveToCloud({ action: "update_sale", item: sales[idx] });
+                renderUI();
+            }
+        }
+        closeQrModal();
+    }
+
+    function closeQrModal() {
+        qrModal.style.display = 'none';
+        currentActiveItemId = null;
+    }
+
+    function togglePayMethod(id) {
+        const idx = sales.findIndex(s => String(s.id) === String(id));
+        if (idx !== -1) {
+            const current = sales[idx].paymentMethod || 'promptpay';
+            sales[idx].paymentMethod = (current === 'promptpay') ? 'cash' : 'promptpay';
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
+            saveToCloud({ action: "update_sale", item: sales[idx] });
+            renderUI();
+        }
+    }
+
+    function openGoogleSheets() {
+        if (GOOGLE_SHEETS_URL && GOOGLE_SHEETS_URL.includes("docs.google.com")) {
+            window.open(GOOGLE_SHEETS_URL, '_blank');
+        } else {
+            alert('กรุณาระบุ URL ของ Google Sheets ในโค้ดก่อนใช้งานครับ');
+        }
+    }
+
+    function toggleProfitPanel() {
+        isProfitShown = !isProfitShown;
+        if (isProfitShown) {
+            secretProfitPanel.style.display = 'grid';
+            btnToggleProfit.innerText = '🔒 ปิดผลประกอบการ';
+        } else {
+            secretProfitPanel.style.display = 'none';
+            btnToggleProfit.innerText = '📊 สรุปผลประกอบการ';
+        }
+    }
+
+    function toggleBackdateMode() {
+        isBackdateActive = !isBackdateActive;
+        if (isBackdateActive) {
+            backdateBox.style.display = 'block';
+            btnToggleBackdate.classList.add('active');
+            btnToggleBackdate.innerText = '🕒 เปิดโหมดลงย้อนหลังอยู่';
+        } else {
+            backdateBox.style.display = 'none';
+            btnToggleBackdate.classList.remove('active');
+            btnToggleBackdate.innerText = '🕒 บันทึกย้อนหลัง';
+        }
+    }
+
+    function handleSearchSuggest(val) {
+        const query = val.trim().toLowerCase();
+        if (!query) {
+            suggestBox.style.display = 'none';
+            suggestBox.innerHTML = '';
+            return;
+        }
+
+        const matched = [];
+        for (const [name, price] of Object.entries(priceBook)) {
+            if (name.toLowerCase().includes(query)) {
+                matched.push({ name, price });
+            }
+        }
+
+        if (matched.length === 0) {
+            suggestBox.style.display = 'none';
+            suggestBox.innerHTML = '';
+            return;
+        }
+
+        suggestBox.innerHTML = '';
+        matched.slice(0, 8).forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'suggest-item';
+            div.innerHTML = `
+                <span>${item.name}</span>
+                <span class="suggest-price">฿${item.price}</span>
+            `;
+            div.onclick = () => {
+                quickInput.value = item.name;
+                suggestBox.style.display = 'none';
+                quickInput.focus();
+            };
+            suggestBox.appendChild(div);
         });
-      }
+        suggestBox.style.display = 'block';
     }
-  }
 
-  // ดึงข้อมูลต้นทุน
-  var expenses = [];
-  var expSheet = ss.getSheetByName(EXPENSE_SHEET);
-  if (expSheet) {
-    var expData = expSheet.getDataRange().getValues();
-    for (var j = 1; j < expData.length; j++) {
-      if (expData[j][0]) {
-        expenses.push({
-          id: String(expData[j][0]),
-          ts: Number(expData[j][1]) || 0,
-          date: String(expData[j][2]),
-          name: String(expData[j][3]),
-          cost: Number(expData[j][4]) || 0,
-          time: String(expData[j][5])
+    document.addEventListener('click', (e) => {
+        if (!quickInput.contains(e.target) && !suggestBox.contains(e.target)) {
+            suggestBox.style.display = 'none';
+        }
+    });
+
+    async function loadFromCloud() {
+        syncStatus.innerText = "🔄 กำลังซิงค์ข้อมูล...";
+        try {
+            const res = await fetch(API_URL);
+            const data = await res.json();
+            if (data && data.sales) {
+                sales = data.sales;
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
+            }
+            if (data && data.expenses) {
+                expenses = data.expenses;
+                localStorage.setItem(EXPENSES_KEY, JSON.stringify(expenses));
+            }
+            if (data && data.prices) {
+                priceBook = { ...DEFAULT_PRESET_PRICES, ...data.prices };
+                localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
+            }
+            syncStatus.innerText = "☁️ ซิงค์ตรงกันทุกเครื่องแล้ว";
+            renderUI();
+        } catch (e) {
+            syncStatus.innerText = "💾 ใช้งานข้อมูลในเครื่อง";
+        }
+    }
+
+    function saveToCloud(payload) {
+        try {
+            fetch(API_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "text/plain" },
+                body: JSON.stringify(payload)
+            });
+        } catch (e) {}
+    }
+
+    function setTimeFilter(filter, btn) {
+        currentFilter = filter;
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        customFilterBox.style.display = (filter === 'custom') ? 'block' : 'none';
+
+        renderUI();
+    }
+
+    function applyCustomFilter(type) {
+        customFilterType = type;
+        renderUI();
+    }
+
+    function setCategory(cat, btn) {
+        selectedCategory = cat;
+        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        quickInput.focus();
+    }
+
+    function detectCategory(name) {
+        if (selectedCategory !== 'auto') return selectedCategory;
+        const n = name.toLowerCase();
+        if (n.includes('ปัง') || n.includes('โทสต์') || n.includes('เนยนม') || n.includes('สังขยา') || n.includes('เนยน้ำตาล')) return 'ขนมปังปิ้ง';
+        if (n.includes('เฟรน') || n.includes('ฟราย') || n.includes('ชีส') || n.includes('บอล') || n.includes('ป๊อบ') || n.includes('เก็ต') || n.includes('ไส้กรอก') || n.includes('ทอด') || n.includes('ลูกชิ้น')) return 'ของทอด/ทานเล่น';
+        if (n.includes('กะเพรา') || n.includes('ข้าว') || n.includes('หมูปิ้ง') || n.includes('ไก่ย่าง') || n.includes('ไข่ดาว') || n.includes('ผัด') || n.includes('มาม่า') || n.includes('ยำ')) return 'อาหาร/กะเพรา';
+        return 'เครื่องดื่ม';
+    }
+
+    function handleAdd(e) {
+        if (e) e.preventDefault();
+        suggestBox.style.display = 'none';
+        const text = quickInput.value.trim();
+        if (!text) return false;
+
+        let name = '';
+        let unitPrice = 0;
+        let qty = 1;
+
+        const parts = text.split(/\s+/);
+
+        if (priceBook[text]) {
+            name = text;
+            unitPrice = priceBook[text];
+            qty = 1;
+        } else if (parts.length >= 2 && !isNaN(parts[parts.length - 1])) {
+            const potentialQty = parseInt(parts[parts.length - 1]);
+            const potentialName = parts.slice(0, parts.length - 1).join(' ');
+
+            if (priceBook[potentialName]) {
+                name = potentialName;
+                qty = potentialQty;
+                unitPrice = priceBook[name];
+            } else {
+                name = text;
+            }
+        } else {
+            name = text;
+        }
+
+        if ((isNaN(unitPrice) || unitPrice <= 0) && priceBook[name]) {
+            unitPrice = priceBook[name];
+        }
+
+        if (!name || isNaN(unitPrice) || unitPrice <= 0 || qty <= 0) {
+            alert(`เมนู "${name || text}" ยังไม่มีราคาในระบบ\nกรุณาพิมพ์ชื่อพร้อมราคา เช่น "${name || text} 25"`);
+            return false;
+        }
+
+        priceBook[name] = unitPrice;
+        localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
+
+        const category = detectCategory(name);
+        const totalPrice = unitPrice * qty;
+        
+        let recordDate = '';
+        let recordTime = '';
+        let recordTs = Date.now();
+
+        if (isBackdateActive && backdateDateInput.value) {
+            recordDate = backdateDateInput.value;
+            recordTime = backdateTimeInput.value || '12:00';
+            const [y, m, d] = recordDate.split('-').map(Number);
+            const [hh, mm] = recordTime.split(':').map(Number);
+            recordTs = new Date(y, m - 1, d, hh || 12, mm || 0).getTime();
+        } else {
+            const now = new Date();
+            recordDate = formatDateYMD(now);
+            recordTime = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+            recordTs = Date.now();
+        }
+
+        const newId = String(Date.now() + Math.floor(Math.random() * 100));
+        const newItem = { 
+            id: newId,
+            ts: recordTs,
+            date: recordDate,
+            name, 
+            unitPrice, 
+            qty, 
+            totalPrice, 
+            category,
+            paymentMethod: 'promptpay',
+            time: recordTime 
+        };
+
+        sales.push(newItem);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
+        
+        saveToCloud({ action: "add_sale", item: newItem });
+
+        renderUI();
+        quickInput.value = '';
+
+        if (!isBackdateActive) {
+            showPromptPayQR(name, qty, totalPrice, newId);
+        }
+
+        return false;
+    }
+
+    function addExpense() {
+        const name = document.getElementById('newExpenseName').value.trim();
+        const cost = parseFloat(document.getElementById('newExpenseCost').value);
+        if (!name || isNaN(cost) || cost <= 0) {
+            alert('กรุณากรอกรายการและจำนวนเงินต้นทุนให้ถูกต้อง');
+            return;
+        }
+
+        let recordDate = '';
+        let recordTime = '';
+        let recordTs = Date.now();
+
+        if (isBackdateActive && backdateDateInput.value) {
+            recordDate = backdateDateInput.value;
+            recordTime = backdateTimeInput.value || '12:00';
+            const [y, m, d] = recordDate.split('-').map(Number);
+            const [hh, mm] = recordTime.split(':').map(Number);
+            recordTs = new Date(y, m - 1, d, hh || 12, mm || 0).getTime();
+        } else {
+            const now = new Date();
+            recordDate = formatDateYMD(now);
+            recordTime = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+            recordTs = Date.now();
+        }
+
+        const newExp = {
+            id: String(Date.now() + Math.floor(Math.random() * 100)),
+            ts: recordTs,
+            date: recordDate,
+            name,
+            cost,
+            time: recordTime
+        };
+
+        expenses.push(newExp);
+        localStorage.setItem(EXPENSES_KEY, JSON.stringify(expenses));
+        saveToCloud({ action: "add_expense", item: newExp });
+
+        document.getElementById('newExpenseName').value = '';
+        document.getElementById('newExpenseCost').value = '';
+        renderUI();
+    }
+
+    function deleteExpense(id) {
+        expenses = expenses.filter(item => String(item.id) !== String(id));
+        localStorage.setItem(EXPENSES_KEY, JSON.stringify(expenses));
+        saveToCloud({ action: "delete_expense", id: String(id) });
+        renderUI();
+    }
+
+    function getFilteredData() {
+        const now = new Date();
+        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+        const todayEnd = todayStart + (24 * 60 * 60 * 1000) - 1;
+
+        let filterFn = () => true;
+
+        if (currentFilter === 'today') {
+            filterFn = item => {
+                const itemTs = Number(item.ts) || Number(item.id) || 0;
+                return itemTs >= todayStart && itemTs <= todayEnd;
+            };
+        } else if (currentFilter === 'week') {
+            const dayOfWeek = now.getDay() || 7;
+            const mondayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek + 1).getTime();
+            const sundayEnd = mondayStart + (7 * 24 * 60 * 60 * 1000) - 1;
+            filterFn = item => {
+                const itemTs = Number(item.ts) || Number(item.id) || 0;
+                return itemTs >= mondayStart && itemTs <= sundayEnd;
+            };
+        } else if (currentFilter === 'custom') {
+            if (customFilterType === 'date') {
+                const selDate = selectDateInput.value;
+                const [y, m, d] = selDate.split('-').map(Number);
+                const dayStart = new Date(y, m - 1, d).getTime();
+                const dayEnd = dayStart + (24 * 60 * 60 * 1000) - 1;
+                filterFn = item => {
+                    const itemTs = Number(item.ts) || Number(item.id) || 0;
+                    return itemTs >= dayStart && itemTs <= dayEnd;
+                };
+            } else if (customFilterType === 'month') {
+                const selMonth = selectMonthInput.value;
+                const [y, m] = selMonth.split('-').map(Number);
+                const mStart = new Date(y, m - 1, 1).getTime();
+                const mEnd = new Date(y, m, 1).getTime() - 1;
+                filterFn = item => {
+                    const itemTs = Number(item.ts) || Number(item.id) || 0;
+                    return itemTs >= mStart && itemTs <= mEnd;
+                };
+            }
+        }
+
+        return {
+            sales: sales.filter(filterFn),
+            expenses: expenses.filter(filterFn)
+        };
+    }
+
+    function renderUI() {
+        const data = getFilteredData();
+        const displaySales = data.sales;
+        const displayExpenses = data.expenses;
+
+        let totalS = 0;
+        let totalC = 0;
+        let totalCashSum = 0;
+        let totalQrSum = 0;
+        let totalPieces = 0;
+        
+        displayExpenses.forEach(e => totalC += Number(e.cost));
+
+        const catStats = {
+            'เครื่องดื่ม': { sum: 0, count: 0 },
+            'ของทอด/ทานเล่น': { sum: 0, count: 0 },
+            'ขนมปังปิ้ง': { sum: 0, count: 0 },
+            'อาหาร/กะเพรา': { sum: 0, count: 0 }
+        };
+
+        const menuGrouped = {
+            'เครื่องดื่ม': {},
+            'ของทอด/ทานเล่น': {},
+            'ขนมปังปิ้ง': {},
+            'อาหาร/กะเพรา': {}
+        };
+
+        itemList.innerHTML = '';
+        
+        if (displaySales.length === 0) {
+            itemList.innerHTML = '<div class="empty-text">ยังไม่มีรายการขายในช่วงนี้</div>';
+        } else {
+            displaySales.slice().reverse().forEach((item) => {
+                const price = Number(item.totalPrice);
+                totalS += price;
+                totalPieces += Number(item.qty);
+
+                if (item.paymentMethod === 'cash') {
+                    totalCashSum += price;
+                } else {
+                    totalQrSum += price; // ค่าเริ่มต้นเป็น promptpay
+                }
+
+                const cat = catStats[item.category] ? item.category : 'อาหาร/กะเพรา';
+                catStats[cat].sum += price;
+                catStats[cat].count += Number(item.qty);
+
+                if (!menuGrouped[cat][item.name]) menuGrouped[cat][item.name] = { qty: 0, sum: 0 };
+                menuGrouped[cat][item.name].qty += Number(item.qty);
+                menuGrouped[cat][item.name].sum += price;
+
+                const isQr = (item.paymentMethod !== 'cash');
+                const badgeClass = isQr ? 'pay-badge qr' : 'pay-badge cash';
+                const badgeText = isQr ? '📱 สแกนจ่าย' : '💵 เงินสด';
+
+                const row = document.createElement('div');
+                row.className = 'item-row';
+                row.innerHTML = `
+                    <div>
+                        <div class="item-title">${item.name} <span style="color:#0284c7;">x${item.qty}</span> <span class="badge">${cat}</span></div>
+                        <div class="item-detail">(@${item.unitPrice} บ.) • ${item.date} ${item.time} น.</div>
+                    </div>
+                    <div style="display:flex; align-items:center;">
+                        <span class="item-price">฿${price.toLocaleString()}</span>
+                        <button class="${badgeClass}" onclick="togglePayMethod('${item.id}')" title="แตะเพื่อสลับประเภทการรับเงิน">${badgeText}</button>
+                        <button class="btn-del" onclick="deleteItem('${item.id}')">ลบ</button>
+                    </div>
+                `;
+                itemList.appendChild(row);
+            });
+        }
+
+        expenseList.innerHTML = '';
+        if (displayExpenses.length === 0) {
+            expenseList.innerHTML = '<div class="empty-text">ยังไม่มีรายการต้นทุนในช่วงนี้</div>';
+        } else {
+            displayExpenses.slice().reverse().forEach((item) => {
+                const row = document.createElement('div');
+                row.className = 'item-row';
+                row.innerHTML = `
+                    <div>
+                        <div class="item-title" style="color:#ef4444;">💸 ${item.name}</div>
+                        <div class="item-detail">${item.date} • ${item.time} น.</div>
+                    </div>
+                    <div style="display:flex; align-items:center;">
+                        <span class="item-price" style="color:#ef4444;">-฿${Number(item.cost).toLocaleString()}</span>
+                        <button class="btn-del" onclick="deleteExpense('${item.id}')">ลบ</button>
+                    </div>
+                `;
+                expenseList.appendChild(row);
+            });
+        }
+
+        const profit = totalS - totalC;
+        totalSales.innerText = `฿${totalS.toLocaleString()}`;
+        totalSalesSub.innerText = `ยอดขายรวม • ${totalPieces} ชิ้น (${displaySales.length} ออเดอร์)`;
+        
+        document.getElementById('totalCash').innerText = `฿${totalCashSum.toLocaleString()}`;
+        document.getElementById('totalQr').innerText = `฿${totalQrSum.toLocaleString()}`;
+        totalCost.innerText = `฿${totalC.toLocaleString()}`;
+        totalProfit.innerText = `฿${profit.toLocaleString()}`;
+        totalProfit.style.color = profit >= 0 ? '#4ade80' : '#f87171';
+
+        document.getElementById('catDrinkSum').innerText = `฿${catStats['เครื่องดื่ม'].sum.toLocaleString()}`;
+        document.getElementById('catDrinkCount').innerText = `${catStats['เครื่องดื่ม'].count} แก้ว`;
+
+        document.getElementById('catSnackSum').innerText = `฿${catStats['ของทอด/ทานเล่น'].sum.toLocaleString()}`;
+        document.getElementById('catSnackCount').innerText = `${catStats['ของทอด/ทานเล่น'].count} รายการ`;
+
+        document.getElementById('catBreadSum').innerText = `฿${catStats['ขนมปังปิ้ง'].sum.toLocaleString()}`;
+        document.getElementById('catBreadCount').innerText = `${catStats['ขนมปังปิ้ง'].count} ชิ้น`;
+
+        document.getElementById('catFoodSum').innerText = `฿${catStats['อาหาร/กะเพรา'].sum.toLocaleString()}`;
+        document.getElementById('catFoodCount').innerText = `${catStats['อาหาร/กะเพรา'].count} จาน/ชุด`;
+
+        menuSummaryList.innerHTML = '';
+        let hasMenu = false;
+        for (const [catName, items] of Object.entries(menuGrouped)) {
+            const keys = Object.keys(items);
+            if (keys.length > 0) {
+                hasMenu = true;
+                const groupTitle = document.createElement('div');
+                groupTitle.className = 'summary-group-title';
+                groupTitle.innerText = `${catName} (รวม ฿${catStats[catName].sum.toLocaleString()})`;
+                menuSummaryList.appendChild(groupTitle);
+
+                for (const [name, data] of Object.entries(items)) {
+                    const row = document.createElement('div');
+                    row.className = 'summary-row';
+                    row.innerHTML = `
+                        <span>${name} (x${data.qty})</span>
+                        <span><b>฿${data.sum.toLocaleString()}</b></span>
+                    `;
+                    menuSummaryList.appendChild(row);
+                }
+            }
+        }
+        if (!hasMenu) {
+            menuSummaryList.innerHTML = '<div class="empty-text">ยังไม่มีข้อมูลสรุปเมนู</div>';
+        }
+
+        renderPriceSettingList();
+    }
+
+    function renderPriceSettingList() {
+        priceSettingList.innerHTML = '';
+        const searchKeyword = (priceSearchInput ? priceSearchInput.value : '').trim().toLowerCase();
+        
+        let keys = Object.keys(priceBook);
+        if (searchKeyword) {
+            keys = keys.filter(k => k.toLowerCase().includes(searchKeyword));
+        }
+
+        if (keys.length === 0) {
+            priceSettingList.innerHTML = '<div class="empty-text">ไม่พบเมนูที่ค้นหา</div>';
+            return;
+        }
+
+        keys.sort().forEach(name => {
+            const row = document.createElement('div');
+            row.className = 'summary-row price-list-row';
+            row.innerHTML = `
+                <span onclick="fillEditPrice('${name}', ${priceBook[name]})" style="flex:1;">📝 ${name}</span>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <b onclick="fillEditPrice('${name}', ${priceBook[name]})" style="color:#0284c7;">฿${priceBook[name]}</b>
+                    <button class="btn-del" onclick="deletePrice('${name}')">✕</button>
+                </div>
+            `;
+            priceSettingList.appendChild(row);
         });
-      }
-    }
-  }
-
-  // ดึงข้อมูลราคา
-  var prices = {};
-  var priceSheet = ss.getSheetByName(PRICE_SHEET);
-  if (priceSheet) {
-    var pData = priceSheet.getDataRange().getValues();
-    for (var k = 1; k < pData.length; k++) {
-      if (pData[k][0]) {
-        prices[String(pData[k][0])] = Number(pData[k][1]) || 0;
-      }
-    }
-  }
-
-  // ดึงข้อมูลรูปภาพ
-  var images = {};
-  var imageSheet = ss.getSheetByName(IMAGE_SHEET);
-  if (imageSheet) {
-    var iData = imageSheet.getDataRange().getValues();
-    for (var m = 1; m < iData.length; m++) {
-      if (iData[m][0]) {
-        images[String(iData[m][0])] = String(iData[m][1]);
-      }
-    }
-  }
-
-  var result = {
-    sales: sales,
-    expenses: expenses,
-    prices: prices,
-    images: images
-  };
-
-  return ContentService.createTextOutput(JSON.stringify(result))
-    .setMimeType(ContentService.MimeType.JSON);
-}
-
-function doPost(e) {
-  try {
-    var data = JSON.parse(e.postData.contents);
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-
-    if (data.action === "add_sale") {
-      var sheet = getOrCreateSheet(ss, SHEET_NAME_SALES, ["ID", "Date", "Name", "UnitPrice", "Qty", "TotalPrice", "Category", "PaymentMethod", "OrderType", "CustName", "CustPhone", "CustAddress", "CustGps", "Time"]);
-      var item = data.item;
-      sheet.appendRow([
-        item.id, item.date, item.name, item.unitPrice, item.qty, item.totalPrice, 
-        item.category, item.paymentMethod, item.orderType, item.custName, item.custPhone, 
-        item.custAddress, item.custGps, item.time
-      ]);
-    } 
-    else if (data.action === "delete_sale") {
-      deleteRowById(ss.getSheetByName(SHEET_NAME_SALES), data.id);
-    }
-    else if (data.action === "update_sale") {
-      // อัปเดตสถานะหรือรายการ
-      updateOrAppendRow(ss.getSheetByName(SHEET_NAME_SALES), data.item);
-    }
-    else if (data.action === "add_expense") {
-      var sheet = getOrCreateSheet(ss, EXPENSE_SHEET, ["ID", "Timestamp", "Date", "Name", "Cost", "Time"]);
-      var item = data.item;
-      sheet.appendRow([item.id, item.ts, item.date, item.name, item.cost, item.time]);
-    }
-    else if (data.action === "delete_expense") {
-      deleteRowById(ss.getSheetByName(EXPENSE_SHEET), data.id);
-    }
-    else if (data.action === "update_price") {
-      setKeyValue(ss.getSheetByName(PRICE_SHEET), data.name, data.price);
-      if(data.imageUrl) {
-        setKeyValue(ss.getSheetByName(IMAGE_SHEET), data.name, data.imageUrl);
-      }
-    }
-    else if (data.action === "delete_price") {
-      removeKey(ss.getSheetByName(PRICE_SHEET), data.name);
-      removeKey(ss.getSheetByName(IMAGE_SHEET), data.name);
     }
 
-    return ContentService.createTextOutput(JSON.stringify({status: "success"}))
-      .setMimeType(ContentService.MimeType.JSON);
-  } catch (err) {
-    return ContentService.createTextOutput(JSON.stringify({status: "error", message: err.toString()}))
-      .setMimeType(ContentService.MimeType.JSON);
-  }
-}
-
-function getOrCreateSheet(ss, name, headers) {
-  var sheet = ss.getSheetByName(name);
-  if (!sheet) {
-    sheet = ss.insertSheet(name);
-    if (headers && headers.length > 0) {
-      sheet.appendRow(headers);
+    function fillEditPrice(name, price) {
+        document.getElementById('newMenuName').value = name;
+        document.getElementById('newMenuPrice').value = price;
+        document.getElementById('newMenuPrice').focus();
     }
-  }
-  return sheet;
-}
 
-function deleteRowById(sheet, id) {
-  if (!sheet) return;
-  var rows = sheet.getDataRange().getValues();
-  for (var i = rows.length - 1; i >= 1; i--) {
-    if (String(rows[i][0]) === String(id)) {
-      sheet.deleteRow(i + 1);
-      break;
+    function addOrUpdatePrice() {
+        const name = document.getElementById('newMenuName').value.trim();
+        const price = parseFloat(document.getElementById('newMenuPrice').value);
+        if (name && !isNaN(price) && price > 0) {
+            priceBook[name] = price;
+            localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
+            saveToCloud({ action: "update_price", name, price });
+            document.getElementById('newMenuName').value = '';
+            document.getElementById('newMenuPrice').value = '';
+            renderUI();
+        } else {
+            alert('กรุณากรอกชื่อเมนูและราคาให้ถูกต้อง');
+        }
     }
-  }
-}
 
-function updateOrAppendRow(sheet, item) {
-  if (!sheet) return;
-  var rows = sheet.getDataRange().getValues();
-  var found = false;
-  for (var i = 1; i < rows.length; i++) {
-    if (String(rows[i][0]) === String(item.id)) {
-      sheet.getRange(i + 1, 8).setValue(item.paymentMethod); // อัปเดตประเภทการชำระเงิน
-      found = true;
-      break;
+    function deletePrice(name) {
+        if (confirm(`ต้องการลบราคาของเมนู "${name}" หรือไม่?`)) {
+            delete priceBook[name];
+            localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
+            saveToCloud({ action: "delete_price", name });
+            renderUI();
+        }
     }
-  }
-  if (!found) {
-    sheet.appendRow([
-      item.id, item.date, item.name, item.unitPrice, item.qty, item.totalPrice, 
-      item.category, item.paymentMethod, item.orderType, item.custName, item.custPhone, 
-      item.custAddress, item.custGps, item.time
-    ]);
-  }
-}
 
-function setKeyValue(sheet, key, val) {
-  if (!sheet) return;
-  var rows = sheet.getDataRange().getValues();
-  var found = false;
-  for (var i = 1; i < rows.length; i++) {
-    if (String(rows[i][0]) === String(key)) {
-      sheet.getRange(i + 1, 2).setValue(val);
-      found = true;
-      break;
+    function deleteItem(id) {
+        sales = sales.filter(item => String(item.id) !== String(id));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
+        saveToCloud({ action: "delete_sale", id: String(id) });
+        renderUI();
     }
-  }
-  if (!found) {
-    sheet.appendRow([key, val]);
-  }
-}
 
-function removeKey(sheet, key) {
-  if (!sheet) return;
-  var rows = sheet.getDataRange().getValues();
-  for (var i = rows.length - 1; i >= 1; i--) {
-    if (String(rows[i][0]) === String(key)) {
-      sheet.deleteRow(i + 1);
-      break;
+    function switchTab(tab) {
+        document.getElementById('tabHistory').className = `tab-btn ${tab === 'history' ? 'active' : ''}`;
+        document.getElementById('tabSummary').className = `tab-btn ${tab === 'summary' ? 'active' : ''}`;
+        document.getElementById('tabExpenses').className = `tab-btn ${tab === 'expenses' ? 'active' : ''}`;
+        document.getElementById('tabPrices').className = `tab-btn ${tab === 'prices' ? 'active' : ''}`;
+        
+        document.getElementById('historyView').style.display = tab === 'history' ? 'block' : 'none';
+        document.getElementById('summaryView').style.display = tab === 'summary' ? 'block' : 'none';
+        document.getElementById('expensesView').style.display = tab === 'expenses' ? 'block' : 'none';
+        document.getElementById('pricesView').style.display = tab === 'prices' ? 'block' : 'none';
     }
-  }
-}
+
+    function exportSalesToCSV() {
+        if (sales.length === 0) { alert('ไม่มีข้อมูลยอดขายสำหรับดาวน์โหลด'); return; }
+        let csv = '\uFEFFวันที่,เวลา,ชื่อเมนู,หมวดหมู่,ประเภทการชำระ,ราคาต่อหน่วย,จำนวน,ราคารวม\n';
+        sales.forEach(s => {
+            const payText = (s.paymentMethod === 'cash') ? 'เงินสด' : 'สแกนจ่าย';
+            csv += `"${s.date}","${s.time}","${s.name}","${s.category}","${payText}",${s.unitPrice},${s.qty},${s.totalPrice}\n`;
+        });
+        downloadBlob(csv, `FLUKCHAFE_Sales_${formatDateYMD(new Date())}.csv`);
+    }
+
+    function exportExpensesToCSV() {
+        if (expenses.length === 0) { alert('ไม่มีข้อมูลต้นทุนสำหรับดาวน์โหลด'); return; }
+        let csv = '\uFEFFวันที่,เวลา,รายการซื้อของ,จำนวนเงินต้นทุน\n';
+        expenses.exportExpensesToCSV = true; // placeholder
+        expenses.forEach(e => {
+            csv += `"${e.date}","${e.time}","${e.name}",${e.cost}\n`;
+        });
+        downloadBlob(csv, `FLUKCHAFE_Expenses_${formatDateYMD(new Date())}.csv`);
+    }
+
+    function downloadBlob(content, filename) {
+        const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', filename);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    renderUI();
+    window.addEventListener('DOMContentLoaded', () => {
+        loadFromCloud();
+    });
+</script>
+</body>
+</html>
