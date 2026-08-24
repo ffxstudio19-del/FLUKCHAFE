@@ -36,6 +36,7 @@
             padding: 16px; 
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25); 
             border: 1px solid rgba(255, 255, 255, 0.6);
+            padding-bottom: 70px;
         }
         
         .brand-header { text-align: center; margin-bottom: 12px; position: relative; }
@@ -312,7 +313,6 @@
 
         .list-container { max-height: 380px; overflow-y: auto; }
 
-        /* การ์ดจัดกลุ่มบิลประวัติการขาย */
         .order-batch-card {
             background: #ffffff;
             border: 1px solid #e2e8f0;
@@ -346,7 +346,6 @@
             color: #0f172a;
         }
 
-        /* รายการย่อยในบิล */
         .batch-item-row {
             display: flex;
             justify-content: space-between;
@@ -362,19 +361,23 @@
             gap: 8px;
             flex: 1;
             cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
         }
         .item-check-circle {
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            border: 1.5px solid #94a3b8;
+            width: 20px;
+            height: 20px;
+            border-radius: 6px;
+            border: 1.8px solid #94a3b8;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.65rem;
+            font-size: 0.75rem;
+            font-weight: 700;
             color: transparent;
-            transition: all 0.15s;
+            transition: background 0.08s, border-color 0.08s;
             flex-shrink: 0;
+            background: #fff;
         }
         .item-done .item-check-circle {
             background: #10b981;
@@ -382,11 +385,8 @@
             color: #ffffff;
         }
         .item-done .item-title-text {
-            text-decoration: line-through;
-            color: #94a3b8 !important;
-        }
-        .item-done .item-price-text {
-            color: #94a3b8 !important;
+            color: #047857 !important;
+            font-weight: 600;
         }
 
         .item-title-text {
@@ -595,6 +595,52 @@
             from { opacity: 0.4; }
             to { opacity: 1; }
         }
+
+        .live-checked-bar {
+            position: fixed;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 24px);
+            max-width: 456px;
+            background: #047857;
+            color: #ffffff;
+            border-radius: 14px;
+            padding: 10px 16px;
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 10px 25px rgba(4, 120, 87, 0.4);
+            z-index: 1500;
+        }
+        .checked-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .checked-count-badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 3px 8px;
+            border-radius: 8px;
+            font-size: 0.78rem;
+            font-weight: 600;
+        }
+        .checked-total-amount {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #a7f3d0;
+        }
+        .btn-clear-checked {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #ffffff;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .btn-clear-checked:active { background: rgba(255, 255, 255, 0.25); }
 
         .modal-overlay {
             position: fixed;
@@ -848,6 +894,18 @@
     </div>
 </div>
 
+<!-- แถบลอยสรุปยอดเฉพาะรายการที่ติ๊กเลือก -->
+<div class="live-checked-bar" id="liveCheckedBar">
+    <div class="checked-bar-left">
+        <span class="checked-count-badge" id="liveCheckedCount">ติ๊ก 0 รายการ</span>
+        <div>
+            <div style="font-size:0.7rem; color:#d1fae5;">รวมยอดที่ติ๊ก</div>
+            <div class="checked-total-amount" id="liveCheckedSum">฿0</div>
+        </div>
+    </div>
+    <button type="button" class="btn-clear-checked" onclick="clearAllChecked()">ล้างการเลือก</button>
+</div>
+
 <!-- Modal หน้าต่างแก้ไขข้อมูลออเดอร์ -->
 <div class="modal-overlay" id="editModal">
     <div class="modal-box">
@@ -995,6 +1053,9 @@
     let payMethodsLock = JSON.parse(localStorage.getItem(PAY_METHODS_LOCK_KEY)) || {};
     let doneItemsSet = new Set(JSON.parse(localStorage.getItem(DONE_ITEMS_KEY)) || []);
 
+    let currentCheckedSum = 0;
+    let currentCheckedCount = 0;
+
     let selectedCategory = 'auto';
     let currentFilter = 'today';
     let customFilterType = 'date';
@@ -1034,6 +1095,10 @@
     const editItemCategory = document.getElementById('editItemCategory');
     const editItemUnitPrice = document.getElementById('editItemUnitPrice');
     const editItemQty = document.getElementById('editItemQty');
+
+    const liveCheckedBar = document.getElementById('liveCheckedBar');
+    const liveCheckedCount = document.getElementById('liveCheckedCount');
+    const liveCheckedSum = document.getElementById('liveCheckedSum');
 
     const THAI_MONTHS_SHORT = [
         "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.",
@@ -1096,15 +1161,60 @@
     backdateDateInput.value = formatDateYMD(initD);
     backdateTimeInput.value = initD.toTimeString().substring(0, 5);
 
-    function toggleItemDone(id) {
+    // ฟังก์ชันติ๊กแบบ Ultra Fast (O(1)) สลับทันที คำนวณทันที ไม่ต้องวน Loop ใหม่
+    function toggleItemDone(id, el) {
         const targetId = String(id);
+        const row = el ? el.closest('.batch-item-row') : document.getElementById(`row-${targetId}`);
+        if (!row) return;
+
+        const price = Number(row.dataset.price) || 0;
+        const qty = Number(row.dataset.qty) || 1;
+        const checkCircle = row.querySelector('.item-check-circle');
+
         if (doneItemsSet.has(targetId)) {
             doneItemsSet.delete(targetId);
+            row.classList.remove('item-done');
+            if (checkCircle) checkCircle.innerText = '';
+            currentCheckedCount -= qty;
+            currentCheckedSum -= price;
         } else {
             doneItemsSet.add(targetId);
+            row.classList.add('item-done');
+            if (checkCircle) checkCircle.innerText = '✓';
+            currentCheckedCount += qty;
+            currentCheckedSum += price;
         }
-        localStorage.setItem(DONE_ITEMS_KEY, JSON.stringify(Array.from(doneItemsSet)));
-        renderUI();
+
+        if (currentCheckedCount < 0) currentCheckedCount = 0;
+        if (currentCheckedSum < 0) currentCheckedSum = 0;
+
+        // อัปเดตแถบยอดคำนวณด้านล่างทันที
+        if (currentCheckedCount > 0) {
+            liveCheckedBar.style.display = 'flex';
+            liveCheckedCount.innerText = `ติ๊ก ${currentCheckedCount} ชิ้น`;
+            liveCheckedSum.innerText = `฿${currentCheckedSum.toLocaleString()}`;
+        } else {
+            liveCheckedBar.style.display = 'none';
+        }
+
+        // เซฟลง Storage เบื้องหลัง
+        setTimeout(() => {
+            localStorage.setItem(DONE_ITEMS_KEY, JSON.stringify(Array.from(doneItemsSet)));
+        }, 10);
+    }
+
+    function clearAllChecked() {
+        doneItemsSet.clear();
+        currentCheckedCount = 0;
+        currentCheckedSum = 0;
+        localStorage.setItem(DONE_ITEMS_KEY, JSON.stringify([]));
+        
+        document.querySelectorAll('.batch-item-row.item-done').forEach(r => {
+            r.classList.remove('item-done');
+            const c = r.querySelector('.item-check-circle');
+            if (c) c.innerText = '';
+        });
+        liveCheckedBar.style.display = 'none';
     }
 
     function togglePayMethod(id) {
@@ -1451,6 +1561,8 @@
         if (confirm(`ท่านต้องการยืนยันการลบรายการออเดอร์ "${name}" ออกจากระบบใช่หรือไม่?`)) {
             deletedSalesIds.add(targetId);
             localStorage.setItem(DELETED_SALES_KEY, JSON.stringify(Array.from(deletedSalesIds)));
+            doneItemsSet.delete(targetId);
+            localStorage.setItem(DONE_ITEMS_KEY, JSON.stringify(Array.from(doneItemsSet)));
 
             sales = sales.filter(item => item && String(item.id) !== targetId);
             localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
@@ -1589,7 +1701,9 @@
         };
 
         itemList.innerHTML = '';
-        
+        currentCheckedCount = 0;
+        currentCheckedSum = 0;
+
         if (displaySales.length === 0) {
             itemList.innerHTML = '<div class="empty-text">ยังไม่มีรายการขายในช่วงนี้</div>';
         } else {
@@ -1599,6 +1713,11 @@
                 const qty = Number(item.qty) || 1;
                 totalS += price;
                 totalPieces += qty;
+
+                if (doneItemsSet.has(String(item.id))) {
+                    currentCheckedCount += qty;
+                    currentCheckedSum += price;
+                }
 
                 if (item.paymentMethod === 'promptpay') {
                     totalQrSum += price;
@@ -1644,8 +1763,8 @@
             });
             if (currentBatch) batches.push(currentBatch);
 
-            // Render การ์ดบิลทีละ Batch
-            batches.forEach((batch, batchIndex) => {
+            // Render การ์ดบิล
+            batches.forEach((batch) => {
                 let batchTotal = 0;
                 let batchTotalQty = 0;
                 batch.items.forEach(it => {
@@ -1668,8 +1787,8 @@
                     const doneClass = isDone ? 'item-done' : '';
 
                     itemsHtml += `
-                        <div class="batch-item-row ${doneClass}">
-                            <div class="batch-item-left" onclick="toggleItemDone('${item.id}')" title="แตะเพื่อติ๊ก ทำแล้ว/ยังไม่ทำ">
+                        <div class="batch-item-row ${doneClass}" id="row-${item.id}" data-price="${price}" data-qty="${qty}">
+                            <div class="batch-item-left" onclick="toggleItemDone('${item.id}', this)" title="แตะเพื่อติ๊กเลือก/คำนวณราคา">
                                 <div class="item-check-circle">${isDone ? '✓' : ''}</div>
                                 <div>
                                     <div class="item-title-text">${item.name} <b style="color:#0284c7;">x${qty}</b> <span class="badge">${item.category || 'น้ำ'}</span></div>
@@ -1695,6 +1814,15 @@
                 `;
                 itemList.appendChild(card);
             });
+        }
+
+        // แสดงผลแถบสรุปยอดที่ติ๊ก
+        if (currentCheckedCount > 0) {
+            liveCheckedBar.style.display = 'flex';
+            liveCheckedCount.innerText = `ติ๊ก ${currentCheckedCount} ชิ้น`;
+            liveCheckedSum.innerText = `฿${currentCheckedSum.toLocaleString()}`;
+        } else {
+            liveCheckedBar.style.display = 'none';
         }
 
         expenseList.innerHTML = '';
