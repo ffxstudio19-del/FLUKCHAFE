@@ -36,7 +36,6 @@
             padding: 16px; 
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25); 
             border: 1px solid rgba(255, 255, 255, 0.6);
-            padding-bottom: 70px;
         }
         
         .brand-header { text-align: center; margin-bottom: 12px; position: relative; }
@@ -311,22 +310,23 @@
         }
         .tab-btn.active { background: #0f172a; color: #fff; }
 
-        .list-container { max-height: 380px; overflow-y: auto; }
+        .list-container { max-height: 420px; overflow-y: auto; }
 
+        /* การ์ดจัดกลุ่มบิลออเดอร์แยกทุก 1 นาที */
         .order-batch-card {
             background: #ffffff;
             border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 10px 12px;
-            margin-bottom: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+            border-radius: 14px;
+            padding: 12px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
         }
         .batch-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding-bottom: 8px;
-            border-bottom: 1px dashed #e2e8f0;
+            border-bottom: 1px dashed #cbd5e1;
             margin-bottom: 8px;
         }
         .batch-time-tag {
@@ -334,7 +334,7 @@
             font-weight: 600;
             color: #0369a1;
             background: #e0f2fe;
-            padding: 2px 8px;
+            padding: 3px 8px;
             border-radius: 6px;
             display: inline-flex;
             align-items: center;
@@ -350,53 +350,66 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 6px 0;
+            padding: 7px 0;
             border-bottom: 1px solid #f8fafc;
+            touch-action: manipulation;
         }
         .batch-item-row:last-child { border-bottom: none; }
         
         .batch-item-left {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             flex: 1;
             cursor: pointer;
             user-select: none;
             -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
+        
+        /* กล่องเช็กถูกขีดฆ่าออเดอร์ */
         .item-check-circle {
-            width: 20px;
-            height: 20px;
+            width: 22px;
+            height: 22px;
             border-radius: 6px;
             border: 1.8px solid #94a3b8;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             font-weight: 700;
             color: transparent;
-            transition: background 0.08s, border-color 0.08s;
             flex-shrink: 0;
             background: #fff;
+            transition: all 0.1s ease;
         }
+        
+        /* สถานะเมื่อทำเสร็จแล้ว -> ขีดฆ่าชื่อและจางลง */
         .item-done .item-check-circle {
-            background: #10b981;
-            border-color: #10b981;
-            color: #ffffff;
+            background: #10b981 !important;
+            border-color: #10b981 !important;
+            color: #ffffff !important;
         }
         .item-done .item-title-text {
-            color: #047857 !important;
-            font-weight: 600;
+            text-decoration: line-through;
+            color: #94a3b8 !important;
+        }
+        .item-done .item-sub-detail {
+            text-decoration: line-through;
+            color: #cbd5e1 !important;
+        }
+        .item-done .item-price-text {
+            color: #94a3b8 !important;
         }
 
         .item-title-text {
-            font-size: 0.88rem;
+            font-size: 0.9rem;
             font-weight: 500;
             color: #1e293b;
-            line-height: 1.2;
+            line-height: 1.25;
         }
         .item-sub-detail {
-            font-size: 0.7rem;
+            font-size: 0.72rem;
             color: #64748b;
             margin-top: 1px;
         }
@@ -422,7 +435,7 @@
             cursor: pointer;
             margin-right: 4px;
             user-select: none;
-            transition: all 0.15s;
+            -webkit-tap-highlight-color: transparent;
         }
         .pay-badge.qr {
             background: #e0f2fe;
@@ -434,7 +447,6 @@
             color: #047857;
             border: 1px solid #a7f3d0;
         }
-        .pay-badge:active { transform: scale(0.92); opacity: 0.8; }
 
         .btn-edit {
             background: #f1f5f9;
@@ -447,7 +459,6 @@
             cursor: pointer;
             margin-right: 3px;
         }
-        .btn-edit:active { background: #bae6fd; }
 
         .btn-del {
             background: #fee2e2;
@@ -459,7 +470,6 @@
             font-weight: 600;
             cursor: pointer;
         }
-        .btn-del:active { background: #fca5a5; }
 
         .summary-group-title {
             background: #f1f5f9;
@@ -595,52 +605,6 @@
             from { opacity: 0.4; }
             to { opacity: 1; }
         }
-
-        .live-checked-bar {
-            position: fixed;
-            bottom: 12px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: calc(100% - 24px);
-            max-width: 456px;
-            background: #047857;
-            color: #ffffff;
-            border-radius: 14px;
-            padding: 10px 16px;
-            display: none;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 10px 25px rgba(4, 120, 87, 0.4);
-            z-index: 1500;
-        }
-        .checked-bar-left {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .checked-count-badge {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 3px 8px;
-            border-radius: 8px;
-            font-size: 0.78rem;
-            font-weight: 600;
-        }
-        .checked-total-amount {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: #a7f3d0;
-        }
-        .btn-clear-checked {
-            background: rgba(255, 255, 255, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: #ffffff;
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            cursor: pointer;
-        }
-        .btn-clear-checked:active { background: rgba(255, 255, 255, 0.25); }
 
         .modal-overlay {
             position: fixed;
@@ -894,18 +858,6 @@
     </div>
 </div>
 
-<!-- แถบลอยสรุปยอดเฉพาะรายการที่ติ๊กเลือก -->
-<div class="live-checked-bar" id="liveCheckedBar">
-    <div class="checked-bar-left">
-        <span class="checked-count-badge" id="liveCheckedCount">ติ๊ก 0 รายการ</span>
-        <div>
-            <div style="font-size:0.7rem; color:#d1fae5;">รวมยอดที่ติ๊ก</div>
-            <div class="checked-total-amount" id="liveCheckedSum">฿0</div>
-        </div>
-    </div>
-    <button type="button" class="btn-clear-checked" onclick="clearAllChecked()">ล้างการเลือก</button>
-</div>
-
 <!-- Modal หน้าต่างแก้ไขข้อมูลออเดอร์ -->
 <div class="modal-overlay" id="editModal">
     <div class="modal-box">
@@ -1053,9 +1005,6 @@
     let payMethodsLock = JSON.parse(localStorage.getItem(PAY_METHODS_LOCK_KEY)) || {};
     let doneItemsSet = new Set(JSON.parse(localStorage.getItem(DONE_ITEMS_KEY)) || []);
 
-    let currentCheckedSum = 0;
-    let currentCheckedCount = 0;
-
     let selectedCategory = 'auto';
     let currentFilter = 'today';
     let customFilterType = 'date';
@@ -1095,10 +1044,6 @@
     const editItemCategory = document.getElementById('editItemCategory');
     const editItemUnitPrice = document.getElementById('editItemUnitPrice');
     const editItemQty = document.getElementById('editItemQty');
-
-    const liveCheckedBar = document.getElementById('liveCheckedBar');
-    const liveCheckedCount = document.getElementById('liveCheckedCount');
-    const liveCheckedSum = document.getElementById('liveCheckedSum');
 
     const THAI_MONTHS_SHORT = [
         "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.",
@@ -1161,60 +1106,36 @@
     backdateDateInput.value = formatDateYMD(initD);
     backdateTimeInput.value = initD.toTimeString().substring(0, 5);
 
-    // ฟังก์ชันติ๊กแบบ Ultra Fast (O(1)) สลับทันที คำนวณทันที ไม่ต้องวน Loop ใหม่
-    function toggleItemDone(id, el) {
+    // ฟังก์ชันติ๊กแบบขีดฆ่าเมนูที่ทำเสร็จแล้ว (Ultra Fast Toggle)
+    function fastToggle(event, id, el) {
+        if (event) {
+            if (event.type === 'touchstart') {
+                el._touched = true;
+            } else if (event.type === 'click' && el._touched) {
+                el._touched = false;
+                return;
+            }
+        }
+
         const targetId = String(id);
-        const row = el ? el.closest('.batch-item-row') : document.getElementById(`row-${targetId}`);
+        const row = el.closest('.batch-item-row');
         if (!row) return;
 
-        const price = Number(row.dataset.price) || 0;
-        const qty = Number(row.dataset.qty) || 1;
         const checkCircle = row.querySelector('.item-check-circle');
 
         if (doneItemsSet.has(targetId)) {
             doneItemsSet.delete(targetId);
             row.classList.remove('item-done');
             if (checkCircle) checkCircle.innerText = '';
-            currentCheckedCount -= qty;
-            currentCheckedSum -= price;
         } else {
             doneItemsSet.add(targetId);
             row.classList.add('item-done');
             if (checkCircle) checkCircle.innerText = '✓';
-            currentCheckedCount += qty;
-            currentCheckedSum += price;
         }
 
-        if (currentCheckedCount < 0) currentCheckedCount = 0;
-        if (currentCheckedSum < 0) currentCheckedSum = 0;
-
-        // อัปเดตแถบยอดคำนวณด้านล่างทันที
-        if (currentCheckedCount > 0) {
-            liveCheckedBar.style.display = 'flex';
-            liveCheckedCount.innerText = `ติ๊ก ${currentCheckedCount} ชิ้น`;
-            liveCheckedSum.innerText = `฿${currentCheckedSum.toLocaleString()}`;
-        } else {
-            liveCheckedBar.style.display = 'none';
-        }
-
-        // เซฟลง Storage เบื้องหลัง
         setTimeout(() => {
             localStorage.setItem(DONE_ITEMS_KEY, JSON.stringify(Array.from(doneItemsSet)));
-        }, 10);
-    }
-
-    function clearAllChecked() {
-        doneItemsSet.clear();
-        currentCheckedCount = 0;
-        currentCheckedSum = 0;
-        localStorage.setItem(DONE_ITEMS_KEY, JSON.stringify([]));
-        
-        document.querySelectorAll('.batch-item-row.item-done').forEach(r => {
-            r.classList.remove('item-done');
-            const c = r.querySelector('.item-check-circle');
-            if (c) c.innerText = '';
-        });
-        liveCheckedBar.style.display = 'none';
+        }, 0);
     }
 
     function togglePayMethod(id) {
@@ -1701,8 +1622,6 @@
         };
 
         itemList.innerHTML = '';
-        currentCheckedCount = 0;
-        currentCheckedSum = 0;
 
         if (displaySales.length === 0) {
             itemList.innerHTML = '<div class="empty-text">ยังไม่มีรายการขายในช่วงนี้</div>';
@@ -1713,11 +1632,6 @@
                 const qty = Number(item.qty) || 1;
                 totalS += price;
                 totalPieces += qty;
-
-                if (doneItemsSet.has(String(item.id))) {
-                    currentCheckedCount += qty;
-                    currentCheckedSum += price;
-                }
 
                 if (item.paymentMethod === 'promptpay') {
                     totalQrSum += price;
@@ -1734,7 +1648,7 @@
                 menuGrouped[cat][item.name].sum += price;
             });
 
-            // จัดกลุ่มออเดอร์ตามช่วงเวลา (Batching ภายใน 2 นาที)
+            // จัดกลุ่มออเดอร์ตามช่วงเวลา (Batching ทุก 1 นาที)
             const sortedSales = displaySales.slice().sort((a, b) => (Number(b.ts) || 0) - (Number(a.ts) || 0));
             const batches = [];
             let currentBatch = null;
@@ -1748,8 +1662,9 @@
                         items: [item]
                     };
                 } else {
+                    // หากเวลาห่างกันเกิน 1 นาที (60,000ms) ให้แยกเป็นบิลใหม่
                     const diffMinutes = Math.abs(currentBatch.latestTs - itemTs) / (1000 * 60);
-                    if (diffMinutes <= 2) {
+                    if (diffMinutes <= 1.0) {
                         currentBatch.items.push(item);
                     } else {
                         batches.push(currentBatch);
@@ -1787,8 +1702,11 @@
                     const doneClass = isDone ? 'item-done' : '';
 
                     itemsHtml += `
-                        <div class="batch-item-row ${doneClass}" id="row-${item.id}" data-price="${price}" data-qty="${qty}">
-                            <div class="batch-item-left" onclick="toggleItemDone('${item.id}', this)" title="แตะเพื่อติ๊กเลือก/คำนวณราคา">
+                        <div class="batch-item-row ${doneClass}" id="row-${item.id}">
+                            <div class="batch-item-left" 
+                                 ontouchstart="fastToggle(event, '${item.id}', this)" 
+                                 onclick="fastToggle(event, '${item.id}', this)" 
+                                 title="แตะเพื่อติ๊กทำเสร็จแล้ว">
                                 <div class="item-check-circle">${isDone ? '✓' : ''}</div>
                                 <div>
                                     <div class="item-title-text">${item.name} <b style="color:#0284c7;">x${qty}</b> <span class="badge">${item.category || 'น้ำ'}</span></div>
@@ -1814,15 +1732,6 @@
                 `;
                 itemList.appendChild(card);
             });
-        }
-
-        // แสดงผลแถบสรุปยอดที่ติ๊ก
-        if (currentCheckedCount > 0) {
-            liveCheckedBar.style.display = 'flex';
-            liveCheckedCount.innerText = `ติ๊ก ${currentCheckedCount} ชิ้น`;
-            liveCheckedSum.innerText = `฿${currentCheckedSum.toLocaleString()}`;
-        } else {
-            liveCheckedBar.style.display = 'none';
         }
 
         expenseList.innerHTML = '';
