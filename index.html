@@ -516,7 +516,6 @@
             to { opacity: 1; }
         }
 
-        /* Modal แก้ไขออเดอร์ */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -813,6 +812,7 @@
     const EXPENSES_KEY = 'FLUKCHAFE_SHARED_EXP_V5';
     const DELETED_SALES_KEY = 'FLUKCHAFE_DELETED_SALES_IDS_V5';
     const DELETED_EXP_KEY = 'FLUKCHAFE_DELETED_EXP_IDS_V5';
+    const PAY_METHODS_LOCK_KEY = 'FLUKCHAFE_PAY_LOCK_V5';
     
     const DEFAULT_PRESET_PRICES = {
         "เอสเพรสโซ่ เย็น": 30, "เอสเพรสโซ่ ปั่น": 35,
@@ -911,6 +911,7 @@
     
     let deletedSalesIds = new Set(JSON.parse(localStorage.getItem(DELETED_SALES_KEY)) || []);
     let deletedExpensesIds = new Set(JSON.parse(localStorage.getItem(DELETED_EXP_KEY)) || []);
+    let payMethodsLock = JSON.parse(localStorage.getItem(PAY_METHODS_LOCK_KEY)) || {};
 
     let selectedCategory = 'auto';
     let currentFilter = 'today';
@@ -1013,15 +1014,27 @@
     backdateDateInput.value = formatDateYMD(initD);
     backdateTimeInput.value = initD.toTimeString().substring(0, 5);
 
-    async function togglePayMethod(id) {
+    function togglePayMethod(id) {
         const targetId = String(id);
         const idx = sales.findIndex(s => String(s.id) === targetId);
         if (idx !== -1) {
             const currentMethod = sales[idx].paymentMethod || 'cash';
-            sales[idx].paymentMethod = (currentMethod === 'cash') ? 'promptpay' : 'cash';
+            const nextMethod = (currentMethod === 'cash') ? 'promptpay' : 'cash';
+            sales[idx].paymentMethod = nextMethod;
+
+            // บันทึกลง Lock Object เพื่อไม่ให้ระบบดึงข้อมูลเก่ามาเขียนทับ
+            payMethodsLock[targetId] = nextMethod;
+            localStorage.setItem(PAY_METHODS_LOCK_KEY, JSON.stringify(payMethodsLock));
             localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
+            
             renderUI();
-            await saveToCloud({ action: "update_sale", item: sales[idx] });
+            
+            // ส่งข้อมูลไปอัปเดตบน Cloud แบบเงียบๆ โดยไม่ดึงข้อมูลกลับมาเขียนทับ
+            fetch(API_URL, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify({ action: "update_sale", item: sales[idx] })
+            }).catch(() => {});
         }
     }
 
@@ -1117,7 +1130,15 @@
             const data = await res.json();
             if (data) {
                 if (Array.isArray(data.sales)) {
-                    sales = data.sales.filter(item => item && item.id && !deletedSalesIds.has(String(item.id)));
+                    sales = data.sales
+                        .filter(item => item && item.id && !deletedSalesIds.has(String(item.id)))
+                        .map(item => {
+                            const tid = String(item.id);
+                            if (payMethodsLock[tid]) {
+                                item.paymentMethod = payMethodsLock[tid];
+                            }
+                            return item;
+                        });
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
                 }
                 if (Array.isArray(data.expenses)) {
