@@ -310,34 +310,114 @@
         }
         .tab-btn.active { background: #0f172a; color: #fff; }
 
-        .list-container { max-height: 320px; overflow-y: auto; }
-        .item-row {
+        .list-container { max-height: 380px; overflow-y: auto; }
+
+        /* การ์ดจัดกลุ่มบิลประวัติการขาย */
+        .order-batch-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 10px 12px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+        }
+        .batch-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 8px 4px;
-            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 8px;
+            border-bottom: 1px dashed #e2e8f0;
+            margin-bottom: 8px;
         }
-        .item-title { font-size: 0.9rem; font-weight: 500; }
-        .item-detail { font-size: 0.72rem; color: #64748b; margin-top: 1px; }
-        .item-price { font-size: 1rem; font-weight: 600; color: #0f172a; margin-right: 4px; }
+        .batch-time-tag {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #0369a1;
+            background: #e0f2fe;
+            padding: 2px 8px;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .batch-total-price {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        /* รายการย่อยในบิล */
+        .batch-item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            border-bottom: 1px solid #f8fafc;
+        }
+        .batch-item-row:last-child { border-bottom: none; }
+        
+        .batch-item-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            cursor: pointer;
+        }
+        .item-check-circle {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 1.5px solid #94a3b8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.65rem;
+            color: transparent;
+            transition: all 0.15s;
+            flex-shrink: 0;
+        }
+        .item-done .item-check-circle {
+            background: #10b981;
+            border-color: #10b981;
+            color: #ffffff;
+        }
+        .item-done .item-title-text {
+            text-decoration: line-through;
+            color: #94a3b8 !important;
+        }
+        .item-done .item-price-text {
+            color: #94a3b8 !important;
+        }
+
+        .item-title-text {
+            font-size: 0.88rem;
+            font-weight: 500;
+            color: #1e293b;
+            line-height: 1.2;
+        }
+        .item-sub-detail {
+            font-size: 0.7rem;
+            color: #64748b;
+            margin-top: 1px;
+        }
+
         .badge {
             display: inline-block;
             padding: 1px 5px;
             border-radius: 4px;
-            font-size: 0.65rem;
+            font-size: 0.62rem;
             margin-left: 4px;
-            background: #e0f2fe;
-            color: #0369a1;
+            background: #f1f5f9;
+            color: #475569;
         }
 
         .pay-badge {
             display: inline-flex;
             align-items: center;
             gap: 2px;
-            padding: 4px 6px;
+            padding: 3px 6px;
             border-radius: 6px;
-            font-size: 0.68rem;
+            font-size: 0.65rem;
             font-weight: 500;
             cursor: pointer;
             margin-right: 4px;
@@ -357,15 +437,15 @@
         .pay-badge:active { transform: scale(0.92); opacity: 0.8; }
 
         .btn-edit {
-            background: #e0f2fe;
+            background: #f1f5f9;
             color: #0284c7;
-            border: 1px solid #bae6fd;
+            border: 1px solid #cbd5e1;
             border-radius: 6px;
-            padding: 4px 6px;
-            font-size: 0.7rem;
+            padding: 3px 6px;
+            font-size: 0.65rem;
             font-weight: 600;
             cursor: pointer;
-            margin-right: 4px;
+            margin-right: 3px;
         }
         .btn-edit:active { background: #bae6fd; }
 
@@ -374,8 +454,8 @@
             color: #ef4444;
             border: none;
             border-radius: 6px;
-            padding: 4px 6px;
-            font-size: 0.7rem;
+            padding: 3px 6px;
+            font-size: 0.65rem;
             font-weight: 600;
             cursor: pointer;
         }
@@ -405,7 +485,7 @@
         .price-list-row:hover, .price-list-row:active {
             background: #e0f2fe;
         }
-        .empty-text { text-align: center; color: #94a3b8; padding: 20px 0; font-size: 0.85rem; }
+        .empty-text { text-align: center; color: #94a3b8; padding: 24px 0; font-size: 0.85rem; }
 
         .price-mgr-form { display: flex; gap: 6px; margin-bottom: 8px; }
         .price-mgr-form input {
@@ -813,6 +893,7 @@
     const DELETED_SALES_KEY = 'FLUKCHAFE_DELETED_SALES_IDS_V5';
     const DELETED_EXP_KEY = 'FLUKCHAFE_DELETED_EXP_IDS_V5';
     const PAY_METHODS_LOCK_KEY = 'FLUKCHAFE_PAY_LOCK_V5';
+    const DONE_ITEMS_KEY = 'FLUKCHAFE_DONE_ITEMS_V5';
     
     const DEFAULT_PRESET_PRICES = {
         "เอสเพรสโซ่ เย็น": 30, "เอสเพรสโซ่ ปั่น": 35,
@@ -912,6 +993,7 @@
     let deletedSalesIds = new Set(JSON.parse(localStorage.getItem(DELETED_SALES_KEY)) || []);
     let deletedExpensesIds = new Set(JSON.parse(localStorage.getItem(DELETED_EXP_KEY)) || []);
     let payMethodsLock = JSON.parse(localStorage.getItem(PAY_METHODS_LOCK_KEY)) || {};
+    let doneItemsSet = new Set(JSON.parse(localStorage.getItem(DONE_ITEMS_KEY)) || []);
 
     let selectedCategory = 'auto';
     let currentFilter = 'today';
@@ -1014,6 +1096,17 @@
     backdateDateInput.value = formatDateYMD(initD);
     backdateTimeInput.value = initD.toTimeString().substring(0, 5);
 
+    function toggleItemDone(id) {
+        const targetId = String(id);
+        if (doneItemsSet.has(targetId)) {
+            doneItemsSet.delete(targetId);
+        } else {
+            doneItemsSet.add(targetId);
+        }
+        localStorage.setItem(DONE_ITEMS_KEY, JSON.stringify(Array.from(doneItemsSet)));
+        renderUI();
+    }
+
     function togglePayMethod(id) {
         const targetId = String(id);
         const idx = sales.findIndex(s => String(s.id) === targetId);
@@ -1022,14 +1115,12 @@
             const nextMethod = (currentMethod === 'cash') ? 'promptpay' : 'cash';
             sales[idx].paymentMethod = nextMethod;
 
-            // บันทึกลง Lock Object เพื่อไม่ให้ระบบดึงข้อมูลเก่ามาเขียนทับ
             payMethodsLock[targetId] = nextMethod;
             localStorage.setItem(PAY_METHODS_LOCK_KEY, JSON.stringify(payMethodsLock));
             localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
             
             renderUI();
             
-            // ส่งข้อมูลไปอัปเดตบน Cloud แบบเงียบๆ โดยไม่ดึงข้อมูลกลับมาเขียนทับ
             fetch(API_URL, {
                 method: "POST",
                 headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -1502,11 +1593,10 @@
         if (displaySales.length === 0) {
             itemList.innerHTML = '<div class="empty-text">ยังไม่มีรายการขายในช่วงนี้</div>';
         } else {
-            displaySales.slice().reverse().forEach((item) => {
+            // คำนวณสรุปยอดรวม
+            displaySales.forEach((item) => {
                 const price = Number(item.totalPrice) || 0;
                 const qty = Number(item.qty) || 1;
-                const unitPrice = Number(item.unitPrice) || price;
-                
                 totalS += price;
                 totalPieces += qty;
 
@@ -1523,28 +1613,87 @@
                 if (!menuGrouped[cat][item.name]) menuGrouped[cat][item.name] = { qty: 0, sum: 0 };
                 menuGrouped[cat][item.name].qty += qty;
                 menuGrouped[cat][item.name].sum += price;
+            });
 
-                const isQr = (item.paymentMethod === 'promptpay');
-                const badgeClass = isQr ? 'pay-badge qr' : 'pay-badge cash';
-                const badgeText = isQr ? '📱 สแกน' : '💵 เงินสด';
-                
-                const formattedTime = formatThaiDateTime(item.date, item.time, item.ts);
+            // จัดกลุ่มออเดอร์ตามช่วงเวลา (Batching ภายใน 2 นาที)
+            const sortedSales = displaySales.slice().sort((a, b) => (Number(b.ts) || 0) - (Number(a.ts) || 0));
+            const batches = [];
+            let currentBatch = null;
 
-                const row = document.createElement('div');
-                row.className = 'item-row';
-                row.innerHTML = `
-                    <div>
-                        <div class="item-title">${item.name} <span style="color:#0284c7;">x${qty}</span> <span class="badge">${cat}</span></div>
-                        <div class="item-detail">(@${unitPrice} บ.) • ${formattedTime}</div>
+            sortedSales.forEach((item) => {
+                const itemTs = Number(item.ts) || 0;
+                if (!currentBatch) {
+                    currentBatch = {
+                        timeKey: formatThaiDateTime(item.date, item.time, item.ts),
+                        latestTs: itemTs,
+                        items: [item]
+                    };
+                } else {
+                    const diffMinutes = Math.abs(currentBatch.latestTs - itemTs) / (1000 * 60);
+                    if (diffMinutes <= 2) {
+                        currentBatch.items.push(item);
+                    } else {
+                        batches.push(currentBatch);
+                        currentBatch = {
+                            timeKey: formatThaiDateTime(item.date, item.time, item.ts),
+                            latestTs: itemTs,
+                            items: [item]
+                        };
+                    }
+                }
+            });
+            if (currentBatch) batches.push(currentBatch);
+
+            // Render การ์ดบิลทีละ Batch
+            batches.forEach((batch, batchIndex) => {
+                let batchTotal = 0;
+                let batchTotalQty = 0;
+                batch.items.forEach(it => {
+                    batchTotal += Number(it.totalPrice) || 0;
+                    batchTotalQty += Number(it.qty) || 1;
+                });
+
+                const card = document.createElement('div');
+                card.className = 'order-batch-card';
+
+                let itemsHtml = '';
+                batch.items.forEach(item => {
+                    const price = Number(item.totalPrice) || 0;
+                    const qty = Number(item.qty) || 1;
+                    const unitPrice = Number(item.unitPrice) || price;
+                    const isQr = (item.paymentMethod === 'promptpay');
+                    const badgeClass = isQr ? 'pay-badge qr' : 'pay-badge cash';
+                    const badgeText = isQr ? '📱 สแกน' : '💵 สด';
+                    const isDone = doneItemsSet.has(String(item.id));
+                    const doneClass = isDone ? 'item-done' : '';
+
+                    itemsHtml += `
+                        <div class="batch-item-row ${doneClass}">
+                            <div class="batch-item-left" onclick="toggleItemDone('${item.id}')" title="แตะเพื่อติ๊ก ทำแล้ว/ยังไม่ทำ">
+                                <div class="item-check-circle">${isDone ? '✓' : ''}</div>
+                                <div>
+                                    <div class="item-title-text">${item.name} <b style="color:#0284c7;">x${qty}</b> <span class="badge">${item.category || 'น้ำ'}</span></div>
+                                    <div class="item-sub-detail">(@${unitPrice} บ.)</div>
+                                </div>
+                            </div>
+                            <div style="display:flex; align-items:center;">
+                                <span class="item-price-text" style="font-weight:600; font-size:0.92rem; margin-right:6px; color:#0f172a;">฿${price.toLocaleString()}</span>
+                                <button type="button" class="${badgeClass}" onclick="togglePayMethod('${item.id}')" title="แตะสลับวิธีจ่ายเงิน">${badgeText}</button>
+                                <button type="button" class="btn-edit" onclick="openEditModal('${item.id}')" title="แก้ไขรายการ">✏️</button>
+                                <button type="button" class="btn-del" onclick="deleteItem('${item.id}')" title="ลบรายการ">✕</button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                card.innerHTML = `
+                    <div class="batch-header">
+                        <div class="batch-time-tag">🕒 ${batch.timeKey} (${batchTotalQty} ชิ้น)</div>
+                        <div class="batch-total-price">รวม ฿${batchTotal.toLocaleString()}</div>
                     </div>
-                    <div style="display:flex; align-items:center;">
-                        <span class="item-price">฿${price.toLocaleString()}</span>
-                        <button type="button" class="${badgeClass}" onclick="togglePayMethod('${item.id}')" title="แตะเพื่อสลับการจ่ายเงิน">${badgeText}</button>
-                        <button type="button" class="btn-edit" onclick="openEditModal('${item.id}')">✏️</button>
-                        <button type="button" class="btn-del" onclick="deleteItem('${item.id}')">ลบ</button>
-                    </div>
+                    <div>${itemsHtml}</div>
                 `;
-                itemList.appendChild(row);
+                itemList.appendChild(card);
             });
         }
 
@@ -1573,7 +1722,7 @@
 
         const profit = totalS - totalC;
         totalSales.innerText = `฿${totalS.toLocaleString()}`;
-        totalSalesSub.innerText = `ยอดขายรวม • ${totalPieces} ชิ้น (${displaySales.length} ออเดอร์)`;
+        totalSalesSub.innerText = `ยอดขายรวม • ${totalPieces} ชิ้น (${displaySales.length} รายการ)`;
         
         document.getElementById('totalCash').innerText = `฿${totalCashSum.toLocaleString()}`;
         document.getElementById('totalQr').innerText = `฿${totalQrSum.toLocaleString()}`;
