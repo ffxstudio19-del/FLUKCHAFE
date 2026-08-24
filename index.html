@@ -263,7 +263,6 @@
             background: #fff;
         }
 
-        /* Suggest Box พร้อมปุ่มแก้ไข/ลบเมนูขณะรับออเดอร์ */
         .suggest-box {
             position: absolute;
             top: 52px;
@@ -273,48 +272,30 @@
             border: 1.5px solid #0284c7;
             border-radius: 12px;
             box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-            max-height: 240px;
+            max-height: 220px;
             overflow-y: auto;
             z-index: 1000;
             display: none;
         }
         .suggest-item {
-            padding: 8px 12px;
+            padding: 10px 14px;
             border-bottom: 1px solid #f1f5f9;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
             cursor: pointer;
         }
         .suggest-item:last-child { border-bottom: none; }
-        .suggest-item:hover { background: #e0f2fe; }
-        .suggest-item-name {
-            flex: 1;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            padding-right: 6px;
-        }
-        .suggest-actions {
-            display: flex;
-            align-items: center;
-            gap: 6px;
+        .suggest-item:active, .suggest-item:hover {
+            background: #e0f2fe;
+            color: #0369a1;
         }
         .suggest-price {
             font-weight: 600;
             color: #0284c7;
             font-size: 0.85rem;
         }
-        .btn-suggest-tool {
-            background: #f1f5f9;
-            border: 1px solid #cbd5e1;
-            border-radius: 4px;
-            padding: 2px 6px;
-            font-size: 0.7rem;
-            cursor: pointer;
-        }
-        .btn-suggest-tool:hover { background: #e2e8f0; }
 
         .tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 12px; }
         .tab-btn {
@@ -719,7 +700,7 @@
         <div id="suggestBox" class="suggest-box"></div>
 
         <div class="backdate-control">
-            <span style="font-size:0.72rem; color:#64748b;">💡 พิมพ์ค้นหา หรือแตะ ✏️/🗑️ เพื่อจัดการเมนู</span>
+            <span style="font-size:0.72rem; color:#64748b;">💡 พิมพ์ค้นหาแล้วแตะเลือกได้ทันที</span>
             <button type="button" class="btn-toggle-backdate" id="btnToggleBackdate" onclick="toggleBackdateMode()">
                 🕒 บันทึกย้อนหลัง
             </button>
@@ -1076,7 +1057,6 @@
         }
     }
 
-    /* จัดการค้นหาและแก้ไข/ลบเมนูในช่องค้นหา */
     function handleSearchSuggest(val) {
         const query = val.trim().toLowerCase();
         if (!query) {
@@ -1103,12 +1083,8 @@
             const div = document.createElement('div');
             div.className = 'suggest-item';
             div.innerHTML = `
-                <span class="suggest-item-name">${item.name}</span>
-                <div class="suggest-actions">
-                    <span class="suggest-price">฿${item.price}</span>
-                    <button type="button" class="btn-suggest-tool" onclick="event.stopPropagation(); quickEditMenuPrice('${item.name}', ${item.price})" title="แก้ไขราคา">✏️</button>
-                    <button type="button" class="btn-suggest-tool" onclick="event.stopPropagation(); deletePrice('${item.name}')" title="ลบเมนูนี้">🗑️</button>
-                </div>
+                <span>${item.name}</span>
+                <span class="suggest-price">฿${item.price}</span>
             `;
             div.onclick = () => {
                 quickInput.value = item.name;
@@ -1118,22 +1094,6 @@
             suggestBox.appendChild(div);
         });
         suggestBox.style.display = 'block';
-    }
-
-    function quickEditMenuPrice(name, currentPrice) {
-        const newPrice = prompt(`ระบุราคาใหม่สำหรับเมนู "${name}":`, currentPrice);
-        if (newPrice !== null && newPrice.trim() !== '') {
-            const p = parseFloat(newPrice);
-            if (!isNaN(p) && p > 0) {
-                priceBook[name] = p;
-                localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
-                saveToCloud({ action: "update_price", name, price: p });
-                renderUI();
-                handleSearchSuggest(quickInput.value);
-            } else {
-                alert('กรุณากรอกจำนวนราคาให้ถูกต้อง');
-            }
-        }
     }
 
     document.addEventListener('click', (e) => {
@@ -1698,7 +1658,6 @@
             localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
             saveToCloud({ action: "delete_price", name });
             renderUI();
-            if (suggestBox) suggestBox.style.display = 'none';
         }
     }
 
