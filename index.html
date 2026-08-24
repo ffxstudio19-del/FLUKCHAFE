@@ -617,7 +617,6 @@
             to { opacity: 1; }
         }
 
-        /* Modal หน้าต่างแสดงสูตรชง */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -892,16 +891,15 @@
 <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbzr8lEc78rzKvRvYsgKpBkiH-E7zrpdt8oj_o9oJ6PCvMh7gcfJUrUwmMo-J1uHHVXWJQ/exec";
     const GOOGLE_SHEETS_URL = "https://docs.google.com/spreadsheets/d/1EEU-LsVCzD8jbisYSVmy5jMjdTotGOgIW-4ASJlzqYU/edit";
-    const RELAY_SYNC_URL = "https://kvdb.io/4y9y1y4QW5N1WdYk7z2M9C/flukchafe_done_state";
 
-    const STORAGE_KEY = 'FLUKCHAFE_SHARED_DB_V6';
-    const MENU_PRICES_KEY = 'FLUKCHAFE_SHARED_PRICES_V6';
-    const RECIPES_KEY = 'FLUKCHAFE_SHARED_RECIPES_V6';
-    const EXPENSES_KEY = 'FLUKCHAFE_SHARED_EXP_V6';
-    const DELETED_SALES_KEY = 'FLUKCHAFE_DELETED_SALES_IDS_V6';
-    const DELETED_EXP_KEY = 'FLUKCHAFE_DELETED_EXP_IDS_V6';
-    const PAY_METHODS_LOCK_KEY = 'FLUKCHAFE_PAY_LOCK_V6';
-    const DONE_LOCAL_KEY = 'FLUKCHAFE_DONE_MAP_V6';
+    const STORAGE_KEY = 'FLUKCHAFE_SHARED_DB_V8';
+    const MENU_PRICES_KEY = 'FLUKCHAFE_SHARED_PRICES_V8';
+    const RECIPES_KEY = 'FLUKCHAFE_SHARED_RECIPES_V8';
+    const EXPENSES_KEY = 'FLUKCHAFE_SHARED_EXP_V8';
+    const DELETED_SALES_KEY = 'FLUKCHAFE_DELETED_SALES_IDS_V8';
+    const DELETED_EXP_KEY = 'FLUKCHAFE_DELETED_EXP_IDS_V8';
+    const PAY_METHODS_LOCK_KEY = 'FLUKCHAFE_PAY_LOCK_V8';
+    const DONE_MAP_KEY = 'FLUKCHAFE_SHARED_DONE_MAP_V8';
 
     const DEFAULT_RECIPES = {
         "ชาไทย เย็น": "• ผงชาไทย 2 ช้อนโต๊ะ\n• นมข้นหวาน 30 มล.\n• นมข้นจืด 30 มล.\n• นมสด 30 มล.",
@@ -935,7 +933,7 @@
     let deletedSalesIds = new Set(JSON.parse(localStorage.getItem(DELETED_SALES_KEY)) || []);
     let deletedExpensesIds = new Set(JSON.parse(localStorage.getItem(DELETED_EXP_KEY)) || []);
     let payMethodsLock = JSON.parse(localStorage.getItem(PAY_METHODS_LOCK_KEY)) || {};
-    let doneStateMap = JSON.parse(localStorage.getItem(DONE_LOCAL_KEY)) || {};
+    let doneStateMap = JSON.parse(localStorage.getItem(DONE_MAP_KEY)) || {};
 
     let selectedCategory = 'auto';
     let currentFilter = 'today';
@@ -1042,7 +1040,6 @@
     backdateDateInput.value = formatDateYMD(initD);
     backdateTimeInput.value = initD.toTimeString().substring(0, 5);
 
-    // เปิดดูสูตรชงเมื่อกดชื่อเมนู
     function showRecipe(menuName) {
         recipeModalTitle.innerText = `📖 สูตรชง: ${menuName}`;
         const recipeText = recipeBook[menuName] || "ยังไม่มีการบันทึกสูตรชงสำหรับเมนูนี้\n(คุณสามารถเพิ่มสูตรได้ที่แท็บตั้งราคา)";
@@ -1054,46 +1051,7 @@
         recipeModal.style.display = 'none';
     }
 
-    async function syncDoneStateFromCloud() {
-        try {
-            const res = await fetch(RELAY_SYNC_URL);
-            if (res.ok) {
-                const cloudDoneMap = await res.json();
-                if (cloudDoneMap && typeof cloudDoneMap === 'object') {
-                    doneStateMap = { ...doneStateMap, ...cloudDoneMap };
-                    localStorage.setItem(DONE_LOCAL_KEY, JSON.stringify(doneStateMap));
-                    updateDoneDOMState();
-                }
-            }
-        } catch (e) {}
-    }
-
-    async function pushDoneStateToCloud() {
-        try {
-            await fetch(RELAY_SYNC_URL, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(doneStateMap)
-            });
-        } catch (e) {}
-    }
-
-    function updateDoneDOMState() {
-        for (const [id, isDone] of Object.entries(doneStateMap)) {
-            const row = document.getElementById(`row-${id}`);
-            if (row) {
-                const box = row.querySelector('.item-check-box');
-                if (isDone) {
-                    row.classList.add('item-done');
-                    if (box) box.innerText = '✓';
-                } else {
-                    row.classList.remove('item-done');
-                    if (box) box.innerText = '';
-                }
-            }
-        }
-    }
-
+    // ซิงค์สถานะติ๊กข้ามเครื่องโดยฝังคำว่า #done ต่อท้าย paymentMethod ซึ่ง Google Sheets รองรับและเซฟให้อัตโนมัติทันที
     function fastToggle(event, id, el) {
         if (event) {
             event.stopPropagation();
@@ -1109,10 +1067,19 @@
         const row = el.closest('.batch-item-row');
         if (!row) return;
 
-        const nextDone = !doneStateMap[targetId];
-        doneStateMap[targetId] = nextDone;
+        const idx = sales.findIndex(s => String(s.id) === targetId);
+        if (idx === -1) return;
 
-        if (nextDone) {
+        const currentMethod = sales[idx].paymentMethod || 'cash';
+        const isDone = currentMethod.includes('#done');
+        const baseMethod = currentMethod.replace('#done', '');
+        const nextMethod = isDone ? baseMethod : `${baseMethod}#done`;
+
+        sales[idx].paymentMethod = nextMethod;
+        payMethodsLock[targetId] = nextMethod;
+        doneStateMap[targetId] = !isDone;
+
+        if (!isDone) {
             row.classList.add('item-done');
             el.innerText = '✓';
         } else {
@@ -1120,8 +1087,15 @@
             el.innerText = '';
         }
 
-        localStorage.setItem(DONE_LOCAL_KEY, JSON.stringify(doneStateMap));
-        pushDoneStateToCloud();
+        localStorage.setItem(PAY_METHODS_LOCK_KEY, JSON.stringify(payMethodsLock));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
+        localStorage.setItem(DONE_MAP_KEY, JSON.stringify(doneStateMap));
+
+        fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify({ action: "update_sale", item: sales[idx] })
+        }).catch(() => {});
     }
 
     function togglePayMethod(id) {
@@ -1129,9 +1103,12 @@
         const idx = sales.findIndex(s => String(s.id) === targetId);
         if (idx !== -1) {
             const currentMethod = sales[idx].paymentMethod || 'cash';
-            const nextMethod = (currentMethod === 'cash') ? 'promptpay' : 'cash';
-            sales[idx].paymentMethod = nextMethod;
+            const isDone = currentMethod.includes('#done');
+            const baseMethod = currentMethod.replace('#done', '');
+            const nextBase = (baseMethod === 'cash') ? 'promptpay' : 'cash';
+            const nextMethod = isDone ? `${nextBase}#done` : nextBase;
 
+            sales[idx].paymentMethod = nextMethod;
             payMethodsLock[targetId] = nextMethod;
             localStorage.setItem(PAY_METHODS_LOCK_KEY, JSON.stringify(payMethodsLock));
             localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
@@ -1245,9 +1222,13 @@
                             if (payMethodsLock[tid]) {
                                 item.paymentMethod = payMethodsLock[tid];
                             }
+                            if (item.paymentMethod && item.paymentMethod.includes('#done')) {
+                                doneStateMap[tid] = true;
+                            }
                             return item;
                         });
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
+                    localStorage.setItem(DONE_MAP_KEY, JSON.stringify(doneStateMap));
                 }
                 if (Array.isArray(data.expenses)) {
                     expenses = data.expenses.filter(item => item && item.id && !deletedExpensesIds.has(String(item.id)));
@@ -1260,7 +1241,6 @@
                 if (syncStatus) syncStatus.innerText = "เชื่อมต่อข้อมูลสดอัตโนมัติ";
                 if (syncDot) syncDot.className = 'status-dot';
                 renderUI();
-                syncDoneStateFromCloud();
             }
         } catch (e) {
             if (syncStatus) syncStatus.innerText = "ใช้งานโหมดในเครื่อง (ออฟไลน์)";
@@ -1470,12 +1450,11 @@
             deletedSalesIds.add(targetId);
             localStorage.setItem(DELETED_SALES_KEY, JSON.stringify(Array.from(deletedSalesIds)));
             delete doneStateMap[targetId];
-            localStorage.setItem(DONE_LOCAL_KEY, JSON.stringify(doneStateMap));
+            localStorage.setItem(DONE_MAP_KEY, JSON.stringify(doneStateMap));
 
             sales = sales.filter(item => item && String(item.id) !== targetId);
             localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
             renderUI();
-            pushDoneStateToCloud();
 
             await saveToCloud({ action: "delete_sale", id: targetId });
         }
@@ -1620,7 +1599,8 @@
                 totalS += price;
                 totalPieces += qty;
 
-                if (item.paymentMethod === 'promptpay') {
+                const baseMethod = (item.paymentMethod || 'cash').replace('#done', '');
+                if (baseMethod === 'promptpay') {
                     totalQrSum += price;
                 } else {
                     totalCashSum += price;
@@ -1635,6 +1615,7 @@
                 menuGrouped[cat][item.name].sum += price;
             });
 
+            // จัดกลุ่มออเดอร์ตามช่วงเวลา (Batching ทุก 1 นาที)
             const sortedSales = displaySales.slice().sort((a, b) => (Number(b.ts) || 0) - (Number(a.ts) || 0));
             const batches = [];
             let currentBatch = null;
@@ -1663,6 +1644,7 @@
             });
             if (currentBatch) batches.push(currentBatch);
 
+            // Render การ์ดบิล
             batches.forEach((batch) => {
                 let batchTotal = 0;
                 let batchTotalQty = 0;
@@ -1679,10 +1661,15 @@
                     const price = Number(item.totalPrice) || 0;
                     const qty = Number(item.qty) || 1;
                     const unitPrice = Number(item.unitPrice) || price;
-                    const isQr = (item.paymentMethod === 'promptpay');
+                    
+                    const basePay = (item.paymentMethod || 'cash').replace('#done', '');
+                    const isQr = (basePay === 'promptpay');
                     const badgeClass = isQr ? 'pay-badge qr' : 'pay-badge cash';
                     const badgeText = isQr ? '📱 สแกน' : '💵 สด';
-                    const isDone = doneStateMap[String(item.id)] === true;
+                    
+                    const isDone = (item.paymentMethod && item.paymentMethod.includes('#done')) || doneStateMap[String(item.id)] === true;
+                    if (isDone) doneStateMap[String(item.id)] = true;
+
                     const doneClass = isDone ? 'item-done' : '';
 
                     itemsHtml += `
@@ -1881,7 +1868,8 @@
         if (sales.length === 0) { alert('ไม่มีข้อมูลยอดขายสำหรับดาวน์โหลด'); return; }
         let csv = '\uFEFFวันที่,เวลา,ชื่อเมนู,หมวดหมู่,ประเภทการชำระ,ราคาต่อหน่วย,จำนวน,ราคารวม\n';
         sales.forEach(s => {
-            const payText = (s.paymentMethod === 'promptpay') ? 'สแกนจ่าย' : 'เงินสด';
+            const basePay = (s.paymentMethod || 'cash').replace('#done', '');
+            const payText = (basePay === 'promptpay') ? 'สแกนจ่าย' : 'เงินสด';
             csv += `"${s.date}","${s.time}","${s.name}","${s.category}","${payText}",${s.unitPrice},${s.qty},${s.totalPrice}\n`;
         });
         downloadBlob(csv, `FLUKCHAFE_Sales_${formatDateYMD(new Date())}.csv`);
@@ -1910,23 +1898,17 @@
     renderUI();
     window.addEventListener('DOMContentLoaded', () => {
         loadFromCloud();
-        syncDoneStateFromCloud();
         setInterval(() => {
-            if (!document.hidden) {
-                loadFromCloud();
-                syncDoneStateFromCloud();
-            }
+            if (!document.hidden) loadFromCloud();
         }, 3000);
     });
 
     window.addEventListener('focus', () => {
         loadFromCloud();
-        syncDoneStateFromCloud();
     });
 
     window.addEventListener('online', () => {
         loadFromCloud();
-        syncDoneStateFromCloud();
     });
 </script>
 </body>
