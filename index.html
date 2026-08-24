@@ -659,6 +659,22 @@
             line-height: 1.5;
             margin-bottom: 14px;
         }
+        .btn-modal-close-large {
+            width: 100%;
+            background: #0284c7;
+            color: #fff;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(2, 132, 199, 0.3);
+        }
+        .btn-modal-close-large:active {
+            background: #0369a1;
+            transform: scale(0.98);
+        }
     </style>
 </head>
 <body>
@@ -845,11 +861,11 @@
 </div>
 
 <!-- Modal หน้าต่างแสดงสูตรชงเมื่อกดชื่อเมนูในประวัติ -->
-<div class="modal-overlay" id="recipeModal">
-    <div class="modal-box">
+<div class="modal-overlay" id="recipeModal" onclick="closeRecipeModal(event)">
+    <div class="modal-box" onclick="event.stopPropagation()">
         <div class="modal-title" id="recipeModalTitle">📖 สูตรชงเมนู</div>
         <div class="recipe-content" id="recipeModalBody">-</div>
-        <button type="button" class="btn-modal-save" onclick="closeRecipeModal()">ปิดหน้าต่าง</button>
+        <button type="button" class="btn-modal-close-large" onclick="closeRecipeModal()">ปิดหน้าต่าง</button>
     </div>
 </div>
 
@@ -892,14 +908,14 @@
     const API_URL = "https://script.google.com/macros/s/AKfycbzr8lEc78rzKvRvYsgKpBkiH-E7zrpdt8oj_o9oJ6PCvMh7gcfJUrUwmMo-J1uHHVXWJQ/exec";
     const GOOGLE_SHEETS_URL = "https://docs.google.com/spreadsheets/d/1EEU-LsVCzD8jbisYSVmy5jMjdTotGOgIW-4ASJlzqYU/edit";
 
-    const STORAGE_KEY = 'FLUKCHAFE_SHARED_DB_V8';
-    const MENU_PRICES_KEY = 'FLUKCHAFE_SHARED_PRICES_V8';
-    const RECIPES_KEY = 'FLUKCHAFE_SHARED_RECIPES_V8';
-    const EXPENSES_KEY = 'FLUKCHAFE_SHARED_EXP_V8';
-    const DELETED_SALES_KEY = 'FLUKCHAFE_DELETED_SALES_IDS_V8';
-    const DELETED_EXP_KEY = 'FLUKCHAFE_DELETED_EXP_IDS_V8';
-    const PAY_METHODS_LOCK_KEY = 'FLUKCHAFE_PAY_LOCK_V8';
-    const DONE_MAP_KEY = 'FLUKCHAFE_SHARED_DONE_MAP_V8';
+    const STORAGE_KEY = 'FLUKCHAFE_SHARED_DB_V9';
+    const MENU_PRICES_KEY = 'FLUKCHAFE_SHARED_PRICES_V9';
+    const RECIPES_KEY = 'FLUKCHAFE_SHARED_RECIPES_V9';
+    const EXPENSES_KEY = 'FLUKCHAFE_SHARED_EXP_V9';
+    const DELETED_SALES_KEY = 'FLUKCHAFE_DELETED_SALES_IDS_V9';
+    const DELETED_EXP_KEY = 'FLUKCHAFE_DELETED_EXP_IDS_V9';
+    const PAY_METHODS_LOCK_KEY = 'FLUKCHAFE_PAY_LOCK_V9';
+    const DONE_MAP_KEY = 'FLUKCHAFE_SHARED_DONE_MAP_V9';
 
     const DEFAULT_RECIPES = {
         "ชาไทย เย็น": "• ผงชาไทย 2 ช้อนโต๊ะ\n• นมข้นหวาน 30 มล.\n• นมข้นจืด 30 มล.\n• นมสด 30 มล.",
@@ -1051,7 +1067,7 @@
         recipeModal.style.display = 'none';
     }
 
-    // ซิงค์สถานะติ๊กข้ามเครื่องโดยฝังคำว่า #done ต่อท้าย paymentMethod ซึ่ง Google Sheets รองรับและเซฟให้อัตโนมัติทันที
+    // ซิงค์สถานะติ๊กข้ามเครื่องแบบ Realtime โดยฝังสถานะผ่าน paymentMethod (เช่น promptpay#done หรือ cash#done) ส่งเข้า Google Sheets โดยตรง
     function fastToggle(event, id, el) {
         if (event) {
             event.stopPropagation();
@@ -1878,7 +1894,7 @@
     function exportExpensesToCSV() {
         if (expenses.length === 0) { alert('ไม่มีข้อมูลต้นทุนสำหรับดาวน์โหลด'); return; }
         let csv = '\uFEFFวันที่,เวลา,รายการซื้อของ,จำนวนเงินต้นทุน\n';
-        expenses.forEach(e => {
+        expenses.expenses.forEach(e => {
             csv += `"${e.date}","${e.time}","${e.name}",${e.cost}\n`;
         });
         downloadBlob(csv, `FLUKCHAFE_Expenses_${formatDateYMD(new Date())}.csv`);
