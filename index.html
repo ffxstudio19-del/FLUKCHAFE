@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FLUKCHAFE - ฟลุ๊ค ชาเฟ่ POS & Profit</title>
+    <title>FLUKCHAFE - ฟลุ๊ค ชาเฟ่</title>
     
     <link rel="icon" type="image/png" href="logo.png">
     <link rel="apple-touch-icon" href="logo.png">
@@ -704,7 +704,6 @@
             <button type="button" class="btn-export" onclick="exportSalesToCSV()">📥 ดาวน์โหลดรายงานยอดขาย (CSV/Excel)</button>
             <button type="button" class="btn-export" style="background:#6366f1;" onclick="exportExpensesToCSV()">📥 ดาวน์โหลดรายงานต้นทุน (CSV/Excel)</button>
             
-            <!-- ปุ่มซิงค์ข้อมูลย้ายมาไว้ด้านล่างสุด -->
             <div id="syncStatus" class="sync-badge" onclick="loadFromCloud()">🔄 ซิงค์ข้อมูล Cloud</div>
         </div>
     </div>
@@ -1346,7 +1345,16 @@
 
         const profit = totalS - totalC;
         totalSales.innerText = `฿${totalS.toLocaleString()}`;
-        totalSalesSub.innerText = `ยอดขายรวม • ${totalPieces} ชิ้น (${displaySales.length} ออเดอร์)`;
+        
+        // กำหนดข้อความป้ายย่อยให้เปลี่ยนตามช่วงเวลาที่เลือกอัตโนมัติ
+        let filterLabel = "วันนี้";
+        if (currentFilter === 'week') filterLabel = "อาทิตย์นี้";
+        else if (currentFilter === 'all') filterLabel = "ทั้งหมด";
+        else if (currentFilter === 'custom') {
+            filterLabel = (customFilterType === 'date') ? `วันที่ ${selectDateInput.value}` : `เดือน ${selectMonthInput.value}`;
+        }
+        
+        totalSalesSub.innerText = `ยอดขายรวม${filterLabel} • รวม ${totalPieces} ชิ้น (${displaySales.length} ออเดอร์)`;
         
         document.getElementById('totalCash').innerText = `฿${totalCashSum.toLocaleString()}`;
         document.getElementById('totalQr').innerText = `฿${totalQrSum.toLocaleString()}`;
