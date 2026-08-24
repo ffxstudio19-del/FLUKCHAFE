@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FLUKCHAFE - ฟลุ๊ค ชาเฟ่</title>
+    <title>FLUKCHAFE - ฟลุ๊ค ชาเฟ่ POS & Profit</title>
     
     <link rel="icon" type="image/png" href="logo.png">
     <link rel="apple-touch-icon" href="logo.png">
@@ -1000,11 +1000,19 @@
             const res = await fetch(API_URL);
             const data = await res.json();
             if (data && data.sales) {
-                sales = data.sales;
+                sales = data.sales.map(s => ({
+                    ...s,
+                    qty: Number(s.qty) || 1,
+                    unitPrice: Number(s.unitPrice) || 0,
+                    totalPrice: Number(s.totalPrice) || (Number(s.qty || 1) * Number(s.unitPrice || 0))
+                }));
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
             }
             if (data && data.expenses) {
-                expenses = data.expenses;
+                expenses = data.expenses.map(e => ({
+                    ...e,
+                    cost: Number(e.cost) || 0
+                }));
                 localStorage.setItem(EXPENSES_KEY, JSON.stringify(expenses));
             }
             if (data && data.prices) {
@@ -1074,7 +1082,7 @@
 
         if (priceBook[text]) {
             name = text;
-            unitPrice = priceBook[text];
+            unitPrice = Number(priceBook[text]);
             qty = 1;
         } else if (parts.length >= 2 && !isNaN(parts[parts.length - 1])) {
             const potentialQty = parseInt(parts[parts.length - 1]);
@@ -1083,7 +1091,7 @@
             if (priceBook[potentialName]) {
                 name = potentialName;
                 qty = potentialQty;
-                unitPrice = priceBook[name];
+                unitPrice = Number(priceBook[name]);
             } else {
                 name = text;
             }
@@ -1092,7 +1100,7 @@
         }
 
         if ((isNaN(unitPrice) || unitPrice <= 0) && priceBook[name]) {
-            unitPrice = priceBook[name];
+            unitPrice = Number(priceBook[name]);
         }
 
         if (!name || isNaN(unitPrice) || unitPrice <= 0 || qty <= 0) {
@@ -1126,12 +1134,12 @@
         const newId = String(Date.now() + Math.floor(Math.random() * 100));
         const newItem = { 
             id: newId,
-            ts: recordTs,
+            ts: Number(recordTs),
             date: recordDate,
             name, 
-            unitPrice, 
-            qty, 
-            totalPrice, 
+            unitPrice: Number(unitPrice), 
+            qty: Number(qty), 
+            totalPrice: Number(totalPrice), 
             category,
             paymentMethod: 'promptpay',
             time: recordTime 
@@ -1179,10 +1187,10 @@
 
         const newExp = {
             id: String(Date.now() + Math.floor(Math.random() * 100)),
-            ts: recordTs,
+            ts: Number(recordTs),
             date: recordDate,
             name,
-            cost,
+            cost: Number(cost),
             time: recordTime
         };
 
@@ -1261,7 +1269,7 @@
         let totalQrSum = 0;
         let totalPieces = 0;
         
-        displayExpenses.forEach(e => totalC += Number(e.cost));
+        displayExpenses.forEach(e => totalC += Number(e.cost || 0));
 
         const catStats = {
             'เครื่องดื่ม': { sum: 0, count: 0 },
@@ -1283,9 +1291,12 @@
             itemList.innerHTML = '<div class="empty-text">ยังไม่มีรายการขายในช่วงนี้</div>';
         } else {
             displaySales.slice().reverse().forEach((item) => {
-                const price = Number(item.totalPrice);
+                const qty = Number(item.qty) || 1;
+                const unitPrice = Number(item.unitPrice) || Number(priceBook[item.name]) || 0;
+                const price = Number(item.totalPrice) || (unitPrice * qty);
+                
                 totalS += price;
-                totalPieces += Number(item.qty);
+                totalPieces += qty;
 
                 if (item.paymentMethod === 'cash') {
                     totalCashSum += price;
@@ -1295,10 +1306,10 @@
 
                 const cat = catStats[item.category] ? item.category : 'อาหาร/กะเพรา';
                 catStats[cat].sum += price;
-                catStats[cat].count += Number(item.qty);
+                catStats[cat].count += qty;
 
                 if (!menuGrouped[cat][item.name]) menuGrouped[cat][item.name] = { qty: 0, sum: 0 };
-                menuGrouped[cat][item.name].qty += Number(item.qty);
+                menuGrouped[cat][item.name].qty += qty;
                 menuGrouped[cat][item.name].sum += price;
 
                 const isQr = (item.paymentMethod !== 'cash');
@@ -1309,8 +1320,8 @@
                 row.className = 'item-row';
                 row.innerHTML = `
                     <div>
-                        <div class="item-title">${item.name} <span style="color:#0284c7;">x${item.qty}</span> <span class="badge">${cat}</span></div>
-                        <div class="item-detail">(@${item.unitPrice} บ.) • ${item.date} ${item.time} น.</div>
+                        <div class="item-title">${item.name} <span style="color:#0284c7;">x${qty}</span> <span class="badge">${cat}</span></div>
+                        <div class="item-detail">(@${unitPrice} บ.) • ${item.date} ${item.time || ''} น.</div>
                     </div>
                     <div style="display:flex; align-items:center;">
                         <span class="item-price">฿${price.toLocaleString()}</span>
@@ -1332,10 +1343,10 @@
                 row.innerHTML = `
                     <div>
                         <div class="item-title" style="color:#ef4444;">💸 ${item.name}</div>
-                        <div class="item-detail">${item.date} • ${item.time} น.</div>
+                        <div class="item-detail">${item.date} • ${item.time || ''} น.</div>
                     </div>
                     <div style="display:flex; align-items:center;">
-                        <span class="item-price" style="color:#ef4444;">-฿${Number(item.cost).toLocaleString()}</span>
+                        <span class="item-price" style="color:#ef4444;">-฿${Number(item.cost || 0).toLocaleString()}</span>
                         <button class="btn-del" onclick="deleteExpense('${item.id}')">ลบ</button>
                     </div>
                 `;
@@ -1346,7 +1357,6 @@
         const profit = totalS - totalC;
         totalSales.innerText = `฿${totalS.toLocaleString()}`;
         
-        // กำหนดข้อความป้ายย่อยให้เปลี่ยนตามช่วงเวลาที่เลือกอัตโนมัติ
         let filterLabel = "วันนี้";
         if (currentFilter === 'week') filterLabel = "อาทิตย์นี้";
         else if (currentFilter === 'all') filterLabel = "ทั้งหมด";
@@ -1485,7 +1495,7 @@
         let csv = '\uFEFFวันที่,เวลา,ชื่อเมนู,หมวดหมู่,ประเภทการชำระ,ราคาต่อหน่วย,จำนวน,ราคารวม\n';
         sales.forEach(s => {
             const payText = (s.paymentMethod === 'cash') ? 'เงินสด' : 'สแกนจ่าย';
-            csv += `"${s.date}","${s.time}","${s.name}","${s.category}","${payText}",${s.unitPrice},${s.qty},${s.totalPrice}\n`;
+            csv += `"${s.date}","${s.time || ''}","${s.name}","${s.category}","${payText}",${s.unitPrice || 0},${s.qty || 1},${s.totalPrice || 0}\n`;
         });
         downloadBlob(csv, `FLUKCHAFE_Sales_${formatDateYMD(new Date())}.csv`);
     }
@@ -1494,7 +1504,7 @@
         if (expenses.length === 0) { alert('ไม่มีข้อมูลต้นทุนสำหรับดาวน์โหลด'); return; }
         let csv = '\uFEFFวันที่,เวลา,รายการซื้อของ,จำนวนเงินต้นทุน\n';
         expenses.forEach(e => {
-            csv += `"${e.date}","${e.time}","${e.name}",${e.cost}\n`;
+            csv += `"${e.date}","${e.time || ''}","${e.name}",${e.cost || 0}\n`;
         });
         downloadBlob(csv, `FLUKCHAFE_Expenses_${formatDateYMD(new Date())}.csv`);
     }
