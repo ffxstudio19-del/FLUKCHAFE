@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>FLUKCHAFE ฟลุ๊ค ชาเฟ่</title>
     
-    <!-- PWA & Mobile App Meta Tags -->
+    <!-- PWA & Mobile App Settings -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0f172a">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1056,7 +1056,7 @@
         } else {
             const now = new Date();
             recordDate = formatDateYMD(now);
-            recordTime = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', hour12: false });
+            recordTime = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
             recordTs = Date.now();
         }
 
@@ -1105,7 +1105,7 @@
         } else {
             const now = new Date();
             recordDate = formatDateYMD(now);
-            recordTime = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', hour12: false });
+            recordTime = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
             recordTs = Date.now();
         }
 
