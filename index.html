@@ -918,7 +918,7 @@
             <div id="priceSettingList"></div>
 
             <div class="export-section">
-                <div style="font-size: 0.75rem; color: #64748b; font-weight: 600; margin-bottom: 6px;">📊 จัดการข้อมูล & รายงาน (Google Sheets / Excel)</div>
+                <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 600; margin-bottom: 6px;">📊 จัดการข้อมูล & รายงาน (Google Sheets / Excel)</div>
                 <button type="button" class="btn-sheets-link" onclick="openGoogleSheets()">🟢 เปิดดูข้อมูลบน Google Sheets</button>
                 <button type="button" class="btn-export" onclick="exportSalesToCSV()">📥 ดาวน์โหลดรายงานยอดขาย (CSV/Excel)</button>
                 <button type="button" class="btn-export" style="background:#6366f1;" onclick="exportExpensesToCSV()">📥 ดาวน์โหลดรายงานต้นทุน (CSV/Excel)</button>
@@ -1122,6 +1122,8 @@
     const deliveryAddressSection = document.getElementById('deliveryAddressSection');
     const btnTypeDelivery = document.getElementById('btnTypeDelivery');
     const btnTypePickup = document.getElementById('btnTypePickup');
+    const btnPayQr = document.getElementById('btnPayQr');
+    const btnPayCash = document.getElementById('btnPayCash');
     const pinModal = document.getElementById('pinModal');
     const pinInput = document.getElementById('pinInput');
 
@@ -1228,6 +1230,19 @@
             btnTypePickup.classList.add('active');
             btnTypeDelivery.classList.remove('active');
             deliveryAddressSection.style.display = 'none';
+        }
+    }
+
+    function selectPaymentType(type) {
+        selectedPaymentType = type;
+        if (type === 'qr') {
+            btnPayQr.classList.add('active');
+            btnPayCash.classList.remove('active');
+            qrSectionContainer.style.display = 'block';
+        } else {
+            btnPayCash.classList.add('active');
+            btnPayQr.classList.remove('active');
+            qrSectionContainer.style.display = 'none';
         }
     }
 
@@ -1339,6 +1354,7 @@
         custModalTotal.innerText = `฿${totalSum.toLocaleString()}`;
         custQrImg.src = `https://promptpay.io/${PROMPTPAY_ID}/${totalSum}.png`;
         selectOrderType(selectedOrderType);
+        selectPaymentType(selectedPaymentType);
         cartModal.style.display = 'flex';
     }
 
@@ -1377,6 +1393,7 @@
         const dateStr = formatDateYMD(now);
         const timeStr = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
         const isDel = (selectedOrderType === 'delivery');
+        const payMethod = (selectedPaymentType === 'qr') ? 'promptpay' : 'cash';
 
         cart.forEach(item => {
             const unitP = Number(item.price) || 0;
@@ -1390,7 +1407,7 @@
                 qty: itemQty,
                 totalPrice: unitP * itemQty,
                 category: detectCategory(item.name),
-                paymentMethod: 'promptpay',
+                paymentMethod: payMethod,
                 isDelivery: isDel,
                 orderType: isDel ? 'ส่งหน้าบ้าน' : 'รับหน้าร้าน',
                 custName: name,
@@ -1542,7 +1559,7 @@
                     let up = Number(item.unitPrice) || 0;
                     let q = Number(item.qty) || 1;
                     
-                    // ป้องกันกรณีข้อมูลสลับช่องราคาและจำนวนในระบบเก่า
+                    // ป้องกันค่าสลับกันระหว่าง unitPrice และ qty ในระบบเก่า
                     if (up > 50 && q <= 5 && up % 5 !== 0 && q > 1) {
                         let temp = up;
                         up = q;
@@ -1550,7 +1567,6 @@
                         item.unitPrice = up;
                         item.qty = q;
                     }
-                    
                     item.totalPrice = up * q;
                 });
 
@@ -1815,7 +1831,6 @@
         sales.forEach(item => {
             let up = Number(item.unitPrice) || 0;
             let q = Number(item.qty) || 1;
-            
             if (up > 50 && q <= 5 && up % 5 !== 0 && q > 1) {
                 let temp = up;
                 up = q;
