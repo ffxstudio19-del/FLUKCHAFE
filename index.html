@@ -908,14 +908,14 @@
     const API_URL = "https://script.google.com/macros/s/AKfycbzr8lEc78rzKvRvYsgKpBkiH-E7zrpdt8oj_o9oJ6PCvMh7gcfJUrUwmMo-J1uHHVXWJQ/exec";
     const GOOGLE_SHEETS_URL = "https://docs.google.com/spreadsheets/d/1EEU-LsVCzD8jbisYSVmy5jMjdTotGOgIW-4ASJlzqYU/edit";
 
-    const STORAGE_KEY = 'FLUKCHAFE_SHARED_DB_V10';
-    const MENU_PRICES_KEY = 'FLUKCHAFE_SHARED_PRICES_V10';
-    const RECIPES_KEY = 'FLUKCHAFE_SHARED_RECIPES_V10';
-    const EXPENSES_KEY = 'FLUKCHAFE_SHARED_EXP_V10';
-    const DELETED_SALES_KEY = 'FLUKCHAFE_DELETED_SALES_IDS_V10';
-    const DELETED_EXP_KEY = 'FLUKCHAFE_DELETED_EXP_IDS_V10';
-    const PAY_METHODS_LOCK_KEY = 'FLUKCHAFE_PAY_LOCK_V10';
-    const DONE_MAP_KEY = 'FLUKCHAFE_SHARED_DONE_MAP_V10';
+    const STORAGE_KEY = 'FLUKCHAFE_SHARED_DB_V11';
+    const MENU_PRICES_KEY = 'FLUKCHAFE_SHARED_PRICES_V11';
+    const RECIPES_KEY = 'FLUKCHAFE_SHARED_RECIPES_V11';
+    const EXPENSES_KEY = 'FLUKCHAFE_SHARED_EXP_V11';
+    const DELETED_SALES_KEY = 'FLUKCHAFE_DELETED_SALES_IDS_V11';
+    const DELETED_EXP_KEY = 'FLUKCHAFE_DELETED_EXP_IDS_V11';
+    const PAY_METHODS_LOCK_KEY = 'FLUKCHAFE_PAY_LOCK_V11';
+    const DONE_MAP_KEY = 'FLUKCHAFE_SHARED_DONE_MAP_V11';
 
     const DEFAULT_RECIPES = {
         "ชาไทย เย็น": "• ผงชาไทย 2 ช้อนโต๊ะ\n• นมข้นหวาน 30 มล.\n• นมข้นจืด 30 มล.\n• นมสด 30 มล.",
@@ -1067,7 +1067,7 @@
         recipeModal.style.display = 'none';
     }
 
-    // ซิงค์สถานะติ๊กข้ามเครื่องแบบ 100% โดยใช้ระบบ Local & Cloud Shared Map
+    // ซิงค์สถานะติ๊กผ่านชื่อเมนูโดยอัตโนมัติ (ใส่เครื่องหมาย ** ท้ายชื่อ เพื่อให้ Google Sheets บันทึกและส่งตรงกันทุกเครื่อง)
     function fastToggle(event, id, el) {
         if (event) {
             event.stopPropagation();
@@ -1083,9 +1083,15 @@
         const row = el.closest('.batch-item-row');
         if (!row) return;
 
-        const currentDone = doneStateMap[targetId] === true;
-        const nextDone = !currentDone;
+        const idx = sales.findIndex(s => String(s.id) === targetId);
+        if (idx === -1) return;
+
+        const isCurrentlyDone = doneStateMap[targetId] === true;
+        const nextDone = !isCurrentlyDone;
         doneStateMap[targetId] = nextDone;
+
+        let cleanName = sales[idx].name.replace(/\s*\*\*\s*/g, '').trim();
+        sales[idx].name = nextDone ? `${cleanName} **` : cleanName;
 
         if (nextDone) {
             row.classList.add('item-done');
@@ -1096,6 +1102,13 @@
         }
 
         localStorage.setItem(DONE_MAP_KEY, JSON.stringify(doneStateMap));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
+
+        fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify({ action: "update_sale", item: sales[idx] })
+        }).catch(() => {});
     }
 
     function togglePayMethod(id) {
@@ -1219,9 +1232,13 @@
                             if (payMethodsLock[tid]) {
                                 item.paymentMethod = payMethodsLock[tid];
                             }
+                            if (item.name && item.name.includes('**')) {
+                                doneStateMap[tid] = true;
+                            }
                             return item;
                         });
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
+                    localStorage.setItem(DONE_MAP_KEY, JSON.stringify(doneStateMap));
                 }
                 if (Array.isArray(data.expenses)) {
                     expenses = data.expenses.filter(item => item && item.id && !deletedExpensesIds.has(String(item.id)));
@@ -1458,7 +1475,7 @@
         if (!item) return;
 
         editItemId.value = item.id;
-        editItemName.value = item.name;
+        editItemName.value = item.name.replace(/\s*\*\*\s*/g, '');
         editItemCategory.value = item.category || 'เครื่องดื่ม';
         editItemUnitPrice.value = item.unitPrice;
         editItemQty.value = item.qty;
@@ -1484,7 +1501,8 @@
 
         const idx = sales.findIndex(s => String(s.id) === String(id));
         if (idx !== -1) {
-            sales[idx].name = name;
+            const isDone = doneStateMap[id] === true || sales[idx].name.includes('**');
+            sales[idx].name = isDone ? `${name} **` : name;
             sales[idx].category = category;
             sales[idx].unitPrice = unitPrice;
             sales[idx].qty = qty;
@@ -1598,13 +1616,14 @@
                     totalCashSum += price;
                 }
 
+                const cleanName = item.name.replace(/\s*\*\*\s*/g, '').trim();
                 const cat = catStats[item.category] ? item.category : 'อาหาร/กะเพรา';
                 catStats[cat].sum += price;
                 catStats[cat].count += qty;
 
-                if (!menuGrouped[cat][item.name]) menuGrouped[cat][item.name] = { qty: 0, sum: 0 };
-                menuGrouped[cat][item.name].qty += qty;
-                menuGrouped[cat][item.name].sum += price;
+                if (!menuGrouped[cat][cleanName]) menuGrouped[cat][cleanName] = { qty: 0, sum: 0 };
+                menuGrouped[cat][cleanName].qty += qty;
+                menuGrouped[cat][cleanName].sum += price;
             });
 
             // จัดกลุ่มออเดอร์ตามช่วงเวลา (Batching ทุก 1 นาที)
@@ -1656,8 +1675,12 @@
                     const isQr = (item.paymentMethod === 'promptpay');
                     const badgeClass = isQr ? 'pay-badge qr' : 'pay-badge cash';
                     const badgeText = isQr ? '📱 สแกน' : '💵 สด';
-                    const isDone = doneStateMap[String(item.id)] === true;
+                    
+                    const isDone = item.name.includes('**') || doneStateMap[String(item.id)] === true;
+                    if (isDone) doneStateMap[String(item.id)] = true;
+
                     const doneClass = isDone ? 'item-done' : '';
+                    const cleanName = item.name.replace(/\s*\*\*\s*/g, '').trim();
 
                     itemsHtml += `
                         <div class="batch-item-row ${doneClass}" id="row-${item.id}">
@@ -1667,7 +1690,7 @@
                                      onclick="fastToggle(event, '${item.id}', this)" 
                                      title="แตะเพื่อติ๊กทำเสร็จแล้ว">${isDone ? '✓' : ''}</div>
                                 <div>
-                                    <div class="item-title-text" onclick="showRecipe('${item.name}')" title="แตะเพื่อดูสูตรชง">${item.name} <b style="color:#0284c7;">x${qty}</b> <span class="badge">${item.category || 'น้ำ'}</span></div>
+                                    <div class="item-title-text" onclick="showRecipe('${cleanName}')" title="แตะเพื่อดูสูตรชง">${cleanName} <b style="color:#0284c7;">x${qty}</b> <span class="badge">${item.category || 'น้ำ'}</span></div>
                                     <div class="item-sub-detail">(@${unitPrice} บ.) • แตะชื่อเพื่อดูสูตรชง</div>
                                 </div>
                             </div>
@@ -1856,7 +1879,8 @@
         let csv = '\uFEFFวันที่,เวลา,ชื่อเมนู,หมวดหมู่,ประเภทการชำระ,ราคาต่อหน่วย,จำนวน,ราคารวม\n';
         sales.forEach(s => {
             const payText = (s.paymentMethod === 'promptpay') ? 'สแกนจ่าย' : 'เงินสด';
-            csv += `"${s.date}","${s.time}","${s.name}","${s.category}","${payText}",${s.unitPrice},${s.qty},${s.totalPrice}\n`;
+            const cleanName = s.name.replace(/\s*\*\*\s*/g, '').trim();
+            csv += `"${s.date}","${s.time}","${cleanName}","${s.category}","${payText}",${s.unitPrice},${s.qty},${s.totalPrice}\n`;
         });
         downloadBlob(csv, `FLUKCHAFE_Sales_${formatDateYMD(new Date())}.csv`);
     }
