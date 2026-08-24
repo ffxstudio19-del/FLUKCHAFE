@@ -619,6 +619,48 @@
             to { opacity: 1; }
         }
 
+        /* Toast Notification Styles */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 3000;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: center;
+            pointer-events: none;
+            width: 90%;
+            max-width: 400px;
+        }
+        .toast-message {
+            background: rgba(15, 23, 42, 0.9);
+            color: #ffffff;
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 0.82rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s forwards;
+            pointer-events: auto;
+            text-align: center;
+        }
+        .toast-message.error { background: rgba(239, 68, 68, 0.95); }
+        .toast-message.success { background: rgba(16, 185, 129, 0.95); }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateY(-15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes toastOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-15px); }
+        }
+
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -680,6 +722,8 @@
     </style>
 </head>
 <body>
+
+<div class="toast-container" id="toastContainer"></div>
 
 <div class="container">
     <div class="brand-header">
@@ -1125,6 +1169,25 @@
         "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."
     ];
 
+    function showToast(message, type = 'info') {
+        const container = document.getElementById('toastContainer');
+        if (!container) return;
+
+        const toast = document.createElement('div');
+        toast.className = `toast-message ${type}`;
+        
+        let icon = 'ℹ️';
+        if (type === 'success') icon = '✅';
+        if (type === 'error') icon = '⚠️';
+
+        toast.innerHTML = `<span>${icon}</span> <span>${message}</span>`;
+        container.appendChild(toast);
+
+        setTimeout(() => {
+            toast.remove();
+        }, 3000);
+    }
+
     function formatThaiDateTime(rawDate, rawTime, ts = null) {
         let d = null;
         if (ts && !isNaN(ts)) {
@@ -1392,14 +1455,18 @@
     async function saveToCloud(payload) {
         if (syncDot) syncDot.className = 'status-dot syncing';
         try {
-            await fetch(API_URL, {
+            const res = await fetch(API_URL, {
                 method: "POST",
                 headers: { "Content-Type": "text/plain;charset=utf-8" },
                 body: JSON.stringify(payload)
             });
+            if (!res.ok) throw new Error('Network response was not ok');
+            if (syncDot) syncDot.className = 'status-dot';
+            showToast('บันทึกข้อมูลลงคลาวด์สำเร็จ', 'success');
             await loadFromCloud();
         } catch (e) {
             if (syncDot) syncDot.className = 'status-dot';
+            showToast('ออฟไลน์: บันทึกข้อมูลในเครื่องเรียบร้อย (รอซิงค์เมื่อมีเน็ต)', 'error');
         }
     }
 
@@ -1755,7 +1822,6 @@
                 menuGrouped[cat][cleanName].sum += price;
             });
 
-            // จัดกลุ่มออเดอร์ตามช่วงเวลา (Batching ทุก 1 นาที)
             const sortedSales = displaySales.slice().sort((a, b) => (Number(b.ts) || 0) - (Number(a.ts) || 0));
             const batches = [];
             let currentBatch = null;
@@ -1784,7 +1850,6 @@
             });
             if (currentBatch) batches.push(currentBatch);
 
-            // Render การ์ดบิล
             batches.forEach((batch) => {
                 let batchTotal = 0;
                 let batchTotalQty = 0;
@@ -1818,9 +1883,9 @@
                         <div class="batch-item-row ${doneClass}" id="row-${item.id}">
                             <div class="batch-item-left">
                                 <div class="item-check-box" 
-                                     ontouchstart="fastToggle(event, '${item.id}', this)" 
-                                     onclick="fastToggle(event, '${item.id}', this)" 
-                                     title="แตะเพื่อติ๊กทำเสร็จแล้ว">${isDone ? '✓' : ''}</div>
+                                   ontouchstart="fastToggle(event, '${item.id}', this)" 
+                                   onclick="fastToggle(event, '${item.id}', this)" 
+                                   title="แตะเพื่อติ๊กทำเสร็จแล้ว">${isDone ? '✓' : ''}</div>
                                 <div>
                                     <div class="${clickableClass}" ${recipeAction}>${cleanName} <b style="color:#0284c7;">x${qty}</b> <span class="badge">${item.category || 'น้ำ'}</span></div>
                                     <div class="item-sub-detail">(@${unitPrice} บ.)${isDrink ? ' • แตะชื่อเพื่อดูสูตร' : ''}</div>
@@ -1855,14 +1920,14 @@
                 const cost = Number(item.cost) || 0;
                 const formattedExpTime = formatThaiDateTime(item.date, item.time, item.ts);
                 const row = document.createElement('div');
-                row.className = 'item-row';
+                row.className = 'summary-row';
                 row.innerHTML = `
                     <div>
-                        <div class="item-title" style="color:#ef4444;">💸 ${item.name}</div>
-                        <div class="item-detail">${formattedExpTime}</div>
+                        <div style="color:#ef4444; font-weight:500;">💸 ${item.name}</div>
+                        <div style="font-size:0.75rem; color:#64748b;">${formattedExpTime}</div>
                     </div>
-                    <div style="display:flex; align-items:center;">
-                        <span class="item-price" style="color:#ef4444;">-฿${cost.toLocaleString()}</span>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="color:#ef4444; font-weight:600;">-฿${cost.toLocaleString()}</span>
                         <button type="button" class="btn-del" onclick="deleteExpense('${item.id}')">ลบ</button>
                     </div>
                 `;
@@ -1878,7 +1943,7 @@
         document.getElementById('totalQr').innerText = `฿${totalQrSum.toLocaleString()}`;
         totalCost.innerText = `฿${totalC.toLocaleString()}`;
         totalProfit.innerText = `฿${profit.toLocaleString()}`;
-        totalProfit.style.color = profit >= 0 ? '#15803d' : '#ef4444';
+        totalProfit.style.color = profit >= 0 ? '#4ade80' : '#f87171';
 
         document.getElementById('catDrinkSum').innerText = `฿${catStats['เครื่องดื่ม'].sum.toLocaleString()}`;
         document.getElementById('catDrinkCount').innerText = `${catStats['เครื่องดื่ม'].count} แก้ว`;
