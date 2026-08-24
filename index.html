@@ -7,9 +7,9 @@
     
     <!-- PWA & Mobile App Settings -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0f172a">
+    <meta name="theme-color" content="#ffffff">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="FLUKCHAFE">
 
     <link rel="icon" type="image/png" href="logo.png">
@@ -19,8 +19,7 @@
         * { box-sizing: border-box; font-family: 'Kanit', sans-serif; margin: 0; padding: 0; }
         
         body { 
-            background: #0f172a url('bg.jpg') no-repeat center center fixed;
-            background-size: cover;
+            background: #f1f5f9;
             min-height: 100vh;
             padding: 12px; 
             color: #1e293b; 
@@ -29,17 +28,15 @@
         .container { 
             max-width: 480px; 
             margin: 0 auto; 
-            background: rgba(255, 255, 255, 0.95); 
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+            background: #ffffff;
             border-radius: 20px; 
             padding: 16px; 
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25); 
-            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 4px 20px rgba(148, 163, 184, 0.2); 
+            border: 1px solid #e2e8f0;
         }
         
         .brand-header { text-align: center; margin-bottom: 12px; position: relative; }
-        .brand-logo { width: 75px; height: 75px; border-radius: 50%; object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 2px solid #0284c7; }
+        .brand-logo { width: 75px; height: 75px; border-radius: 50%; object-fit: cover; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.15); border: 2.5px solid #0284c7; }
         .brand-name-en { font-size: 1.55rem; font-weight: 700; color: #0f172a; margin-top: 4px; line-height: 1.1; }
         .brand-name-th { font-size: 0.9rem; font-weight: 400; color: #64748b; margin-top: 2px; }
 
@@ -47,10 +44,11 @@
             display: grid;
             grid-template-columns: 1fr 1.25fr 1.35fr 1fr;
             gap: 3px;
-            background: #e2e8f0;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
             padding: 3px;
             border-radius: 10px;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
         }
         .filter-btn {
             padding: 6px 2px;
@@ -64,10 +62,10 @@
             white-space: nowrap;
         }
         .filter-btn.active {
-            background: #fff;
-            color: #0284c7;
+            background: #0284c7;
+            color: #ffffff;
             font-weight: 600;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+            box-shadow: 0 2px 4px rgba(2, 132, 199, 0.25);
         }
 
         .custom-filter-box {
@@ -101,21 +99,23 @@
             color: #0f172a;
         }
 
+        /* กล่องยอดขายรวมโทนน้ำเงินคราม สบายตา */
         .total-banner {
-            background: #0f172a;
-            color: #fff;
-            border-radius: 14px;
-            padding: 14px 10px 10px 10px;
+            background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%);
+            color: #ffffff;
+            border-radius: 16px;
+            padding: 14px 10px 12px 10px;
             text-align: center;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 15px rgba(2, 132, 199, 0.25);
         }
-        .total-banner .amount { font-size: 2.3rem; font-weight: 600; color: #38bdf8; line-height: 1.1; }
-        .total-banner .sub { font-size: 0.8rem; color: #94a3b8; margin-top: 4px; }
+        .total-banner .amount { font-size: 2.3rem; font-weight: 700; color: #ffffff; line-height: 1.1; }
+        .total-banner .sub { font-size: 0.8rem; color: #e0f2fe; margin-top: 4px; }
 
         .btn-toggle-profit {
-            background: rgba(255, 255, 255, 0.12);
-            color: #e2e8f0;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.4);
             border-radius: 20px;
             padding: 4px 14px;
             font-size: 0.75rem;
@@ -123,10 +123,8 @@
             cursor: pointer;
             transition: all 0.2s;
         }
-        .btn-toggle-profit:hover, .btn-toggle-profit:active {
-            background: rgba(56, 189, 248, 0.2);
-            color: #38bdf8;
-            border-color: #38bdf8;
+        .btn-toggle-profit:active {
+            background: rgba(255, 255, 255, 0.35);
         }
 
         .secret-profit-panel {
@@ -135,25 +133,25 @@
             gap: 6px;
             margin-top: 10px;
             padding-top: 10px;
-            border-top: 1px dashed rgba(255, 255, 255, 0.2);
+            border-top: 1px dashed rgba(255, 255, 255, 0.3);
         }
         .secret-box {
-            background: rgba(255, 255, 255, 0.06);
+            background: rgba(255, 255, 255, 0.15);
             border-radius: 10px;
             padding: 8px 4px;
         }
-        .secret-title { font-size: 0.7rem; color: #94a3b8; }
-        .secret-val { font-size: 1.1rem; font-weight: 600; margin-top: 2px; }
-        .secret-val.cost { color: #f87171; }
-        .secret-val.profit { color: #4ade80; }
-        .secret-val.cash { color: #34d399; }
-        .secret-val.qr { color: #38bdf8; }
+        .secret-title { font-size: 0.7rem; color: #e0f2fe; }
+        .secret-val { font-size: 1.1rem; font-weight: 700; margin-top: 2px; }
+        .secret-val.cost { color: #fecaca; }
+        .secret-val.profit { color: #bbf7d0; }
+        .secret-val.cash { color: #fed7aa; }
+        .secret-val.qr { color: #e0f2fe; }
 
         .category-summary-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 8px;
-            margin-bottom: 14px;
+            margin-bottom: 12px;
         }
         .cat-box {
             background: #f8fafc;
@@ -172,8 +170,8 @@
             margin-bottom: 10px;
         }
         .cat-btn {
-            background: #e2e8f0;
-            border: none;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
             padding: 8px 2px;
             border-radius: 8px;
             font-size: 0.75rem;
@@ -181,7 +179,7 @@
             font-weight: 500;
             color: #475569;
         }
-        .cat-btn.active { background: #0284c7; color: #fff; }
+        .cat-btn.active { background: #0f172a; color: #fff; border-color: #0f172a; }
 
         .quick-input-box { margin-bottom: 14px; position: relative; }
         .input-btn-group { display: flex; gap: 6px; }
@@ -194,7 +192,7 @@
             outline: none;
             background: #fff;
         }
-        .input-btn-group input:focus { border-color: #0369a1; box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.2); }
+        .input-btn-group input:focus { border-color: #0369a1; box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15); }
         .btn-order-submit {
             background: #0284c7;
             color: #fff;
@@ -205,7 +203,7 @@
             border-radius: 12px;
             cursor: pointer;
             white-space: nowrap;
-            box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);
+            box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);
         }
         .btn-order-submit:active { background: #0369a1; transform: scale(0.98); }
 
@@ -271,7 +269,7 @@
             background: #ffffff;
             border: 1.5px solid #0284c7;
             border-radius: 12px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
             max-height: 220px;
             overflow-y: auto;
             z-index: 1000;
@@ -288,8 +286,8 @@
         }
         .suggest-item:last-child { border-bottom: none; }
         .suggest-item:active, .suggest-item:hover {
-            background: #e0f2fe;
-            color: #0369a1;
+            background: #f0f9ff;
+            color: #0284c7;
         }
         .suggest-price {
             font-weight: 600;
@@ -300,45 +298,46 @@
         .tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 12px; }
         .tab-btn {
             padding: 8px 2px;
-            border: none;
-            background: #e2e8f0;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
             border-radius: 8px;
             font-size: 0.72rem;
             font-weight: 500;
             cursor: pointer;
             color: #475569;
         }
-        .tab-btn.active { background: #0f172a; color: #fff; }
+        .tab-btn.active { background: #0f172a; color: #fff; border-color: #0f172a; }
 
         .list-container { max-height: 420px; overflow-y: auto; }
 
-        /* การ์ดจัดกลุ่มบิลออเดอร์แยกทุก 1 นาที */
+        /* การ์ดบิลออเดอร์พื้นหลังขาวสะอาด */
         .order-batch-card {
             background: #ffffff;
             border: 1px solid #e2e8f0;
             border-radius: 14px;
             padding: 12px;
             margin-bottom: 12px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+            box-shadow: 0 2px 8px rgba(148, 163, 184, 0.1);
         }
         .batch-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding-bottom: 8px;
-            border-bottom: 1px dashed #cbd5e1;
+            border-bottom: 1px dashed #e2e8f0;
             margin-bottom: 8px;
         }
         .batch-time-tag {
             font-size: 0.75rem;
             font-weight: 600;
             color: #0369a1;
-            background: #e0f2fe;
+            background: #f0f9ff;
             padding: 3px 8px;
             border-radius: 6px;
             display: inline-flex;
             align-items: center;
             gap: 4px;
+            border: 1px solid #e0f2fe;
         }
         .batch-total-price {
             font-size: 0.95rem;
@@ -367,12 +366,11 @@
             -webkit-tap-highlight-color: transparent;
         }
         
-        /* กล่องเช็กถูกขีดฆ่าออเดอร์ */
         .item-check-circle {
             width: 22px;
             height: 22px;
             border-radius: 6px;
-            border: 1.8px solid #94a3b8;
+            border: 1.8px solid #cbd5e1;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -384,7 +382,6 @@
             transition: all 0.1s ease;
         }
         
-        /* สถานะเมื่อทำเสร็จแล้ว -> ขีดฆ่าชื่อและจางลง */
         .item-done .item-check-circle {
             background: #10b981 !important;
             border-color: #10b981 !important;
@@ -438,18 +435,18 @@
             -webkit-tap-highlight-color: transparent;
         }
         .pay-badge.qr {
-            background: #e0f2fe;
+            background: #f0f9ff;
             color: #0369a1;
             border: 1px solid #bae6fd;
         }
         .pay-badge.cash {
-            background: #ecfdf5;
-            color: #047857;
-            border: 1px solid #a7f3d0;
+            background: #f0fdf4;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
         }
 
         .btn-edit {
-            background: #f1f5f9;
+            background: #f8fafc;
             color: #0284c7;
             border: 1px solid #cbd5e1;
             border-radius: 6px;
@@ -461,9 +458,9 @@
         }
 
         .btn-del {
-            background: #fee2e2;
+            background: #fef2f2;
             color: #ef4444;
-            border: none;
+            border: 1px solid #fee2e2;
             border-radius: 6px;
             padding: 3px 6px;
             font-size: 0.65rem;
@@ -472,19 +469,20 @@
         }
 
         .summary-group-title {
-            background: #f1f5f9;
+            background: #f8fafc;
             padding: 5px 8px;
             font-size: 0.8rem;
             font-weight: 600;
             color: #475569;
             border-radius: 6px;
             margin: 8px 0 4px 0;
+            border: 1px solid #e2e8f0;
         }
         .summary-row {
             display: flex;
             justify-content: space-between;
             padding: 5px 6px;
-            border-bottom: 1px solid #f8fafc;
+            border-bottom: 1px solid #f1f5f9;
             font-size: 0.85rem;
             align-items: center;
         }
@@ -493,7 +491,7 @@
             transition: background 0.15s;
         }
         .price-list-row:hover, .price-list-row:active {
-            background: #e0f2fe;
+            background: #f0f9ff;
         }
         .empty-text { text-align: center; color: #94a3b8; padding: 24px 0; font-size: 0.85rem; }
 
@@ -587,6 +585,7 @@
             padding: 2px 8px;
             border-radius: 12px;
             background: #f8fafc;
+            border: 1px solid #e2e8f0;
         }
         .status-dot {
             width: 6px;
@@ -612,7 +611,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(15, 23, 42, 0.6);
+            background: rgba(15, 23, 42, 0.4);
             backdrop-filter: blur(4px);
             z-index: 2000;
             display: none;
@@ -626,7 +625,8 @@
             padding: 16px;
             width: 100%;
             max-width: 400px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
         }
         .modal-title {
             font-size: 1.1rem;
@@ -670,7 +670,7 @@
         }
         .btn-modal-cancel {
             flex: 1;
-            background: #e2e8f0;
+            background: #f1f5f9;
             color: #475569;
             border: none;
             padding: 10px;
@@ -712,7 +712,7 @@
         </div>
     </div>
 
-    <!-- กล่องยอดขายรวม และสรุปผลประกอบการ -->
+    <!-- กล่องยอดขายรวม สไตล์ Modern Cafe -->
     <div class="total-banner">
         <div class="amount" id="totalSales">฿0</div>
         <div class="sub" id="totalSalesSub">ยอดขายรวม</div>
@@ -1106,7 +1106,7 @@
     backdateDateInput.value = formatDateYMD(initD);
     backdateTimeInput.value = initD.toTimeString().substring(0, 5);
 
-    // ฟังก์ชันติ๊กแบบขีดฆ่าเมนูที่ทำเสร็จแล้ว (Ultra Fast Toggle)
+    // Fast Toggle (ขีดฆ่าเมนูที่ทำแล้ว)
     function fastToggle(event, id, el) {
         if (event) {
             if (event.type === 'touchstart') {
@@ -1626,7 +1626,6 @@
         if (displaySales.length === 0) {
             itemList.innerHTML = '<div class="empty-text">ยังไม่มีรายการขายในช่วงนี้</div>';
         } else {
-            // คำนวณสรุปยอดรวม
             displaySales.forEach((item) => {
                 const price = Number(item.totalPrice) || 0;
                 const qty = Number(item.qty) || 1;
@@ -1662,7 +1661,6 @@
                         items: [item]
                     };
                 } else {
-                    // หากเวลาห่างกันเกิน 1 นาที (60,000ms) ให้แยกเป็นบิลใหม่
                     const diffMinutes = Math.abs(currentBatch.latestTs - itemTs) / (1000 * 60);
                     if (diffMinutes <= 1.0) {
                         currentBatch.items.push(item);
@@ -1765,7 +1763,7 @@
         document.getElementById('totalQr').innerText = `฿${totalQrSum.toLocaleString()}`;
         totalCost.innerText = `฿${totalC.toLocaleString()}`;
         totalProfit.innerText = `฿${profit.toLocaleString()}`;
-        totalProfit.style.color = profit >= 0 ? '#4ade80' : '#f87171';
+        totalProfit.style.color = profit >= 0 ? '#15803d' : '#ef4444';
 
         document.getElementById('catDrinkSum').innerText = `฿${catStats['เครื่องดื่ม'].sum.toLocaleString()}`;
         document.getElementById('catDrinkCount').innerText = `${catStats['เครื่องดื่ม'].count} แก้ว`;
