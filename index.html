@@ -263,6 +263,7 @@
             background: #fff;
         }
 
+        /* Suggest Box พร้อมปุ่มแก้ไข/ลบเมนูขณะรับออเดอร์ */
         .suggest-box {
             position: absolute;
             top: 52px;
@@ -272,30 +273,48 @@
             border: 1.5px solid #0284c7;
             border-radius: 12px;
             box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-            max-height: 220px;
+            max-height: 240px;
             overflow-y: auto;
             z-index: 1000;
             display: none;
         }
         .suggest-item {
-            padding: 10px 14px;
+            padding: 8px 12px;
             border-bottom: 1px solid #f1f5f9;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
             cursor: pointer;
         }
         .suggest-item:last-child { border-bottom: none; }
-        .suggest-item:active, .suggest-item:hover {
-            background: #e0f2fe;
-            color: #0369a1;
+        .suggest-item:hover { background: #e0f2fe; }
+        .suggest-item-name {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding-right: 6px;
+        }
+        .suggest-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
         .suggest-price {
             font-weight: 600;
             color: #0284c7;
             font-size: 0.85rem;
         }
+        .btn-suggest-tool {
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-size: 0.7rem;
+            cursor: pointer;
+        }
+        .btn-suggest-tool:hover { background: #e2e8f0; }
 
         .tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 12px; }
         .tab-btn {
@@ -320,7 +339,7 @@
         }
         .item-title { font-size: 0.9rem; font-weight: 500; }
         .item-detail { font-size: 0.72rem; color: #64748b; margin-top: 1px; }
-        .item-price { font-size: 1rem; font-weight: 600; color: #0f172a; margin-right: 6px; }
+        .item-price { font-size: 1rem; font-weight: 600; color: #0f172a; margin-right: 4px; }
         .badge {
             display: inline-block;
             padding: 1px 5px;
@@ -335,12 +354,12 @@
             display: inline-flex;
             align-items: center;
             gap: 2px;
-            padding: 4px 8px;
+            padding: 4px 6px;
             border-radius: 6px;
-            font-size: 0.7rem;
+            font-size: 0.68rem;
             font-weight: 500;
             cursor: pointer;
-            margin-right: 6px;
+            margin-right: 4px;
             user-select: none;
             transition: all 0.15s;
         }
@@ -356,13 +375,26 @@
         }
         .pay-badge:active { transform: scale(0.92); opacity: 0.8; }
 
+        .btn-edit {
+            background: #e0f2fe;
+            color: #0284c7;
+            border: 1px solid #bae6fd;
+            border-radius: 6px;
+            padding: 4px 6px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-right: 4px;
+        }
+        .btn-edit:active { background: #bae6fd; }
+
         .btn-del {
             background: #fee2e2;
             color: #ef4444;
             border: none;
             border-radius: 6px;
-            padding: 4px 8px;
-            font-size: 0.72rem;
+            padding: 4px 6px;
+            font-size: 0.7rem;
             font-weight: 600;
             cursor: pointer;
         }
@@ -469,7 +501,6 @@
         }
         .btn-sheets-link:active { background: #115e59; }
 
-        /* แถบสถานะซิงค์ข้อมูลอัตโนมัติ */
         .bottom-sync-bar {
             text-align: center;
             margin-top: 14px;
@@ -502,6 +533,81 @@
         @keyframes pulse {
             from { opacity: 0.4; }
             to { opacity: 1; }
+        }
+
+        /* Modal หน้าต่างแก้ไขออเดอร์ */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .modal-box {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 16px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+        }
+        .modal-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 12px;
+        }
+        .modal-group {
+            margin-bottom: 10px;
+        }
+        .modal-group label {
+            display: block;
+            font-size: 0.75rem;
+            color: #475569;
+            font-weight: 500;
+            margin-bottom: 3px;
+        }
+        .modal-group input, .modal-group select {
+            width: 100%;
+            padding: 8px 10px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            font-size: 0.9rem;
+            outline: none;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 14px;
+        }
+        .btn-modal-save {
+            flex: 1;
+            background: #0284c7;
+            color: #fff;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+        .btn-modal-cancel {
+            flex: 1;
+            background: #e2e8f0;
+            color: #475569;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -613,7 +719,7 @@
         <div id="suggestBox" class="suggest-box"></div>
 
         <div class="backdate-control">
-            <span style="font-size:0.72rem; color:#64748b;">💡 พิมพ์ค้นหาแล้วแตะเลือกได้ทันที</span>
+            <span style="font-size:0.72rem; color:#64748b;">💡 พิมพ์ค้นหา หรือแตะ ✏️/🗑️ เพื่อจัดการเมนู</span>
             <button type="button" class="btn-toggle-backdate" id="btnToggleBackdate" onclick="toggleBackdateMode()">
                 🕒 บันทึกย้อนหลัง
             </button>
@@ -682,6 +788,41 @@
     </div>
 </div>
 
+<!-- Modal หน้าต่างแก้ไขข้อมูลออเดอร์ -->
+<div class="modal-overlay" id="editModal">
+    <div class="modal-box">
+        <div class="modal-title">✏️ แก้ไขข้อมูลออเดอร์</div>
+        <input type="hidden" id="editItemId">
+        <div class="modal-group">
+            <label>ชื่อเมนู:</label>
+            <input type="text" id="editItemName">
+        </div>
+        <div class="modal-group">
+            <label>หมวดหมู่:</label>
+            <select id="editItemCategory">
+                <option value="เครื่องดื่ม">🧋 เครื่องดื่ม</option>
+                <option value="ของทอด/ทานเล่น">🍟 ของทอด/ทานเล่น</option>
+                <option value="ขนมปังปิ้ง">🍞 ขนมปังปิ้ง</option>
+                <option value="อาหาร/กะเพรา">🍳 อาหาร/กะเพรา</option>
+            </select>
+        </div>
+        <div class="modal-group" style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+            <div>
+                <label>ราคาต่อหน่วย (฿):</label>
+                <input type="number" id="editItemUnitPrice">
+            </div>
+            <div>
+                <label>จำนวน:</label>
+                <input type="number" id="editItemQty" min="1">
+            </div>
+        </div>
+        <div class="modal-buttons">
+            <button type="button" class="btn-modal-cancel" onclick="closeEditModal()">ยกเลิก</button>
+            <button type="button" class="btn-modal-save" onclick="saveEditedItem()">บันทึกการแก้ไข</button>
+        </div>
+    </div>
+</div>
+
 <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbzr8lEc78rzKvRvYsgKpBkiH-E7zrpdt8oj_o9oJ6PCvMh7gcfJUrUwmMo-J1uHHVXWJQ/exec";
     const GOOGLE_SHEETS_URL = "https://docs.google.com/spreadsheets/d/1EEU-LsVCzD8jbisYSVmy5jMjdTotGOgIW-4ASJlzqYU/edit";
@@ -689,6 +830,8 @@
     const STORAGE_KEY = 'FLUKCHAFE_SHARED_DB_V5';
     const MENU_PRICES_KEY = 'FLUKCHAFE_SHARED_PRICES_V5';
     const EXPENSES_KEY = 'FLUKCHAFE_SHARED_EXP_V5';
+    const DELETED_SALES_KEY = 'FLUKCHAFE_DELETED_SALES_IDS_V5';
+    const DELETED_EXP_KEY = 'FLUKCHAFE_DELETED_EXP_IDS_V5';
     
     const DEFAULT_PRESET_PRICES = {
         "เอสเพรสโซ่ เย็น": 30, "เอสเพรสโซ่ ปั่น": 35,
@@ -785,6 +928,9 @@
     let savedPrices = JSON.parse(localStorage.getItem(MENU_PRICES_KEY)) || {};
     let priceBook = { ...DEFAULT_PRESET_PRICES, ...savedPrices };
     
+    let deletedSalesIds = new Set(JSON.parse(localStorage.getItem(DELETED_SALES_KEY)) || []);
+    let deletedExpensesIds = new Set(JSON.parse(localStorage.getItem(DELETED_EXP_KEY)) || []);
+
     let selectedCategory = 'auto';
     let currentFilter = 'today';
     let customFilterType = 'date';
@@ -817,6 +963,13 @@
     const backdateBox = document.getElementById('backdateBox');
     const backdateDateInput = document.getElementById('backdateDateInput');
     const backdateTimeInput = document.getElementById('backdateTimeInput');
+
+    const editModal = document.getElementById('editModal');
+    const editItemId = document.getElementById('editItemId');
+    const editItemName = document.getElementById('editItemName');
+    const editItemCategory = document.getElementById('editItemCategory');
+    const editItemUnitPrice = document.getElementById('editItemUnitPrice');
+    const editItemQty = document.getElementById('editItemQty');
 
     const THAI_MONTHS_SHORT = [
         "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.",
@@ -895,7 +1048,7 @@
         if (GOOGLE_SHEETS_URL && GOOGLE_SHEETS_URL.includes("docs.google.com")) {
             window.open(GOOGLE_SHEETS_URL, '_blank');
         } else {
-            alert('กรุณาระบุ URL ของ Google Sheets ในโค้ดก่อนใช้งานครับ');
+            alert('กรุณาระบุ URL ของ Google Sheets ในโค้ดก่อนใช้งาน');
         }
     }
 
@@ -923,6 +1076,7 @@
         }
     }
 
+    /* จัดการค้นหาและแก้ไข/ลบเมนูในช่องค้นหา */
     function handleSearchSuggest(val) {
         const query = val.trim().toLowerCase();
         if (!query) {
@@ -949,8 +1103,12 @@
             const div = document.createElement('div');
             div.className = 'suggest-item';
             div.innerHTML = `
-                <span>${item.name}</span>
-                <span class="suggest-price">฿${item.price}</span>
+                <span class="suggest-item-name">${item.name}</span>
+                <div class="suggest-actions">
+                    <span class="suggest-price">฿${item.price}</span>
+                    <button type="button" class="btn-suggest-tool" onclick="event.stopPropagation(); quickEditMenuPrice('${item.name}', ${item.price})" title="แก้ไขราคา">✏️</button>
+                    <button type="button" class="btn-suggest-tool" onclick="event.stopPropagation(); deletePrice('${item.name}')" title="ลบเมนูนี้">🗑️</button>
+                </div>
             `;
             div.onclick = () => {
                 quickInput.value = item.name;
@@ -960,6 +1118,22 @@
             suggestBox.appendChild(div);
         });
         suggestBox.style.display = 'block';
+    }
+
+    function quickEditMenuPrice(name, currentPrice) {
+        const newPrice = prompt(`ระบุราคาใหม่สำหรับเมนู "${name}":`, currentPrice);
+        if (newPrice !== null && newPrice.trim() !== '') {
+            const p = parseFloat(newPrice);
+            if (!isNaN(p) && p > 0) {
+                priceBook[name] = p;
+                localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
+                saveToCloud({ action: "update_price", name, price: p });
+                renderUI();
+                handleSearchSuggest(quickInput.value);
+            } else {
+                alert('กรุณากรอกจำนวนราคาให้ถูกต้อง');
+            }
+        }
     }
 
     document.addEventListener('click', (e) => {
@@ -983,11 +1157,11 @@
             const data = await res.json();
             if (data) {
                 if (Array.isArray(data.sales)) {
-                    sales = data.sales.filter(item => item && item.id);
+                    sales = data.sales.filter(item => item && item.id && !deletedSalesIds.has(String(item.id)));
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
                 }
                 if (Array.isArray(data.expenses)) {
-                    expenses = data.expenses.filter(item => item && item.id);
+                    expenses = data.expenses.filter(item => item && item.id && !deletedExpensesIds.has(String(item.id)));
                     localStorage.setItem(EXPENSES_KEY, JSON.stringify(expenses));
                 }
                 if (data.prices && typeof data.prices === 'object') {
@@ -1185,18 +1359,79 @@
 
     function deleteExpense(id) {
         const targetId = String(id);
-        expenses = expenses.filter(item => item && String(item.id) !== targetId);
-        localStorage.setItem(EXPENSES_KEY, JSON.stringify(expenses));
-        saveToCloud({ action: "delete_expense", id: targetId });
-        renderUI();
+        const item = expenses.find(e => String(e.id) === targetId);
+        const name = item ? item.name : '';
+        
+        if (confirm(`ท่านต้องการยืนยันการลบรายการต้นทุน "${name}" ออกจากระบบใช่หรือไม่?`)) {
+            deletedExpensesIds.add(targetId);
+            localStorage.setItem(DELETED_EXP_KEY, JSON.stringify(Array.from(deletedExpensesIds)));
+
+            expenses = expenses.filter(item => item && String(item.id) !== targetId);
+            localStorage.setItem(EXPENSES_KEY, JSON.stringify(expenses));
+            saveToCloud({ action: "delete_expense", id: targetId });
+            renderUI();
+        }
     }
 
     function deleteItem(id) {
         const targetId = String(id);
-        sales = sales.filter(item => item && String(item.id) !== targetId);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
-        saveToCloud({ action: "delete_sale", id: targetId });
-        renderUI();
+        const item = sales.find(s => String(s.id) === targetId);
+        const name = item ? item.name : '';
+        
+        if (confirm(`ท่านต้องการยืนยันการลบรายการออเดอร์ "${name}" ออกจากระบบใช่หรือไม่?`)) {
+            deletedSalesIds.add(targetId);
+            localStorage.setItem(DELETED_SALES_KEY, JSON.stringify(Array.from(deletedSalesIds)));
+
+            sales = sales.filter(item => item && String(item.id) !== targetId);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
+            saveToCloud({ action: "delete_sale", id: targetId });
+            renderUI();
+        }
+    }
+
+    /* ระบบ Modal แก้ไขออเดอร์ */
+    function openEditModal(id) {
+        const item = sales.find(s => String(s.id) === String(id));
+        if (!item) return;
+
+        editItemId.value = item.id;
+        editItemName.value = item.name;
+        editItemCategory.value = item.category || 'เครื่องดื่ม';
+        editItemUnitPrice.value = item.unitPrice;
+        editItemQty.value = item.qty;
+
+        editModal.style.display = 'flex';
+    }
+
+    function closeEditModal() {
+        editModal.style.display = 'none';
+    }
+
+    function saveEditedItem() {
+        const id = editItemId.value;
+        const name = editItemName.value.trim();
+        const category = editItemCategory.value;
+        const unitPrice = parseFloat(editItemUnitPrice.value);
+        const qty = parseInt(editItemQty.value);
+
+        if (!name || isNaN(unitPrice) || unitPrice <= 0 || isNaN(qty) || qty <= 0) {
+            alert('กรุณากรอกข้อมูลให้ครบถ้วนและถูกต้อง');
+            return;
+        }
+
+        const idx = sales.findIndex(s => String(s.id) === String(id));
+        if (idx !== -1) {
+            sales[idx].name = name;
+            sales[idx].category = category;
+            sales[idx].unitPrice = unitPrice;
+            sales[idx].qty = qty;
+            sales[idx].totalPrice = unitPrice * qty;
+
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
+            saveToCloud({ action: "update_sale", item: sales[idx] });
+            renderUI();
+            closeEditModal();
+        }
     }
 
     function getFilteredData() {
@@ -1312,7 +1547,7 @@
 
                 const isQr = (item.paymentMethod === 'promptpay');
                 const badgeClass = isQr ? 'pay-badge qr' : 'pay-badge cash';
-                const badgeText = isQr ? '📱 สแกนจ่าย' : '💵 เงินสด';
+                const badgeText = isQr ? '📱 สแกน' : '💵 เงินสด';
                 
                 const formattedTime = formatThaiDateTime(item.date, item.time, item.ts);
 
@@ -1326,6 +1561,7 @@
                     <div style="display:flex; align-items:center;">
                         <span class="item-price">฿${price.toLocaleString()}</span>
                         <button type="button" class="${badgeClass}" onclick="togglePayMethod('${item.id}')" title="แตะเพื่อสลับการจ่ายเงิน">${badgeText}</button>
+                        <button type="button" class="btn-edit" onclick="openEditModal('${item.id}')">✏️</button>
                         <button type="button" class="btn-del" onclick="deleteItem('${item.id}')">ลบ</button>
                     </div>
                 `;
@@ -1457,11 +1693,12 @@
     }
 
     function deletePrice(name) {
-        if (confirm(`ต้องการลบราคาของเมนู "${name}" หรือไม่?`)) {
+        if (confirm(`ท่านต้องการยืนยันการลบเมนู "${name}" ออกจากระบบใช่หรือไม่?`)) {
             delete priceBook[name];
             localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
             saveToCloud({ action: "delete_price", name });
             renderUI();
+            if (suggestBox) suggestBox.style.display = 'none';
         }
     }
 
@@ -1510,18 +1747,15 @@
     renderUI();
     window.addEventListener('DOMContentLoaded', () => {
         loadFromCloud();
-        // ดึงข้อมูลอัตโนมัติเบื้องหลังทุกๆ 5 วินาที
         setInterval(() => {
             if (!document.hidden) loadFromCloud();
         }, 5000);
     });
 
-    // ดึงข้อมูลทันทีเมื่อเปิดหน้าจอ หรือสลับกลับมาที่แอป
     window.addEventListener('focus', () => {
         loadFromCloud();
     });
 
-    // ดึงข้อมูลทันทีเมื่อเน็ตกลับมาเชื่อมต่อ
     window.addEventListener('online', () => {
         loadFromCloud();
     });
