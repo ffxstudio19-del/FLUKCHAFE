@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>FLUKCHAFE ฟลุ๊ค ชาเฟ่</title>
     
-    <!-- PWA & Mobile App Settings -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0f172a">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -233,7 +232,11 @@
             white-space: nowrap;
             box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);
         }
-        .btn-order-submit:active { background: #0369a1; transform: scale(0.98); }
+        .btn-order-submit:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
 
         .backdate-control {
             display: flex;
@@ -610,7 +613,9 @@
         .btn-sheets-link:active { background: #115e59; }
 
         .bottom-sync-bar {
-            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             margin-top: 14px;
             padding-top: 8px;
             border-top: 1px solid #f1f5f9;
@@ -621,7 +626,7 @@
             gap: 5px;
             font-size: 0.68rem;
             color: #64748b;
-            padding: 2px 8px;
+            padding: 3px 8px;
             border-radius: 12px;
             background: #f8fafc;
         }
@@ -636,11 +641,30 @@
         .status-dot.syncing {
             background: #0284c7;
             box-shadow: 0 0 6px #0284c7;
-            animation: pulse 1s infinite alternate;
+            animation: pulse 0.8s infinite alternate;
         }
         @keyframes pulse {
-            from { opacity: 0.4; }
+            from { opacity: 0.3; }
             to { opacity: 1; }
+        }
+
+        .btn-sync-now {
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            color: #0284c7;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.15s;
+        }
+        .btn-sync-now:active {
+            background: #e0f2fe;
+            transform: scale(0.96);
         }
 
         .modal-overlay {
@@ -740,7 +764,7 @@
         </div>
     </div>
 
-    <!-- กล่องยอดขายรวม (แยก เงินสด vs สแกนจ่าย) -->
+    <!-- กล่องยอดขายรวม -->
     <div class="total-banner">
         <div class="amount" id="totalSales">฿0</div>
         <div class="sub" id="totalSalesSub">ยอดขายรวม</div>
@@ -801,7 +825,7 @@
         <button type="button" class="cat-btn" onclick="setCategory('ขนมปังปิ้ง', this)">🍞 ปังปิ้ง</button>
     </div>
 
-    <!-- แถบปุ่มลัดเมนูด่วน (Fast-Order Buttons) -->
+    <!-- แถบปุ่มลัดเมนูด่วน -->
     <div class="quick-pills">
         <button type="button" class="quick-pill" onclick="quickAddPreset('ชาไทย เย็น')">🧋 ชาไทย เย็น</button>
         <button type="button" class="quick-pill" onclick="quickAddPreset('ชาเขียว เย็น')">🍵 ชาเขียว เย็น</button>
@@ -817,17 +841,17 @@
             <input 
                 type="text" 
                 id="quickInput" 
-                placeholder="เช่น ชาไทย เย็น, นมสดสตอเบอรี่ ปั่น, ไส้กรอก 25..." 
+                placeholder="เช่น ชาไทย เย็น 2, โกโก้ x3, กะเพรา 40 2..." 
                 autocomplete="off" 
                 autofocus
                 oninput="handleSearchSuggest(this.value)"
             >
-            <button type="submit" class="btn-order-submit">รับออเดอร์</button>
+            <button type="submit" class="btn-order-submit" id="btnSubmitOrder">รับออเดอร์</button>
         </div>
         <div id="suggestBox" class="suggest-box"></div>
 
         <div class="backdate-control">
-            <span style="font-size:0.72rem; color:#64748b;">💡 พิมพ์ค้นหาแล้วแตะเลือกได้ทันที</span>
+            <span style="font-size:0.72rem; color:#64748b;">💡 ระบุจำนวน: เช่น "ชาไทย 2" หรือ "ชาเขียว x3"</span>
             <button type="button" class="btn-toggle-backdate" id="btnToggleBackdate" onclick="toggleBackdateMode()">
                 🕒 บันทึกย้อนหลัง
             </button>
@@ -897,8 +921,11 @@
     <div class="bottom-sync-bar">
         <div class="sync-status-indicator">
             <span class="status-dot" id="syncDot"></span>
-            <span id="syncStatus">เชื่อมต่อข้อมูลสดอัตโนมัติ</span>
+            <span id="syncStatus">เชื่อมต่อข้อมูลสด</span>
         </div>
+        <button type="button" class="btn-sync-now" id="btnManualSync" onclick="triggerManualSync()">
+            🔄 ซิงค์ด่วน
+        </button>
     </div>
 </div>
 
@@ -950,16 +977,16 @@
     const API_URL = "https://script.google.com/macros/s/AKfycbwuVtheTjpEPp33z7VswY70n-C22KfgvnmfzD7yUiyDr4VN_1XFT0zKCd4KMj4ctOMiYA/exec";
     const GOOGLE_SHEETS_URL = "https://docs.google.com/spreadsheets/d/1EEU-LsVCzD8jbisYSVmy5jMjdTotGOgIW-4ASJlzqYU/edit";
 
-    // ใช้กุญแจ V19 เดิม เพื่อเรียกคืนข้อมูลทั้งหมดของเมื่อวานและวันนี้
-    const STORAGE_KEY = 'FLUKCHAFE_SHARED_DB_V19';
-    const MENU_PRICES_KEY = 'FLUKCHAFE_SHARED_PRICES_V19';
-    const RECIPES_KEY = 'FLUKCHAFE_SHARED_RECIPES_V19';
-    const EXPENSES_KEY = 'FLUKCHAFE_SHARED_EXP_V19';
-    const DELETED_SALES_KEY = 'FLUKCHAFE_DELETED_SALES_IDS_V19';
-    const DELETED_EXP_KEY = 'FLUKCHAFE_DELETED_EXP_IDS_V19';
-    const OFFLINE_QUEUE_KEY = 'FLUKCHAFE_OFFLINE_QUEUE_V19';
+    const STORAGE_KEY = 'FLUKCHAFE_SHARED_DB_V26';
+    const MENU_PRICES_KEY = 'FLUKCHAFE_SHARED_PRICES_V26';
+    const RECIPES_KEY = 'FLUKCHAFE_SHARED_RECIPES_V26';
+    const EXPENSES_KEY = 'FLUKCHAFE_SHARED_EXP_V26';
+    const DELETED_SALES_KEY = 'FLUKCHAFE_DELETED_SALES_IDS_V26';
+    const DELETED_EXP_KEY = 'FLUKCHAFE_DELETED_EXP_IDS_V26';
+    const OFFLINE_QUEUE_KEY = 'FLUKCHAFE_OFFLINE_QUEUE_V26';
 
-    // ฐานข้อมูลสูตรชงแบบเต็มพิกัด (อิงตามไฟล์ที่ส่งมาเป๊ะทุกบรรทัด)
+    const FAST_POLL_INTERVAL = 3500; // รอบซิงค์แบบเร็ว 3.5 วินาที
+
     const DEFAULT_RECIPES = {
         "เอสเพรสโซ่ เย็น": "📍 เอสเพรสโซ่ • เย็น 20 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 60 ml\n⁃ กาแฟ 3 ช้อนกาแฟ ( 15g )\n⁃ นมจืด 100 ml\n⁃ นมข้นหวาน 20 ml\n⁃ นมข้นจืด 20 ml\n⁃ น้ำเชื่อม 10 ml ( ถ้าหวานน้อยไม่ต้องใส่ )",
         "เอสเพรสโซ่ ปั่น": "📍 เอสเพรสโซ่ • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 30 ml\n⁃ กาแฟ 5 ช้อนกาแฟ ( 25g )\n⁃ ครีมเทียม(ฟ้า) 1 ช้อนโต๊ะ\n⁃ นมข้นหวาน 60 ml\n⁃ น้ำเชื่อม 40 ml\n⁃ นมข้นจืด 40 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วพูนนิดๆ )",
@@ -999,7 +1026,7 @@
         "ชาเขียว ปั่น": "📍 ชาเขียว • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ เบสชาไทย 150 ml\n⁃ ครีมเทียม(แดง) 1 ช้อนโต๊ะ\n⁃ นมข้นหวาน 60 ml\n⁃ น้ำเชื่อม 35 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )",
         "ชานม เย็น": "📍 ชานม • เย็น 20 ออนซ์ ( อเคดี้ )\n( ไม่แยกชั้น ใส่ฟองนม )\n⁃ น้ำร้อน 120 ml\n⁃ ผง 3 ช้อนโต๊ะ\n⁃ นมข้นจืด 40 ml\n⁃ นมข้นหวาน 15 ml\n⁃ นมสด 15 ml",
         "ชานม ปั่น": "📍 ชานม • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 70 ml\n⁃ ผง 3.5 - 4 ช้อนโต๊ะ\n⁃ นมข้นจืด 50 ml\n⁃ นมข้นหวาน 30 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วพูนนิดๆ )",
-        "โกโก้ เย็น": "📍 โกโก้ • เย็น 20 ออนซ์ ( ดัทช์ช้อย )\n( ไม่แยกชั้น ใส่ฟองนม )\n⁃ น้ำร้อน 100 ml\n⁃ ผง 2 ช้อนโต๊ะ\n⁃ ครีมเทียม(แดง) 1 ช้อนกลาง ( 10g )\n⁃ น้ำตาลทรายขาว 1 ช้อนกลาง ( 10g )\n⁃ นมข้นจืด 20 ml\n⁃ นมข้นหวาน 50 ml\n⁃ นมสด 15 ml",
+        "โกโก้ เย็น": "📍 โโกโก้ • เย็น 20 ออนซ์ ( ดัทช์ช้อย )\n( ไม่แยกชั้น ใส่ฟองนม )\n⁃ น้ำร้อน 100 ml\n⁃ ผง 2 ช้อนโต๊ะ\n⁃ ครีมเทียม(แดง) 1 ช้อนกลาง ( 10g )\n⁃ น้ำตาลทรายขาว 1 ช้อนกลาง ( 10g )\n⁃ นมข้นจืด 20 ml\n⁃ นมข้นหวาน 50 ml\n⁃ นมสด 15 ml",
         "โกโก้ ปั่น": "📍 โกโก้ • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 90 ml\n⁃ ผง 2 ช้อนโต๊ะ\n⁃ ครีมเทียม(แดง) 1 ช้อนกลาง ( 10g )\n⁃ น้ำตาลทรายขาว 1 ช้อนกลาง ( 10g )\n⁃ นมข้นจืด 30 ml\n⁃ นมข้นหวาน 45 ml\n⁃ น้ำเชื่อม 35 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วพูนนิดๆ )",
         "นมชมพู เย็น": "📍 นมชมพู • เย็น 20 ออนซ์ ( อเคดี้ )\n( ไม่แยกชั้น ใส่ฟองนม )\n⁃ น้ำร้อน 120 ml\n⁃ ผง 3 ช้อนโต๊ะ\n⁃ นมข้นจืด 40 ml\n⁃ นมข้นหวาน 20 ml\n⁃ นมสด 15 ml",
         "นมชมพู ปั่น": "📍 นมชมพู • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 70 ml\n⁃ ผง 3.5 - 4 ช้อนโต๊ะ\n⁃ นมข้นจืด 50 ml\n⁃ นมข้นหวาน 30 ml\n⁃ น้ำเชื่อม 20 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วพูนนิดๆ )",
@@ -1024,13 +1051,13 @@
         "สตอเบอร์รี่ ปั่น": "📍 สตอเบอร์รี่ • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ราดซอสสตอรอบแก้ว )\n⁃ น้ำร้อน 40 ml\n⁃ ไซรัปสตอ 50 ml\n⁃ น้ำเชื่อม 50 ml\n⁃ ซอสสตอ 2 ช้อนโต๊ะ\n⁃ สตอเบอร์รี่ 3-4 ชิ้น\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )",
         "ชาไทยนมสดสตอเบอร์รี่ เย็น": "📍 ชาไทยนมสดสตอเบอร์รี่ • เย็น 20 ออนซ์\n( แยก 3 ชั้น )\n⁃ ไซรัปสตอ 40 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n———————————\n⁃ นมสด 100 ml\n⁃ นมข้นจืด 40 ml\n⁃ นมข้นหวาน 30 ml\n———————————\n⁃ ราดเบสชาไทย 60 ml",
         "ชาไทยโกโก้ เย็น": "📍 ชาไทยโกโก้ • เย็น 20 ออนซ์\n( แยกชั้น )\n⁃ เบสชาไทย 90 ml\n⁃ นมข้นจืด 40 ml\n⁃ นมข้นหวาน 40 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n———————————\n⁃ ผงโกโก้ 1 ช้อนกลาง ( 10g )\n⁃ น้ำร้อน 50 ml \n⁃ ราดบนสุด",
-        "ชาเขียวนมสดสตอเบอร์รี่ เย็น": "📍 ชาเขียวนมสดสตอเบอร์รี่ • เย็น 20 ออนซ์\n( แยก 3 ชั้น )\n⁃ ไซรัปสตอ 40 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n———————————\n⁃ นมสด 100 ml\n⁃ นมข้นจืด 40 ml\n⁃ นมข้นหวาน 30 ml\n———————————\n⁃ ราดเบสชาไทย 60 ml",
+        "ชาเขียวนมสดสตอเบอร์รี่ เย็น": "📍 ชาเขียวนมสดสตอเบอร์รี่ • เย็น 20 ออนซ์\n( แยก 3 ชั้น )\n⁃ ไซรัปสตอ 40 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n———————————\n⁃ นมสด 100 ml\n⁃ นมข้นจืด 40 ml\n⁃ นมข้นหวาน 30 ml\n———————————\n⁃ ราดเบสชาเขียว 60 ml",
         "ชาเขียวโกโก้ เย็น": "📍 ชาเขียวโกโก้ • เย็น 20 ออนซ์\n( แยกชั้น )\n⁃ เบสชาเขียว 90 ml\n⁃ นมข้นจืด 40 ml\n⁃ นมข้นหวาน 40 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n———————————\n⁃ ผงโกโก้ 1 ช้อนกลาง ( 10g )\n⁃ น้ำร้อน 50 ml \n⁃ ราดบนสุด",
         "นมสดโอริโอ้ ปั่น": "📍 นมสดโอริโอ้ปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น เสียบโอริโอ้ 1 ชิ้น )\n⁃ นมสด 100 ml\n⁃ นมข้นหวาน 60 ml\n⁃ นมข้นจืด 30 ml\n⁃ น้ำเชื่อม 20 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ โอริโอ้ปั่น 2 ชิ้น ( เสียบบน 1 ชิ้น )",
         "นมสดโอริโอ้ คาราเมล ปั่น": "📍 นมสดโอริโอ้ คาราเมล • ปั่น 22 ออนซ์\n( ไม่แยกชั้น เสียบโอริโอ้ 1 ชิ้น )\n⁃ นมสด 100 ml\n⁃ ไซรัปคาราเมล 45 ml\n⁃ นมข้นหวาน 60 ml\n⁃ นมข้นจืด 30 ml\n⁃ น้ำเชื่อม 30 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ โอริโอ้ปั่น 2 ชิ้น ( เสียบบน 1 ชิ้น )",
         "ชาไทยโอริโอ้ ปั่น": "📍 ชาไทยโอริโอ้ปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น เสียบโอริโอ้ 1 ชิ้น )\n⁃ เบสชา 120 ml\n⁃ ครีมเทียม 1 ช้อนโต๊ะ\n⁃ นมข้นหวาน 60 ml\n⁃ นมข้นจืด 30 ml\n⁃ น้ำเชื่อม 30 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ โอริโอ้ปั่น 2 ชิ้น ( เสียบบน 1 ชิ้น )",
         "ชาเขียวโอริโอ้ ปั่น": "📍 ชาเขียวโอริโอ้ปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น เสียบโอริโอ้ 1 ชิ้น )\n⁃ เบสชา 120 ml\n⁃ ครีมเทียม 1 ช้อนโต๊ะ\n⁃ นมข้นหวาน 60 ml\n⁃ นมข้นจืด 30 ml\n⁃ น้ำเชื่อม 30 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ โอริโอ้ปั่น 2 ชิ้น ( เสียบบน 1 ชิ้น )",
-        "โกโก้โอริโอ้ ปั่น": "📍 โกโก้โอริโอ้ปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น เสียบโอริโอ้ 1 ชิ้น )\n⁃ น้ำร้อน 100 ml\n⁃ ผงโกโก้ 2 ช้อนโต๊ะ\n⁃ ครีมเทียม 1 ช้อนกลาง ( 10g )\n⁃ นมข้นหวาน 50 ml\n⁃ นมข้นจืด 30 ml\n⁃ น้ำเชื่อม 30 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ โอริโอ้ปั่น 2 ชิ้น ( เสียบบน 1 ชิ้น )",
+        "โกโก้โอริโอ้ ปั่น": "📍 โโกโก้โอริโอ้ปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น เสียบโอริโอ้ 1 ชิ้น )\n⁃ น้ำร้อน 100 ml\n⁃ ผงโกโก้ 2 ช้อนโต๊ะ\n⁃ ครีมเทียม 1 ช้อนกลาง ( 10g )\n⁃ นมข้นหวาน 50 ml\n⁃ นมข้นจืด 30 ml\n⁃ น้ำเชื่อม 30 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ โอริโอ้ปั่น 2 ชิ้น ( เสียบบน 1 ชิ้น )",
         "นมชมพูโอริโอ้ ปั่น": "📍 นมชมพูโอริโอ้ปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น เสียบโอริโอ้ 1 ชิ้น )\n⁃ น้ำร้อน 70 ml\n⁃ ผง 3.5 - 4 ช้อนโต๊ะ\n⁃ นมข้นจืด 50 ml\n⁃ นมข้นหวาน 30 ml\n⁃ น้ำเชื่อม 20 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ โอริโอ้ปั่น 2 ชิ้น ( เสียบบน 1 ชิ้น )",
         "โอวัลตินโอริโอ้ ปั่น": "📍 โอวัลตินโอริโอ้ปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น เสียบโอริโอ้ 1 ชิ้น )\n⁃ น้ำร้อน 100 ml\n⁃ ผง 3.5 - 4 ช้อนโต๊ะ\n⁃ นมข้นจืด 40 ml\n⁃ นมข้นหวาน 40 ml\n⁃ น้ำเชื่อม 25 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ โอริโอ้ปั่น 2 ชิ้น ( เสียบบน 1 ชิ้น )",
         "กาแฟโอริโอ้ ปั่น": "📍 กาแฟโอริโอ้ปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น เสียบโอริโอ้ 1 ชิ้น )\n⁃ น้ำร้อน 30 ml\n⁃ กาแฟ 4 ช้อนกาแฟ ( 20g )\n⁃ ครีมเทียม(ฟ้า) 1 ช้อนโต๊ะ \n⁃ นมจืด 20 ml\n⁃ น้ำเชื่อม 50 ml\n⁃ นมข้นจืด 40 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ โอริโอ้ปั่น 2 ชิ้น ( เสียบบน 1 ชิ้น )",
@@ -1057,14 +1084,11 @@
         "องุ่นโซดา เย็น": "📍 องุ่นโซดา • เย็น 20 ออนซ์\n( แยกชั้น )\n⁃ ไซรัป 45 ml\n⁃ น้ำโซดา 100 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n⁃ เทโซดาให้เต็มแก้ว",
         "บลูเบอร์รี่โซดา เย็น": "📍 บลูเบอร์รี่โซดา • เย็น 20 ออนซ์\n( แยกชั้น )\n⁃ ไซรัป 45 ml\n⁃ น้ำโซดา 100 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n⁃ เทโซดาให้เต็มแก้ว",
         "น้ำผึ้งมะนาวโซดา เย็น": "📍 น้ำผึ้งมะนาวโซดา • เย็น 20 ออนซ์\n( แยกชั้น )\n⁃ น้ำร้อน 20 ml\n⁃ น้ำผึ้ง 30 ml\n⁃ น้ำมะนาว 25 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n⁃ เทโซดาให้เต็มแก้ว",
-        
-        // --- เมนูแนะนำ / ใกล้เคียง ---
-        "ชาพีช เย็น": "📍 ชาพีช • เย็น 20 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 150 ml\n⁃ ผงชาพีช 3 ช้อนชา\n⁃ น้ำเชื่อม 20 ml (เพิ่มลดได้ตามชอบ)",
+        "ชาพีช เย็น": "📍 ชาพีช • เย็น 20 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 150 ml\n⁃ ผงชาพีช 3 ช้อนชา\n⁃ น้ำเชื่อม 20 ml",
         "ชาพีช ปั่น": "📍 ชาพีช • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 120 ml\n⁃ ผงชาพีช 4 ช้อนชา\n⁃ น้ำเชื่อม 50 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วพูนนิดๆ )",
         "มัทฉะน้ำผึ้งมะนาว เย็น": "📍 มัทฉะน้ำผึ้งมะนาว • เย็น 20 ออนซ์\n( แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 100 ml\n⁃ ผงมัทฉะ 2 ช้อนชา\n⁃ น้ำผึ้ง 30 ml\n⁃ น้ำมะนาว 15 ml"
     };
     
-    // ฐานข้อมูลราคาเมนูตั้งต้นทั้งหมด (อิงจากสูตรข้างบนเพื่อให้ค้นหาเจอ 100%)
     const DEFAULT_PRESET_PRICES = {
         "เอสเพรสโซ่ เย็น": 30, "เอสเพรสโซ่ ปั่น": 35,
         "คาปูชิโน่ เย็น": 30, "คาปูชิโน่ ปั่น": 35,
@@ -1109,7 +1133,6 @@
         "กีวี่โซดา เย็น": 25, "ส้มโซดา เย็น": 25, "แอปเปิ้ลโซดา เย็น": 25, "องุ่นโซดา เย็น": 25,
         "บลูเบอร์รี่โซดา เย็น": 25, "น้ำผึ้งมะนาวโซดา เย็น": 25,
         "ชาพีช เย็น": 25, "ชาพีช ปั่น": 30, "มัทฉะน้ำผึ้งมะนาว เย็น": 35,
-        // เมนูอาหาร ของทอด (จะไม่มีปุ่มดูสูตร เพราะหมวดหมู่ไม่ใช่น้ำ)
         "เฟรนช์ฟรายส์": 29, "ชีสบอล": 39, "ปังเนยนม": 20, "ข้าวกะเพรา 40": 40
     };
 
@@ -1131,6 +1154,8 @@
     let isProfitShown = false;
     let isBackdateActive = false;
     let isSyncing = false;
+    let isFlushingQueue = false;
+    let isProcessingAdd = false;
 
     const quickInput = document.getElementById('quickInput');
     const suggestBox = document.getElementById('suggestBox');
@@ -1152,6 +1177,7 @@
     const selectDateInput = document.getElementById('selectDateInput');
     const selectMonthInput = document.getElementById('selectMonthInput');
     const priceSearchInput = document.getElementById('priceSearchInput');
+    const btnSubmitOrder = document.getElementById('btnSubmitOrder');
 
     const btnToggleBackdate = document.getElementById('btnToggleBackdate');
     const backdateBox = document.getElementById('backdateBox');
@@ -1257,11 +1283,11 @@
             }
         }
 
-        const targetId = String(id);
+        const targetId = String(id).trim();
         const row = el.closest('.batch-item-row');
         if (!row) return;
 
-        const idx = sales.findIndex(s => String(s.id) === targetId);
+        const idx = sales.findIndex(s => String(s.id).trim() === targetId);
         if (idx === -1) return;
 
         const currentStatus = sales[idx].status || 'pending';
@@ -1281,8 +1307,8 @@
     }
 
     async function togglePayMethod(id) {
-        const targetId = String(id);
-        const idx = sales.findIndex(s => String(s.id) === targetId);
+        const targetId = String(id).trim();
+        const idx = sales.findIndex(s => String(s.id).trim() === targetId);
         if (idx !== -1) {
             const currentMethod = sales[idx].paymentMethod || 'cash';
             const nextMethod = (currentMethod === 'cash') ? 'promptpay' : 'cash';
@@ -1372,9 +1398,9 @@
         }
     });
 
-    // Offline-First Queue & Sync Engine
     async function flushQueue() {
-        if (offlineQueue.length === 0 || !navigator.onLine) return;
+        if (offlineQueue.length === 0 || !navigator.onLine || isFlushingQueue) return;
+        isFlushingQueue = true;
         if (syncDot) syncDot.className = 'status-dot syncing';
         
         while (offlineQueue.length > 0) {
@@ -1385,9 +1411,15 @@
                     headers: { "Content-Type": "text/plain;charset=utf-8" },
                     body: JSON.stringify(payload)
                 });
+                
                 if (res.ok) {
-                    offlineQueue.shift();
-                    localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(offlineQueue));
+                    const result = await res.json();
+                    if (result && (result.status === "success" || result.status === "error")) {
+                        offlineQueue.shift();
+                        localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(offlineQueue));
+                    } else {
+                        break;
+                    }
                 } else {
                     break;
                 }
@@ -1395,27 +1427,33 @@
                 break;
             }
         }
+        
+        isFlushingQueue = false;
         if (syncDot) syncDot.className = 'status-dot';
     }
 
     async function saveToCloudWithQueue(payload) {
-        if (!navigator.onLine) {
-            offlineQueue.push(payload);
-            localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(offlineQueue));
-            if (syncStatus) syncStatus.innerText = "บันทึกคิวออฟไลน์แล้ว (รอซิงค์)";
-            return;
+        if (payload.action === "add_sale" && payload.item) {
+            const alreadyInQueue = offlineQueue.some(q => q.action === "add_sale" && q.item && String(q.item.id).trim() === String(payload.item.id).trim());
+            if (alreadyInQueue) return;
         }
-        
+
         offlineQueue.push(payload);
         localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(offlineQueue));
-        await flushQueue();
-        await loadFromCloud();
+        
+        if (navigator.onLine) {
+            await flushQueue();
+            await loadFromCloud();
+        } else {
+            if (syncStatus) syncStatus.innerText = "บันทึกคิวออฟไลน์แล้ว";
+        }
     }
 
-    async function loadFromCloud() {
+    async function loadFromCloud(isManual = false) {
         if (isSyncing) return;
         isSyncing = true;
         if (syncDot) syncDot.className = 'status-dot syncing';
+        if (isManual && syncStatus) syncStatus.innerText = "กำลังซิงค์...";
         
         if (navigator.onLine && offlineQueue.length > 0) {
             await flushQueue();
@@ -1423,7 +1461,7 @@
         
         try {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 20000);
+            const timeoutId = setTimeout(() => controller.abort(), 10000);
             
             const res = await fetch(`${API_URL}?t=${Date.now()}`, { signal: controller.signal });
             clearTimeout(timeoutId);
@@ -1431,26 +1469,45 @@
             const data = await res.json();
             if (data && data.status === "success") {
                 if (Array.isArray(data.sales)) {
-                    sales = data.sales.filter(item => item && item.id && !deletedSalesIds.has(String(item.id)));
+                    const cleanMap = new Map();
+                    data.sales.forEach(item => {
+                        if (item && item.id && !deletedSalesIds.has(String(item.id).trim())) {
+                            cleanMap.set(String(item.id).trim(), item);
+                        }
+                    });
+                    sales = Array.from(cleanMap.values());
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
                 }
                 if (Array.isArray(data.expenses)) {
-                    expenses = data.expenses.filter(item => item && item.id && !deletedExpensesIds.has(String(item.id)));
+                    expenses = data.expenses.filter(item => item && item.id && !deletedExpensesIds.has(String(item.id).trim()));
                     localStorage.setItem(EXPENSES_KEY, JSON.stringify(expenses));
                 }
                 if (data.prices && typeof data.prices === 'object') {
                     priceBook = { ...DEFAULT_PRESET_PRICES, ...data.prices };
                     localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
                 }
-                if (syncStatus) syncStatus.innerText = "เชื่อมต่อข้อมูลสดอัตโนมัติ";
+                if (syncStatus) syncStatus.innerText = "เชื่อมต่อข้อมูลสด";
                 if (syncDot) syncDot.className = 'status-dot';
                 renderUI();
             }
         } catch (e) {
-            if (syncStatus) syncStatus.innerText = "ใช้งานโหมดในเครื่อง (ออฟไลน์)";
+            if (syncStatus) syncStatus.innerText = "ใช้งานโหมดในเครื่อง";
             if (syncDot) syncDot.className = 'status-dot';
         } finally {
             isSyncing = false;
+        }
+    }
+
+    async function triggerManualSync() {
+        const btn = document.getElementById('btnManualSync');
+        if (btn) {
+            btn.innerText = '⏳ กำลังซิงค์...';
+            btn.disabled = true;
+        }
+        await loadFromCloud(true);
+        if (btn) {
+            btn.innerText = '🔄 ซิงค์ด่วน';
+            btn.disabled = false;
         }
     }
 
@@ -1489,120 +1546,181 @@
         await handleAdd();
     }
 
-    async function handleAdd(e) {
-        if (e) e.preventDefault();
-        suggestBox.style.display = 'none';
-        const text = quickInput.value.trim();
-        if (!text) return false;
+    function parseOrderInput(rawText) {
+        let text = rawText.trim();
+        if (!text) return null;
+
+        text = text.replace(/(แก้ว|ชิ้น|จาน|ถุง|ชุด|กล่อง)/g, '').trim();
 
         let name = '';
         let unitPrice = 0;
         let qty = 1;
 
-        const parts = text.split(/\s+/);
-
-        if (priceBook[text]) {
-            name = text;
-            unitPrice = Number(priceBook[text]);
-            qty = 1;
-        } else if (parts.length >= 2 && !isNaN(parts[parts.length - 1])) {
-            const potentialQty = parseInt(parts[parts.length - 1]);
-            const potentialName = parts.slice(0, parts.length - 1).join(' ');
-
-            if (priceBook[potentialName]) {
-                name = potentialName;
-                qty = potentialQty;
+        // รูปแบบ เช่น ชาไทย x2, ชาเขียว *3
+        const multiMatch = text.match(/^(.+?)\s*[*xX]\s*(\d+)$/);
+        if (multiMatch) {
+            name = multiMatch[1].trim();
+            qty = Math.min(500, Math.max(1, parseInt(multiMatch[2]) || 1));
+            if (priceBook[name]) {
                 unitPrice = Number(priceBook[name]);
-            } else {
-                name = text;
             }
-        } else {
-            name = text;
+            return { name, unitPrice, qty };
         }
 
-        if ((isNaN(unitPrice) || unitPrice <= 0) && priceBook[name]) {
-            unitPrice = Number(priceBook[name]);
+        // ตรงกับชื่อในระบบเป๊ะๆ
+        if (priceBook[text]) {
+            return { name: text, unitPrice: Number(priceBook[text]), qty: 1 };
         }
 
-        if (!name || isNaN(unitPrice) || unitPrice <= 0 || isNaN(qty) || qty <= 0) {
-            alert(`เมนู "${name || text}" ยังไม่มีราคาในระบบ\nกรุณาพิมพ์ชื่อพร้อมราคา เช่น "${name || text} 25"`);
-            return false;
+        var parts = text.split(/\s+/);
+
+        // รูปแบบ 3 ส่วน เช่น ชาดำ 20 2 (ชื่อ ราคา จำนวน)
+        if (parts.length >= 3 && !isNaN(parts[parts.length - 1]) && !isNaN(parts[parts.length - 2])) {
+            var pQty = Math.min(500, Math.max(1, parseInt(parts[parts.length - 1]) || 1));
+            var pPrice = Math.max(0, parseFloat(parts[parts.length - 2]) || 0);
+            var pName = parts.slice(0, parts.length - 2).join(' ').trim();
+            return { name: pName, unitPrice: pPrice, qty: pQty };
         }
 
-        priceBook[name] = unitPrice;
-        localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
+        // รูปแบบ 2 ส่วน เช่น ชาไทย 2 หรือ ไส้กรอก 25
+        if (parts.length >= 2 && !isNaN(parts[parts.length - 1])) {
+            var lastNum = parseFloat(parts[parts.length - 1]);
+            var pName2 = parts.slice(0, parts.length - 1).join(' ').trim();
 
-        const category = detectCategory(name);
-        const totalPrice = unitPrice * qty;
+            if (priceBook[pName2]) {
+                if (lastNum <= 10) {
+                    return { name: pName2, unitPrice: Number(priceBook[pName2]), qty: Math.max(1, parseInt(lastNum)) };
+                } else {
+                    return { name: pName2, unitPrice: lastNum, qty: 1 };
+                }
+            } else {
+                if (lastNum >= 15) {
+                    return { name: pName2, unitPrice: lastNum, qty: 1 };
+                } else {
+                    return { name: pName2, unitPrice: 0, qty: Math.max(1, parseInt(lastNum)) };
+                }
+            }
+        }
+
+        return { name: text, unitPrice: Number(priceBook[text]) || 0, qty: 1 };
+    }
+
+    async function handleAdd(e) {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
         
-        let recordDate = '';
-        let recordTime = '';
-        let recordTs = Date.now();
+        if (isProcessingAdd) return false;
 
-        if (isBackdateActive && backdateDateInput.value) {
-            recordDate = backdateDateInput.value;
-            recordTime = backdateTimeInput.value || '12:00';
-            const [y, m, d] = recordDate.split('-').map(Number);
-            const [hh, mm] = recordTime.split(':').map(Number);
-            recordTs = new Date(y, m - 1, d, hh || 12, mm || 0).getTime();
-        } else {
-            const now = new Date();
-            recordDate = formatDateYMD(now);
-            recordTime = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
-            recordTs = Date.now();
+        var text = quickInput.value.trim();
+        if (!text) return false;
+
+        isProcessingAdd = true;
+        if (btnSubmitOrder) btnSubmitOrder.disabled = true;
+
+        try {
+            suggestBox.style.display = 'none';
+            var parsed = parseOrderInput(text);
+
+            if (!parsed || !parsed.name) {
+                return false;
+            }
+
+            var name = parsed.name;
+            var unitPrice = parsed.unitPrice;
+            var qty = Math.min(500, Math.max(1, parseInt(parsed.qty) || 1));
+
+            if ((isNaN(unitPrice) || unitPrice <= 0) && priceBook[name]) {
+                unitPrice = Number(priceBook[name]);
+            }
+
+            if (!name || isNaN(unitPrice) || unitPrice <= 0 || isNaN(qty) || qty <= 0) {
+                alert('เมนู "' + name + '" ยังไม่มีราคาในระบบ\nกรุณาพิมพ์ชื่อพร้อมราคา เช่น "' + name + ' 25"');
+                return false;
+            }
+
+            priceBook[name] = unitPrice;
+            localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
+
+            var category = detectCategory(name);
+            var totalPrice = unitPrice * qty;
+            
+            var recordDate = '';
+            var recordTime = '';
+            var recordTs = Date.now();
+
+            if (isBackdateActive && backdateDateInput.value) {
+                recordDate = backdateDateInput.value;
+                recordTime = backdateTimeInput.value || '12:00';
+                var dParts = recordDate.split('-').map(Number);
+                var tParts = recordTime.split(':').map(Number);
+                recordTs = new Date(dParts[0], dParts[1] - 1, dParts[2], tParts[0] || 12, tParts[1] || 0).getTime();
+            } else {
+                var now = new Date();
+                recordDate = formatDateYMD(now);
+                recordTime = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+                recordTs = Date.now();
+            }
+
+            var newId = String(Date.now()) + '-' + String(Math.floor(Math.random() * 10000));
+            var newItem = { 
+                id: newId,
+                ts: Number(recordTs),
+                date: String(recordDate),
+                name: String(name), 
+                unitPrice: Number(unitPrice), 
+                qty: Number(qty), 
+                totalPrice: Number(totalPrice), 
+                category: String(category),
+                paymentMethod: 'cash',
+                time: String(recordTime),
+                status: 'pending'
+            };
+
+            sales.push(newItem);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
+            renderUI();
+            quickInput.value = '';
+
+            await saveToCloudWithQueue({ action: "add_sale", item: newItem });
+        } finally {
+            setTimeout(function() {
+                isProcessingAdd = false;
+                if (btnSubmitOrder) btnSubmitOrder.disabled = false;
+            }, 250);
         }
 
-        const newId = String(Date.now() + Math.floor(Math.random() * 1000));
-        const newItem = { 
-            id: newId,
-            ts: Number(recordTs),
-            date: String(recordDate),
-            name: String(name), 
-            unitPrice: Number(unitPrice), 
-            qty: Number(qty), 
-            totalPrice: Number(totalPrice), 
-            category: String(category),
-            paymentMethod: 'cash',
-            time: String(recordTime),
-            status: 'pending'
-        };
-
-        sales.push(newItem);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
-        renderUI();
-        quickInput.value = '';
-
-        await saveToCloudWithQueue({ action: "add_sale", item: newItem });
         return false;
     }
 
     async function addExpense() {
-        const name = document.getElementById('newExpenseName').value.trim();
-        const cost = parseFloat(document.getElementById('newExpenseCost').value);
+        var name = document.getElementById('newExpenseName').value.trim();
+        var cost = parseFloat(document.getElementById('newExpenseCost').value);
         if (!name || isNaN(cost) || cost <= 0) {
             alert('กรุณากรอกรายการและจำนวนเงินต้นทุนให้ถูกต้อง');
             return;
         }
 
-        let recordDate = '';
-        let recordTime = '';
-        let recordTs = Date.now();
+        var recordDate = '';
+        var recordTime = '';
+        var recordTs = Date.now();
 
         if (isBackdateActive && backdateDateInput.value) {
             recordDate = backdateDateInput.value;
             recordTime = backdateTimeInput.value || '12:00';
-            const [y, m, d] = recordDate.split('-').map(Number);
-            const [hh, mm] = recordTime.split(':').map(Number);
-            recordTs = new Date(y, m - 1, d, hh || 12, mm || 0).getTime();
+            var dParts = recordDate.split('-').map(Number);
+            var tParts = recordTime.split(':').map(Number);
+            recordTs = new Date(dParts[0], dParts[1] - 1, dParts[2], tParts[0] || 12, tParts[1] || 0).getTime();
         } else {
-            const now = new Date();
+            var now = new Date();
             recordDate = formatDateYMD(now);
             recordTime = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
             recordTs = Date.now();
         }
 
-        const newExp = {
-            id: String(Date.now() + Math.floor(Math.random() * 1000)),
+        var newExp = {
+            id: String(Date.now()) + '-' + String(Math.floor(Math.random() * 10000)),
             ts: Number(recordTs),
             date: String(recordDate),
             name: String(name),
@@ -1620,15 +1738,15 @@
     }
 
     async function deleteExpense(id) {
-        const targetId = String(id);
-        const item = expenses.find(e => String(e.id) === targetId);
-        const name = item ? item.name : '';
+        var targetId = String(id).trim();
+        var item = expenses.find(e => String(e.id).trim() === targetId);
+        var name = item ? item.name : '';
         
-        if (confirm(`ท่านต้องการยืนยันการลบรายการต้นทุน "${name}" ออกจากระบบใช่หรือไม่?`)) {
+        if (confirm('ยืนยันการลบรายการต้นทุน "' + name + '" หรือไม่?')) {
             deletedExpensesIds.add(targetId);
             localStorage.setItem(DELETED_EXP_KEY, JSON.stringify(Array.from(deletedExpensesIds)));
 
-            expenses = expenses.filter(item => item && String(item.id) !== targetId);
+            expenses = expenses.filter(item => item && String(item.id).trim() !== targetId);
             localStorage.setItem(EXPENSES_KEY, JSON.stringify(expenses));
             renderUI();
 
@@ -1637,15 +1755,15 @@
     }
 
     async function deleteItem(id) {
-        const targetId = String(id);
-        const item = sales.find(s => String(s.id) === targetId);
-        const name = item ? item.name : '';
+        var targetId = String(id).trim();
+        var item = sales.find(s => String(s.id).trim() === targetId);
+        var name = item ? item.name : '';
         
-        if (confirm(`ท่านต้องการยืนยันการลบรายการออเดอร์ "${name}" ออกจากระบบใช่หรือไม่?`)) {
+        if (confirm('ยืนยันการลบรายการออเดอร์ "' + name + '" หรือไม่?')) {
             deletedSalesIds.add(targetId);
             localStorage.setItem(DELETED_SALES_KEY, JSON.stringify(Array.from(deletedSalesIds)));
 
-            sales = sales.filter(item => item && String(item.id) !== targetId);
+            sales = sales.filter(item => item && String(item.id).trim() !== targetId);
             localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
             renderUI();
 
@@ -1654,7 +1772,7 @@
     }
 
     function openEditModal(id) {
-        const item = sales.find(s => String(s.id) === String(id));
+        var item = sales.find(s => String(s.id).trim() === String(id).trim());
         if (!item) return;
 
         editItemId.value = item.id;
@@ -1671,18 +1789,18 @@
     }
 
     async function saveEditedItem() {
-        const id = editItemId.value;
-        const name = editItemName.value.trim();
-        const category = editItemCategory.value;
-        const unitPrice = parseFloat(editItemUnitPrice.value);
-        const qty = parseInt(editItemQty.value);
+        var id = editItemId.value;
+        var name = editItemName.value.trim();
+        var category = editItemCategory.value;
+        var unitPrice = parseFloat(editItemUnitPrice.value);
+        var qty = Math.min(500, Math.max(1, parseInt(editItemQty.value) || 1));
 
         if (!name || isNaN(unitPrice) || unitPrice <= 0 || isNaN(qty) || qty <= 0) {
             alert('กรุณากรอกข้อมูลให้ครบถ้วนและถูกต้อง');
             return;
         }
 
-        const idx = sales.findIndex(s => String(s.id) === String(id));
+        var idx = sales.findIndex(s => String(s.id).trim() === String(id).trim());
         if (idx !== -1) {
             sales[idx].name = name;
             sales[idx].category = category;
@@ -1698,83 +1816,82 @@
     }
 
     function getFilteredData() {
-        const now = new Date();
-        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-        const todayEnd = todayStart + (24 * 60 * 60 * 1000) - 1;
+        var now = new Date();
+        var todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+        var todayEnd = todayStart + (24 * 60 * 60 * 1000) - 1;
 
-        let filterFn = () => true;
+        var filterFn = () => true;
 
         if (currentFilter === 'today') {
             filterFn = item => {
                 if (!item) return false;
-                const itemTs = Number(item.ts) || Number(item.id) || 0;
+                var itemTs = Number(item.ts) || 0;
                 return itemTs >= todayStart && itemTs <= todayEnd;
             };
         } else if (currentFilter === 'week') {
-            const dayOfWeek = now.getDay() || 7;
-            const mondayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek + 1).getTime();
-            const sundayEnd = mondayStart + (7 * 24 * 60 * 60 * 1000) - 1;
+            var dayOfWeek = now.getDay() || 7;
+            var mondayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek + 1).getTime();
+            var sundayEnd = mondayStart + (7 * 24 * 60 * 60 * 1000) - 1;
             filterFn = item => {
                 if (!item) return false;
-                const itemTs = Number(item.ts) || Number(item.id) || 0;
+                var itemTs = Number(item.ts) || 0;
                 return itemTs >= mondayStart && itemTs <= sundayEnd;
             };
         } else if (currentFilter === 'custom') {
             if (customFilterType === 'date') {
-                const selDate = selectDateInput.value;
+                var selDate = selectDateInput.value;
                 if (!selDate) return () => true;
-                const [y, m, d] = selDate.split('-').map(Number);
-                const dayStart = new Date(y, m - 1, d).getTime();
-                const dayEnd = dayStart + (24 * 60 * 60 * 1000) - 1;
+                var p = selDate.split('-').map(Number);
+                var dayStart = new Date(p[0], p[1] - 1, p[2]).getTime();
+                var dayEnd = dayStart + (24 * 60 * 60 * 1000) - 1;
                 filterFn = item => {
                     if (!item) return false;
-                    const itemTs = Number(item.ts) || Number(item.id) || 0;
+                    var itemTs = Number(item.ts) || 0;
                     return itemTs >= dayStart && dayEnd >= itemTs;
                 };
             } else if (customFilterType === 'month') {
-                const selMonth = selectMonthInput.value;
+                var selMonth = selectMonthInput.value;
                 if (!selMonth) return () => true;
-                const [y, m] = selMonth.split('-').map(Number);
-                const mStart = new Date(y, m - 1, 1).getTime();
-                const mEnd = new Date(y, m, 1).getTime() - 1;
+                var mp = selMonth.split('-').map(Number);
+                var mStart = new Date(mp[0], mp[1] - 1, 1).getTime();
+                var mEnd = new Date(mp[0], mp[1], 1).getTime() - 1;
                 filterFn = item => {
                     if (!item) return false;
-                    const itemTs = Number(item.ts) || Number(item.id) || 0;
+                    var itemTs = Number(item.ts) || 0;
                     return itemTs >= mStart && itemTs <= mEnd;
                 };
             }
         }
 
         return {
-            sales: sales.filter(item => item && typeof item === 'object' && !deletedSalesIds.has(String(item.id))).filter(filterFn),
-            expenses: expenses.filter(item => item && typeof item === 'object' && !deletedExpensesIds.has(String(item.id))).filter(filterFn)
+            sales: sales.filter(item => item && typeof item === 'object' && !deletedSalesIds.has(String(item.id).trim())).filter(filterFn),
+            expenses: expenses.filter(item => item && typeof item === 'object' && !deletedExpensesIds.has(String(item.id).trim())).filter(filterFn)
         };
     }
 
     function renderUI() {
-        const data = getFilteredData();
-        const displaySales = data.sales;
-        const displayExpenses = data.expenses;
+        var data = getFilteredData();
+        var displaySales = data.sales;
+        var displayExpenses = data.expenses;
 
-        let totalS = 0;
-        let totalC = 0;
-        let totalCashSum = 0;
-        let totalQrSum = 0;
-        let totalPieces = 0;
+        var totalS = 0;
+        var totalC = 0;
+        var totalCashSum = 0;
+        var totalQrSum = 0;
+        var totalPieces = 0;
         
-        displayExpenses.forEach(e => {
-            const cost = Number(e.cost) || 0;
-            totalC += cost;
+        displayExpenses.forEach(function(e) {
+            totalC += Number(e.cost) || 0;
         });
 
-        const catStats = {
+        var catStats = {
             'เครื่องดื่ม': { sum: 0, count: 0 },
             'ของทอด/ทานเล่น': { sum: 0, count: 0 },
             'ขนมปังปิ้ง': { sum: 0, count: 0 },
             'อาหาร/กะเพรา': { sum: 0, count: 0 }
         };
 
-        const menuGrouped = {
+        var menuGrouped = {
             'เครื่องดื่ม': {},
             'ของทอด/ทานเล่น': {},
             'ขนมปังปิ้ง': {},
@@ -1786,9 +1903,9 @@
         if (displaySales.length === 0) {
             itemList.innerHTML = '<div class="empty-text">ยังไม่มีรายการขายในช่วงนี้</div>';
         } else {
-            displaySales.forEach((item) => {
-                const price = Number(item.totalPrice) || 0;
-                const qty = Number(item.qty) || 1;
+            displaySales.forEach(function(item) {
+                var price = Number(item.totalPrice) || 0;
+                var qty = Number(item.qty) || 1;
                 totalS += price;
                 totalPieces += qty;
 
@@ -1798,8 +1915,8 @@
                     totalCashSum += price;
                 }
 
-                const cleanName = item.name.replace(/\s*\*\*\s*/g, '').trim();
-                const cat = catStats[item.category] ? item.category : 'อาหาร/กะเพรา';
+                var cleanName = item.name.replace(/\s*\*\*\s*/g, '').trim();
+                var cat = catStats[item.category] ? item.category : 'อาหาร/กะเพรา';
                 catStats[cat].sum += price;
                 catStats[cat].count += qty;
 
@@ -1808,12 +1925,12 @@
                 menuGrouped[cat][cleanName].sum += price;
             });
 
-            const sortedSales = displaySales.slice().sort((a, b) => (Number(b.ts) || 0) - (Number(a.ts) || 0));
-            const batches = [];
-            let currentBatch = null;
+            var sortedSales = displaySales.slice().sort((a, b) => (Number(b.ts) || 0) - (Number(a.ts) || 0));
+            var batches = [];
+            var currentBatch = null;
 
-            sortedSales.forEach((item) => {
-                const itemTs = Number(item.ts) || 0;
+            sortedSales.forEach(function(item) {
+                var itemTs = Number(item.ts) || 0;
                 if (!currentBatch) {
                     currentBatch = {
                         timeKey: formatThaiDateTime(item.date, item.time, item.ts),
@@ -1821,7 +1938,7 @@
                         items: [item]
                     };
                 } else {
-                    const diffMinutes = Math.abs(currentBatch.latestTs - itemTs) / (1000 * 60);
+                    var diffMinutes = Math.abs(currentBatch.latestTs - itemTs) / (1000 * 60);
                     if (diffMinutes <= 1.0) {
                         currentBatch.items.push(item);
                     } else {
@@ -1836,32 +1953,32 @@
             });
             if (currentBatch) batches.push(currentBatch);
 
-            batches.forEach((batch) => {
-                let batchTotal = 0;
-                let batchTotalQty = 0;
-                batch.items.forEach(it => {
+            batches.forEach(function(batch) {
+                var batchTotal = 0;
+                var batchTotalQty = 0;
+                batch.items.forEach(function(it) {
                     batchTotal += Number(it.totalPrice) || 0;
                     batchTotalQty += Number(it.qty) || 1;
                 });
 
-                const card = document.createElement('div');
+                var card = document.createElement('div');
                 card.className = 'order-batch-card';
 
-                let itemsHtml = '';
-                batch.items.forEach(item => {
-                    const price = Number(item.totalPrice) || 0;
-                    const qty = Number(item.qty) || 1;
-                    const unitPrice = Number(item.unitPrice) || price;
-                    const isQr = (item.paymentMethod === 'promptpay');
-                    const badgeClass = isQr ? 'pay-badge qr' : 'pay-badge cash';
-                    const badgeText = isQr ? '📱 สแกน' : '💵 สด';
+                var itemsHtml = '';
+                batch.items.forEach(function(item) {
+                    var price = Number(item.totalPrice) || 0;
+                    var qty = Number(item.qty) || 1;
+                    var unitPrice = Number(item.unitPrice) || price;
+                    var isQr = (item.paymentMethod === 'promptpay');
+                    var badgeClass = isQr ? 'pay-badge qr' : 'pay-badge cash';
+                    var badgeText = isQr ? '📱 สแกน' : '💵 สด';
                     
-                    const isDone = (item.status === 'done');
-                    const doneClass = isDone ? 'item-done' : '';
-                    const cleanName = item.name.replace(/\s*\*\*\s*/g, '').trim();
-                    const isDrink = isDrinkCategory(item.category);
-                    const clickableClass = isDrink ? 'item-title-text has-recipe' : 'item-title-text';
-                    const recipeAction = isDrink ? `onclick="showRecipe('${cleanName}', '${item.category}')" title="แตะเพื่อดูสูตรชง"` : '';
+                    var isDone = (item.status === 'done');
+                    var doneClass = isDone ? 'item-done' : '';
+                    var cleanName = item.name.replace(/\s*\*\*\s*/g, '').trim();
+                    var isDrink = isDrinkCategory(item.category);
+                    var clickableClass = isDrink ? 'item-title-text has-recipe' : 'item-title-text';
+                    var recipeAction = isDrink ? 'onclick="showRecipe(\'' + cleanName + '\', \'' + item.category + '\')" title="แตะเพื่อดูสูตรชง"' : '';
 
                     itemsHtml += `
                         <div class="batch-item-row ${doneClass}" id="row-${item.id}">
@@ -1900,10 +2017,10 @@
         if (displayExpenses.length === 0) {
             expenseList.innerHTML = '<div class="empty-text">ยังไม่มีรายการต้นทุนในช่วงนี้</div>';
         } else {
-            displayExpenses.slice().reverse().forEach((item) => {
-                const cost = Number(item.cost) || 0;
-                const formattedExpTime = formatThaiDateTime(item.date, item.time, item.ts);
-                const row = document.createElement('div');
+            displayExpenses.slice().reverse().forEach(function(item) {
+                var cost = Number(item.cost) || 0;
+                var formattedExpTime = formatThaiDateTime(item.date, item.time, item.ts);
+                var row = document.createElement('div');
                 row.className = 'summary-row';
                 row.innerHTML = `
                     <div>
@@ -1919,7 +2036,7 @@
             });
         }
 
-        const profit = totalS - totalC;
+        var profit = totalS - totalC;
         totalSales.innerText = `฿${totalS.toLocaleString()}`;
         totalSalesSub.innerText = `ยอดขายรวม • ${totalPieces} ชิ้น (${displaySales.length} รายการ)`;
         
@@ -1942,24 +2059,26 @@
         document.getElementById('catFoodCount').innerText = `${catStats['อาหาร/กะเพรา'].count} จาน/ชุด`;
 
         menuSummaryList.innerHTML = '';
-        let hasMenu = false;
-        for (const [catName, items] of Object.entries(menuGrouped)) {
-            const keys = Object.keys(items);
+        var hasMenu = false;
+        for (var catName in menuGrouped) {
+            var items = menuGrouped[catName];
+            var keys = Object.keys(items);
             if (keys.length > 0) {
                 hasMenu = true;
-                const groupTitle = document.createElement('div');
+                var groupTitle = document.createElement('div');
                 groupTitle.className = 'summary-group-title';
                 groupTitle.innerText = `${catName} (รวม ฿${catStats[catName].sum.toLocaleString()})`;
                 menuSummaryList.appendChild(groupTitle);
 
-                for (const [name, data] of Object.entries(items)) {
-                    const row = document.createElement('div');
-                    row.className = 'summary-row';
-                    row.innerHTML = `
-                        <span>${name} (x${data.qty})</span>
-                        <span><b>฿${data.sum.toLocaleString()}</b></span>
+                for (var name in items) {
+                    var mData = items[name];
+                    var sRow = document.createElement('div');
+                    sRow.className = 'summary-row';
+                    sRow.innerHTML = `
+                        <span>${name} (x${mData.qty})</span>
+                        <span><b>฿${mData.sum.toLocaleString()}</b></span>
                     `;
-                    menuSummaryList.appendChild(row);
+                    menuSummaryList.appendChild(sRow);
                 }
             }
         }
@@ -1972,9 +2091,9 @@
 
     function renderPriceSettingList() {
         priceSettingList.innerHTML = '';
-        const searchKeyword = (priceSearchInput ? priceSearchInput.value : '').trim().toLowerCase();
+        var searchKeyword = (priceSearchInput ? priceSearchInput.value : '').trim().toLowerCase();
         
-        let keys = Object.keys(priceBook);
+        var keys = Object.keys(priceBook);
         if (searchKeyword) {
             keys = keys.filter(k => k.toLowerCase().includes(searchKeyword));
         }
@@ -1984,9 +2103,9 @@
             return;
         }
 
-        keys.sort().forEach(name => {
-            const hasRecipe = recipeBook[name] ? ' 📖' : '';
-            const row = document.createElement('div');
+        keys.sort().forEach(function(name) {
+            var hasRecipe = recipeBook[name] ? ' 📖' : '';
+            var row = document.createElement('div');
             row.className = 'summary-row price-list-row';
             row.innerHTML = `
                 <span onclick="fillEditPrice('${name}', ${priceBook[name]})" style="flex:1;">📝 ${name}${hasRecipe}</span>
@@ -2007,9 +2126,9 @@
     }
 
     async function addOrUpdatePrice() {
-        const name = document.getElementById('newMenuName').value.trim();
-        const price = parseFloat(document.getElementById('newMenuPrice').value);
-        const recipe = document.getElementById('newMenuRecipe').value.trim();
+        var name = document.getElementById('newMenuName').value.trim();
+        var price = parseFloat(document.getElementById('newMenuPrice').value);
+        var recipe = document.getElementById('newMenuRecipe').value.trim();
 
         if (name && !isNaN(price) && price > 0) {
             priceBook[name] = price;
@@ -2026,20 +2145,20 @@
             document.getElementById('newMenuPrice').value = '';
             document.getElementById('newMenuRecipe').value = '';
             renderUI();
-            await saveToCloudWithQueue({ action: "update_price", name, price });
+            await saveToCloudWithQueue({ action: "update_price", name: name, price: price });
         } else {
             alert('กรุณากรอกชื่อเมนูและราคาให้ถูกต้อง');
         }
     }
 
     async function deletePrice(name) {
-        if (confirm(`ท่านต้องการยืนยันการลบเมนู "${name}" ออกจากระบบใช่หรือไม่?`)) {
+        if (confirm('ยืนยันการลบเมนู "' + name + '" หรือไม่?')) {
             delete priceBook[name];
             delete recipeBook[name];
             localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
             localStorage.setItem(RECIPES_KEY, JSON.stringify(recipeBook));
             renderUI();
-            await saveToCloudWithQueue({ action: "delete_price", name });
+            await saveToCloudWithQueue({ action: "delete_price", name: name });
         }
     }
 
@@ -2057,10 +2176,10 @@
 
     function exportSalesToCSV() {
         if (sales.length === 0) { alert('ไม่มีข้อมูลยอดขายสำหรับดาวน์โหลด'); return; }
-        let csv = '\uFEFFวันที่,เวลา,ชื่อเมนู,หมวดหมู่,ประเภทการชำระ,ราคาต่อหน่วย,จำนวน,ราคารวม\n';
-        sales.forEach(s => {
-            const payText = (s.paymentMethod === 'promptpay') ? 'สแกนจ่าย' : 'เงินสด';
-            const cleanName = s.name.replace(/\s*\*\*\s*/g, '').trim();
+        var csv = '\uFEFFวันที่,เวลา,ชื่อเมนู,หมวดหมู่,ประเภทการชำระ,ราคาต่อหน่วย,จำนวน,ราคารวม\n';
+        sales.forEach(function(s) {
+            var payText = (s.paymentMethod === 'promptpay') ? 'สแกนจ่าย' : 'เงินสด';
+            var cleanName = s.name.replace(/\s*\*\*\s*/g, '').trim();
             csv += `"${s.date}","${s.time}","${cleanName}","${s.category}","${payText}",${s.unitPrice},${s.qty},${s.totalPrice}\n`;
         });
         downloadBlob(csv, `FLUKCHAFE_Sales_${formatDateYMD(new Date())}.csv`);
@@ -2068,17 +2187,17 @@
 
     function exportExpensesToCSV() {
         if (expenses.length === 0) { alert('ไม่มีข้อมูลต้นทุนสำหรับดาวน์โหลด'); return; }
-        let csv = '\uFEFFวันที่,เวลา,รายการซื้อของ,จำนวนเงินต้นทุน\n';
-        expenses.forEach(e => {
+        var csv = '\uFEFFวันที่,เวลา,รายการซื้อของ,จำนวนเงินต้นทุน\n';
+        expenses.forEach(function(e) {
             csv += `"${e.date}","${e.time}","${e.name}",${e.cost}\n`;
         });
         downloadBlob(csv, `FLUKCHAFE_Expenses_${formatDateYMD(new Date())}.csv`);
     }
 
     function downloadBlob(content, filename) {
-        const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
+        var blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+        var url = URL.createObjectURL(blob);
+        var link = document.createElement('a');
         link.setAttribute('href', url);
         link.setAttribute('download', filename);
         document.body.appendChild(link);
@@ -2088,29 +2207,42 @@
 
     renderUI();
 
-    // ส่วนจัดการ Polling และ Auto-sync & Offline Queue
-    let syncTimer = null;
+    var syncTimer = null;
     async function syncLoop() {
         if (!document.hidden && navigator.onLine) {
             await loadFromCloud();
         }
-        syncTimer = setTimeout(syncLoop, 15000);
+        syncTimer = setTimeout(syncLoop, FAST_POLL_INTERVAL);
     }
 
-    window.addEventListener('DOMContentLoaded', () => {
+    window.addEventListener('DOMContentLoaded', function() {
         syncLoop();
     });
 
-    document.addEventListener('visibilitychange', () => {
+    document.addEventListener('visibilitychange', function() {
         if (!document.hidden) {
             clearTimeout(syncTimer);
+            loadFromCloud();
             syncLoop();
         }
     });
 
-    window.addEventListener('online', () => {
+    window.addEventListener('focus', function() {
+        clearTimeout(syncTimer);
+        loadFromCloud();
+        syncLoop();
+    });
+
+    window.addEventListener('pageshow', function() {
+        clearTimeout(syncTimer);
+        loadFromCloud();
+        syncLoop();
+    });
+
+    window.addEventListener('online', function() {
         clearTimeout(syncTimer);
         flushQueue();
+        loadFromCloud();
         syncLoop();
     });
 </script>
