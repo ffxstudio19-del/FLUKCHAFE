@@ -945,13 +945,14 @@
     const API_URL = "https://script.google.com/macros/s/AKfycbwuVtheTjpEPp33z7VswY70n-C22KfgvnmfzD7yUiyDr4VN_1XFT0zKCd4KMj4ctOMiYA/exec";
     const GOOGLE_SHEETS_URL = "https://docs.google.com/spreadsheets/d/1EEU-LsVCzD8jbisYSVmy5jMjdTotGOgIW-4ASJlzqYU/edit";
 
-    const STORAGE_KEY = 'FLUKCHAFE_SHARED_DB_V20';
-    const MENU_PRICES_KEY = 'FLUKCHAFE_SHARED_PRICES_V20';
-    const RECIPES_KEY = 'FLUKCHAFE_SHARED_RECIPES_V20';
-    const EXPENSES_KEY = 'FLUKCHAFE_SHARED_EXP_V20';
-    const DELETED_SALES_KEY = 'FLUKCHAFE_DELETED_SALES_IDS_V20';
-    const DELETED_EXP_KEY = 'FLUKCHAFE_DELETED_EXP_IDS_V20';
-    const OFFLINE_QUEUE_KEY = 'FLUKCHAFE_OFFLINE_QUEUE_V20';
+    // ใช้กุญแจ V19 เดิม เพื่อดึงข้อมูลเก่าที่เคยบันทึกไว้ในเครื่องกลับมา
+    const STORAGE_KEY = 'FLUKCHAFE_SHARED_DB_V19';
+    const MENU_PRICES_KEY = 'FLUKCHAFE_SHARED_PRICES_V19';
+    const RECIPES_KEY = 'FLUKCHAFE_SHARED_RECIPES_V19';
+    const EXPENSES_KEY = 'FLUKCHAFE_SHARED_EXP_V19';
+    const DELETED_SALES_KEY = 'FLUKCHAFE_DELETED_SALES_IDS_V19';
+    const DELETED_EXP_KEY = 'FLUKCHAFE_DELETED_EXP_IDS_V19';
+    const OFFLINE_QUEUE_KEY = 'FLUKCHAFE_OFFLINE_QUEUE_V19';
 
     const DEFAULT_RECIPES = {
         "เอสเพรสโซ่ เย็น": "📍 เอสเพรสโซ่ • เย็น 20 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 60 ml\n⁃ กาแฟ 3 ช้อนกาแฟ (15g)\n⁃ นมจืด 100 ml\n⁃ นมข้นหวาน 20 ml\n⁃ นมข้นจืด 20 ml\n⁃ น้ำเชื่อม 10 ml ( ถ้าหวานน้อยไม่ต้องใส่ )",
@@ -1268,7 +1269,6 @@
             return;
         }
         
-        // Push to queue first to guarantee safety, then flush
         offlineQueue.push(payload);
         localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(offlineQueue));
         await flushQueue();
@@ -1280,7 +1280,6 @@
         isSyncing = true;
         if (syncDot) syncDot.className = 'status-dot syncing';
         
-        // Flush pending queue first if online
         if (navigator.onLine && offlineQueue.length > 0) {
             await flushQueue();
         }
@@ -1348,7 +1347,6 @@
         return 'เครื่องดื่ม';
     }
 
-    // ฟังก์ชันกดปุ่มลัดเมนูด่วน (Fast-Order Buttons)
     async function quickAddPreset(name) {
         quickInput.value = name;
         await handleAdd();
