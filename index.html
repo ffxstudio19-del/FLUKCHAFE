@@ -768,9 +768,17 @@
 
     let sales = [];
     let expenses = [];
-    let localPendingSales = new Map(); // คิวป้องกันออเดอร์แวบหายระหว่างซิงค์
+    let localPendingSales = new Map();
     let priceBook = Object.assign({}, MASTER_PRICES);
     let recipeBook = Object.assign({}, MASTER_RECIPES);
+
+    // ดึงข้อมูลแคชจากเครื่องขึ้นมาทันที (ป้องกันหน้าเว็บโหลดแล้วโชว์ 0)
+    try {
+        const cachedSales = localStorage.getItem('flukchafe_sales_cache');
+        if (cachedSales) sales = JSON.parse(cachedSales);
+        const cachedExp = localStorage.getItem('flukchafe_exp_cache');
+        if (cachedExp) expenses = JSON.parse(cachedExp);
+    } catch(e) {}
 
     let selectedCategory = 'auto';
     let currentFilter = 'today';
@@ -817,9 +825,65 @@
 
     const THAI_MONTHS_SHORT = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
 
-    // ==========================================
-    // 🕒 ระบบคำนวณวัน-เวลา แบบล็อก Timezone ไทย
-    // ==========================================
+    function saveLocalBackup() {
+        try {
+            localStorage.setItem('flukchafe_sales_cache', JSON.stringify(sales));
+            localStorage.setItem('flukchafe_exp_cache', JSON.stringify(expenses));
+        } catch(e) {}
+    }
+
+    // ========================================================
+    // 🔍 ตัวแปลงวันที่อัจฉริยะ (แก้บั๊ก พ.ศ. / ค.ศ. / Slash / Dash)
+    // ========================================================
+    function normalizeDateStr(raw) {
+        if (!raw) return "";
+        let str = String(raw).trim();
+        
+        if (str.includes('T')) {
+            str = str.split('T')[0];
+        }
+
+        if (str.includes('GMT') || str.includes('Mon') || str.includes('Tue') || str.includes('Wed') || str.includes('Thu') || str.includes('Fri') || str.includes('Sat') || str.includes('Sun')) {
+            const d = new Date(str);
+            if (!isNaN(d.getTime())) {
+                return getBangkokDateStr(d);
+            }
+        }
+
+        if (str.includes('/')) {
+            const parts = str.split('/');
+            if (parts.length === 3) {
+                let d = parseInt(parts[0], 10);
+                let m = parseInt(parts[1], 10);
+                let y = parseInt(parts[2], 10);
+                if (d > 1000) { let temp = d; d = y; y = temp; }
+                if (y > 2400) y -= 543;
+                return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            }
+        }
+
+        if (str.includes('-')) {
+            const parts = str.split('-');
+            if (parts.length === 3) {
+                let y = parseInt(parts[0], 10);
+                let m = parseInt(parts[1], 10);
+                let d = parseInt(parts[2], 10);
+                if (y < 100) { let temp = y; y = d; d = temp; }
+                if (y > 2400) y -= 543;
+                return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            }
+        }
+
+        const parsed = new Date(str);
+        if (!isNaN(parsed.getTime())) {
+            let y = parsed.getFullYear();
+            if (y > 2400) y -= 543;
+            return `${y}-${String(parsed.getMonth() + 1).padStart(2, '0')}-${String(parsed.getDate()).padStart(2, '0')}`;
+        }
+
+        return str;
+    }
+
     function getBangkokDateStr(d = new Date()) {
         const parts = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Bangkok', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(d);
         const y = parts.find(p => p.type === 'year').value;
@@ -840,7 +904,7 @@
         const bkkStr = getBangkokDateStr(now);
         const [y, m, d] = bkkStr.split('-').map(Number);
         const curDate = new Date(y, m - 1, d);
-        const dayOfWeek = curDate.getDay() === 0 ? 7 : curDate.getDay(); // จันทร์=1, อาทิตย์=7
+        const dayOfWeek = curDate.getDay() === 0 ? 7 : curDate.getDay();
         
         const monday = new Date(curDate);
         monday.setDate(curDate.getDate() - dayOfWeek + 1);
@@ -856,24 +920,23 @@
 
     function formatThaiDateTime(rawDate, rawTime) {
         let cleanTime = rawTime || '00:00';
-        let rawDStr = String(rawDate || '').substring(0, 10);
+        let normD = normalizeDateStr(rawDate);
         let todayStr = getBangkokDateStr(new Date());
 
-        if (rawDStr === todayStr) {
+        if (normD === todayStr) {
             return `วันนี้ • ${cleanTime} น.`;
         }
         
-        let parts = rawDStr.split('-');
+        let parts = normD.split('-');
         if (parts.length === 3) {
-            let y = parseInt(parts[0]);
-            let m = parseInt(parts[1]) - 1;
-            let d = parseInt(parts[2]);
+            let y = parseInt(parts[0], 10);
+            let m = parseInt(parts[1], 10) - 1;
+            let d = parseInt(parts[2], 10);
             return `${d} ${THAI_MONTHS_SHORT[m]} ${String(y + 543).slice(-2)} • ${cleanTime} น.`;
         }
-        return `${rawDStr} • ${cleanTime} น.`;
+        return `${normD} • ${cleanTime} น.`;
     }
 
-    // กำหนดค่าเริ่มต้นในตัวกรองวันที่
     const initialBkkDate = getBangkokDateStr(new Date());
     selectDateInput.value = initialBkkDate;
     selectMonthInput.value = initialBkkDate.substring(0, 7);
@@ -901,7 +964,7 @@
     }
 
     // ==========================================
-    // ⚡ ระบบดึงและซิงค์ข้อมูล (แก้ Race Condition)
+    // ⚡ ระบบดึงและซิงค์ข้อมูล
     // ==========================================
     async function syncData() {
         document.getElementById('syncStatus').innerText = 'กำลังซิงค์...';
@@ -912,14 +975,12 @@
                 const serverSales = data.sales || [];
                 const serverIds = new Set(serverSales.map(s => String(s.id)));
                 
-                // ล้างรายการที่เซิร์ฟเวอร์ตอบรับเรียบร้อยแล้วออกจากคิวรอดำเนินการ
                 for (let [id, pendingItem] of localPendingSales.entries()) {
                     if (serverIds.has(String(id))) {
                         localPendingSales.delete(id);
                     }
                 }
 
-                // นำรายการในเครื่องที่เซิร์ฟเวอร์ยังบันทึกไม่เสร็จมารวม ป้องกันออเดอร์แวบหาย
                 const unconfirmed = Array.from(localPendingSales.values());
                 const combined = [...unconfirmed, ...serverSales];
                 
@@ -934,6 +995,7 @@
                 expenses = data.expenses || [];
                 priceBook = Object.assign({}, MASTER_PRICES, data.prices || {});
                 recipeBook = Object.assign({}, MASTER_RECIPES, data.recipes || {});
+                saveLocalBackup();
                 renderUI();
                 renderPriceSettingList();
                 document.getElementById('syncStatus').innerText = 'ซิงค์ข้อมูลสำเร็จ';
@@ -945,6 +1007,7 @@
 
     setInterval(syncData, 5000);
     syncData();
+    renderUI(); // แสดงผลจากแคชทันทีที่เปิดเว็บ
 
     function showRecipe(menuName, category) {
         if (category !== 'เครื่องดื่ม') return;
@@ -961,6 +1024,7 @@
         const item = sales.find(s => String(s.id) === String(id));
         if (item) {
             item.status = item.status === 'done' ? 'pending' : 'done';
+            saveLocalBackup();
             renderUI();
             fetch(SCRIPT_URL, {
                 method: 'POST',
@@ -974,6 +1038,7 @@
         const item = sales.find(s => String(s.id) === String(id));
         if (item) {
             item.paymentMethod = item.paymentMethod === 'cash' ? 'promptpay' : 'cash';
+            saveLocalBackup();
             renderUI();
             fetch(SCRIPT_URL, {
                 method: 'POST',
@@ -1046,9 +1111,6 @@
         await handleAdd();
     }
 
-    // ====================================================
-    // ✍️ ตัดคำสั่งออเดอร์เดี่ยว
-    // ====================================================
     function parseSingleOrder(rawText) {
         let text = rawText.replace(/(แก้ว|ชิ้น|จาน|ถุง|ชุด|กล่อง)/g, '').trim();
         if (!text) return null;
@@ -1083,9 +1145,6 @@
         return { name: text, unitPrice: findPrice(text), qty: 1 };
     }
 
-    // ====================================================
-    // 🚀 รองรับสั่งหลายเมนูพร้อมกัน (Multi-item Order)
-    // ====================================================
     async function handleAdd(e) {
         if (e) e.preventDefault();
         if (isProcessingAdd) return false;
@@ -1093,7 +1152,6 @@
         const rawVal = quickInput.value.trim();
         if (!rawVal) return false;
 
-        // แยกรายการด้วยเครื่องหมายจุลภาค , หรือ + หรือขึ้นบรรทัดใหม่
         const segments = rawVal.split(/[,，\n+]/).map(s => s.trim()).filter(s => s.length > 0);
         if (!segments.length) return false;
 
@@ -1146,6 +1204,7 @@
         });
 
         quickInput.value = '';
+        saveLocalBackup();
         renderUI();
 
         try {
@@ -1181,6 +1240,7 @@
         document.getElementById('newExpenseName').value = '';
         document.getElementById('newExpenseCost').value = '';
         expenses.unshift(newExp);
+        saveLocalBackup();
         renderUI();
 
         fetch(SCRIPT_URL, {
@@ -1194,6 +1254,7 @@
         if (!confirm('ยืนยันการลบออเดอร์นี้?')) return;
         localPendingSales.delete(id);
         sales = sales.filter(s => String(s.id) !== String(id));
+        saveLocalBackup();
         renderUI();
         fetch(SCRIPT_URL, {
             method: 'POST',
@@ -1205,6 +1266,7 @@
     async function deleteExpense(id) {
         if (!confirm('ยืนยันการลบรายการต้นทุนนี้?')) return;
         expenses = expenses.filter(e => String(e.id) !== String(id));
+        saveLocalBackup();
         renderUI();
         fetch(SCRIPT_URL, {
             method: 'POST',
@@ -1242,6 +1304,7 @@
             item.qty = qty;
             item.totalPrice = unitPrice * qty;
             if (localPendingSales.has(id)) localPendingSales.set(id, item);
+            saveLocalBackup();
             renderUI();
             fetch(SCRIPT_URL, {
                 method: 'POST',
@@ -1253,7 +1316,7 @@
     }
 
     // ==========================================
-    // 🔍 ตัวกรองข้อมูล (Timezone Safe)
+    // 🔍 ตัวกรองข้อมูล (Timezone & Format Safe)
     // ==========================================
     function getFilteredData() {
         const todayStr = getBangkokDateStr(new Date());
@@ -1261,17 +1324,19 @@
 
         let filterFn = () => true;
         if (currentFilter === 'today') {
-            filterFn = it => String(it.date).substring(0, 10) === todayStr;
+            filterFn = it => normalizeDateStr(it.date) === todayStr;
         } else if (currentFilter === 'week') {
             filterFn = it => {
-                const d = String(it.date).substring(0, 10);
+                const d = normalizeDateStr(it.date);
                 return d >= weekRange.start && d <= weekRange.end;
             };
         } else if (currentFilter === 'custom') {
             if (customFilterType === 'date' && selectDateInput.value) {
-                filterFn = it => String(it.date).substring(0, 10) === selectDateInput.value;
+                const targetD = normalizeDateStr(selectDateInput.value);
+                filterFn = it => normalizeDateStr(it.date) === targetD;
             } else if (customFilterType === 'month' && selectMonthInput.value) {
-                filterFn = it => String(it.date).substring(0, 7) === selectMonthInput.value;
+                const targetM = selectMonthInput.value.substring(0, 7);
+                filterFn = it => normalizeDateStr(it.date).substring(0, 7) === targetM;
             }
         }
         return { sales: sales.filter(filterFn), expenses: expenses.filter(filterFn) };
@@ -1283,7 +1348,6 @@
         
         displayExpenses.forEach(e => totalC += Number(e.cost) || 0);
 
-        // โครงสร้างสถิติแยกตามหมวดหมู่ พร้อมแยก สด/สแกน
         const catStats = { 
             'เครื่องดื่ม': { sum: 0, count: 0, cash: 0, qr: 0 }, 
             'ของทอด/ทานเล่น': { sum: 0, count: 0, cash: 0, qr: 0 }, 
@@ -1297,8 +1361,9 @@
             itemList.innerHTML = '<div class="empty-text">ยังไม่มีรายการขายในช่วงนี้</div>';
         } else {
             displaySales.forEach(item => {
-                const price = Number(item.totalPrice) || 0;
+                const unitP = Number(item.unitPrice) || 0;
                 const qty = Number(item.qty) || 1;
+                const price = Number(item.totalPrice) > 0 ? Number(item.totalPrice) : (unitP * qty);
                 const isQR = item.paymentMethod === 'promptpay';
 
                 totalS += price;
@@ -1315,7 +1380,7 @@
                 menuGrouped[cat][item.name].sum += price;
             });
 
-            const sorted = displaySales.slice().sort((a, b) => (new Date(b.date + ' ' + b.time).getTime() || 0) - (new Date(a.date + ' ' + a.time).getTime() || 0));
+            const sorted = displaySales.slice().sort((a, b) => (new Date(normalizeDateStr(b.date) + ' ' + b.time).getTime() || 0) - (new Date(normalizeDateStr(a.date) + ' ' + a.time).getTime() || 0));
             const batches = [];
             let currBatch = null;
 
@@ -1330,7 +1395,13 @@
 
             batches.forEach(b => {
                 let bTotal = 0, bQty = 0;
-                b.items.forEach(it => { bTotal += Number(it.totalPrice) || 0; bQty += Number(it.qty) || 1; });
+                b.items.forEach(it => { 
+                    const uP = Number(it.unitPrice) || 0;
+                    const q = Number(it.qty) || 1;
+                    const p = Number(it.totalPrice) > 0 ? Number(it.totalPrice) : (uP * q);
+                    bTotal += p; 
+                    bQty += q; 
+                });
 
                 const card = document.createElement('div');
                 card.className = 'order-batch-card';
@@ -1339,7 +1410,9 @@
                         <div class="batch-time-tag">🕒 ${b.timeKey} (${bQty} ชิ้น)</div>
                         <div class="batch-total-price">รวม ฿${bTotal.toLocaleString()}</div>
                     </div>
-                    <div>${b.items.map(item => `
+                    <div>${b.items.map(item => {
+                        const itPrice = Number(item.totalPrice) > 0 ? Number(item.totalPrice) : (Number(item.unitPrice||0) * Number(item.qty||1));
+                        return `
                         <div class="batch-item-row ${item.status === 'done' ? 'item-done' : ''}">
                             <div class="batch-item-left">
                                 <div class="item-check-box" onclick="fastToggle(event, '${item.id}')">${item.status === 'done' ? '✓' : ''}</div>
@@ -1349,13 +1422,13 @@
                                 </div>
                             </div>
                             <div style="display:flex; align-items:center;">
-                                <span class="item-price-text" style="font-weight:600; font-size:0.92rem; margin-right:6px;">฿${(item.totalPrice||0).toLocaleString()}</span>
+                                <span class="item-price-text" style="font-weight:600; font-size:0.92rem; margin-right:6px;">฿${itPrice.toLocaleString()}</span>
                                 <button type="button" class="pay-badge ${item.paymentMethod === 'promptpay' ? 'qr' : 'cash'}" onclick="togglePayMethod('${item.id}')">${item.paymentMethod === 'promptpay' ? '📱 สแกน' : '💵 สด'}</button>
                                 <button type="button" class="btn-edit" onclick="openEditModal('${item.id}')">✏️</button>
                                 <button type="button" class="btn-del" onclick="deleteItem('${item.id}')">✕</button>
                             </div>
                         </div>
-                    `).join('')}</div>
+                    `;}).join('')}</div>
                 `;
                 itemList.appendChild(card);
             });
@@ -1381,7 +1454,6 @@
         totalCost.innerText = `฿${totalC.toLocaleString()}`;
         totalProfit.innerText = `฿${(totalS - totalC).toLocaleString()}`;
 
-        // อัปเดตข้อมูลหมวดหมู่และแจกแจง สด/สแกน
         document.getElementById('catDrinkSum').innerText = `฿${catStats['เครื่องดื่ม'].sum.toLocaleString()}`;
         document.getElementById('catDrinkCount').innerText = `${catStats['เครื่องดื่ม'].count} แก้ว`;
         document.getElementById('catDrinkPay').innerHTML = `<span>💵 ฿${catStats['เครื่องดื่ม'].cash.toLocaleString()}</span><span>📱 ฿${catStats['เครื่องดื่ม'].qr.toLocaleString()}</span>`;
@@ -1472,14 +1544,19 @@
     function exportSalesToCSV() {
         if (!sales.length) return alert('ไม่มีข้อมูลยอดขาย');
         let csv = '\uFEFFวันที่,เวลา,ชื่อเมนู,หมวดหมู่,วิธีชำระ,ราคา/หน่วย,จำนวน,ราคารวม\n';
-        sales.forEach(s => csv += `"${s.date}","${s.time}","${s.name}","${s.category}","${s.paymentMethod==='promptpay'?'สแกน':'เงินสด'}",${s.unitPrice},${s.qty},${s.totalPrice}\n`);
+        sales.forEach(s => {
+            const uP = Number(s.unitPrice) || 0;
+            const q = Number(s.qty) || 1;
+            const tP = Number(s.totalPrice) > 0 ? Number(s.totalPrice) : (uP * q);
+            csv += `"${normalizeDateStr(s.date)}","${s.time}","${s.name}","${s.category}","${s.paymentMethod==='promptpay'?'สแกน':'เงินสด'}",${uP},${q},${tP}\n`;
+        });
         downloadBlob(csv, `FLUKCHAFE_Sales_${getBangkokDateStr(new Date())}.csv`);
     }
 
     function exportExpensesToCSV() {
         if (!expenses.length) return alert('ไม่มีข้อมูลต้นทุน');
         let csv = '\uFEFFวันที่,เวลา,รายการ,จำนวนเงิน\n';
-        expenses.forEach(e => csv += `"${e.date}","${e.time}","${e.name}",${e.cost}\n`);
+        expenses.forEach(e => csv += `"${normalizeDateStr(e.date)}","${e.time}","${e.name}",${e.cost}\n`);
         downloadBlob(csv, `FLUKCHAFE_Expenses_${getBangkokDateStr(new Date())}.csv`);
     }
 
