@@ -161,7 +161,6 @@
         }
         .cat-btn.active { background: #0284c7; color: #ffffff; }
 
-        /* กล่องแยกเมนูขายดี */
         .best-seller-section {
             background: #f8fafc;
             border: 1px solid #e2e8f0;
@@ -804,6 +803,7 @@
     let isProfitShown = false;
     let isBackdateActive = false;
     let isProcessingAdd = false;
+    let isSyncing = false; // ป้องกันการยิงซิงค์ชนกันจนค้าง
 
     const quickInput = document.getElementById('quickInput');
     const suggestBox = document.getElementById('suggestBox');
@@ -973,7 +973,8 @@
     }
 
     async function syncData() {
-        document.getElementById('syncStatus').innerText = 'กำลังซิงค์...';
+        if (isSyncing) return;
+        isSyncing = true;
         try {
             const res = await fetch(SCRIPT_URL + '?action=get_all');
             const data = await res.json();
@@ -1002,14 +1003,17 @@
                 saveLocalBackup();
                 renderUI();
                 renderPriceSettingList();
-                document.getElementById('syncStatus').innerText = 'ซิงค์ข้อมูลสำเร็จ (ทุกเครื่องตรงกัน)';
+                document.getElementById('syncStatus').innerText = 'ซิงค์ข้อมูลสำเร็จ';
             }
         } catch (e) {
             document.getElementById('syncStatus').innerText = 'พร้อมใช้งาน (ออฟไลน์)';
+        } finally {
+            isSyncing = false;
         }
     }
 
-    setInterval(syncData, 3000);
+    // ซิงค์เบื้องหลังเงียบๆ ทุก 4 วินาที (ไม่หน่วง UI)
+    setInterval(syncData, 4000);
     syncData();
     renderUI();
 
@@ -1029,7 +1033,7 @@
         if (item) {
             item.status = item.status === 'done' ? 'pending' : 'done';
             saveLocalBackup();
-            renderUI();
+            renderUI(); // อัปเดตหน้าจอทันที 0 วิ ไม่กระพริบ
             fetch(SCRIPT_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain' },
@@ -1220,7 +1224,7 @@
 
         quickInput.value = '';
         saveLocalBackup();
-        renderUI();
+        renderUI(); // อัปเดตทันที ไม่กระพริบ
 
         fetch(SCRIPT_URL, {
             method: 'POST',
