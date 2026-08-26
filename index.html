@@ -491,13 +491,13 @@
 
     <form id="quickForm" class="quick-input-box" onsubmit="return handleAdd(event)">
         <div class="input-btn-group">
-            <input type="text" id="quickInput" placeholder="สั่งหลายเมนูคั่นด้วยจุลภาค เช่น ชาไทย 2, โกโก้ 25, กะเพรา 40 2" autocomplete="off" autofocus oninput="handleSearchSuggest(this.value)">
+            <input type="text" id="quickInput" placeholder="เช่น ชาไทย 2, โกโก้ 25, กะเพรา 40 2" autocomplete="off" autofocus oninput="handleSearchSuggest(this.value)">
             <button type="submit" class="btn-order-submit" id="btnSubmitOrder">รับออเดอร์</button>
         </div>
         <div id="suggestBox" class="suggest-box"></div>
 
         <div class="backdate-control">
-            <span style="font-size:0.72rem; color:#64748b;">💡 พิมพ์หลายรายการคั่นด้วยเครื่องหมายจุลภาค <b>,</b> ได้</span>
+            <span style="font-size:0.72rem; color:#64748b;">💡 ระบุจำนวน: เช่น "ชาไทย 2" "ชาเขียว x3"<b>,</b> ได้</span>
             <button type="button" class="btn-toggle-backdate" id="btnToggleBackdate" onclick="toggleBackdateMode()">🕒 บันทึกย้อนหลัง</button>
         </div>
 
