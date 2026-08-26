@@ -161,21 +161,26 @@
         }
         .cat-btn.active { background: #0284c7; color: #ffffff; }
 
+        /* แถบปุ่มลัดเมนูขายดีด้านบน */
         .quick-pills { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 8px; scrollbar-width: none; }
         .quick-pills::-webkit-scrollbar { display: none; }
         .quick-pill {
-            background: #e0f2fe;
-            color: #0369a1;
-            border: 1px solid #bae6fd;
-            padding: 4px 10px;
+            background: #0284c7;
+            color: #ffffff;
+            border: none;
+            padding: 6px 12px;
             border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 500;
+            font-size: 0.78rem;
+            font-weight: 600;
             white-space: nowrap;
             cursor: pointer;
             flex-shrink: 0;
+            box-shadow: 0 2px 5px rgba(2, 132, 199, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
         }
-        .quick-pill:active { background: #bae6fd; }
+        .quick-pill:active { background: #0369a1; transform: scale(0.95); }
 
         .quick-input-box { margin-bottom: 14px; position: relative; }
         .input-btn-group { display: flex; gap: 6px; }
@@ -342,9 +347,8 @@
         .btn-del { background: #fee2e2; color: #ef4444; border: none; border-radius: 6px; padding: 3px 6px; font-size: 0.65rem; font-weight: 600; cursor: pointer; }
 
         .summary-group-title { background: #f1f5f9; padding: 5px 8px; font-size: 0.8rem; font-weight: 600; color: #475569; border-radius: 6px; margin: 8px 0 4px 0; }
-        .summary-row { display: flex; justify-content: space-between; padding: 5px 6px; border-bottom: 1px solid #f8fafc; font-size: 0.85rem; align-items: center; }
-        .price-list-row { cursor: pointer; }
-        .price-list-row:hover { background: #e0f2fe; }
+        .summary-row { display: flex; justify-content: space-between; padding: 6px 8px; border-bottom: 1px solid #f1f5f9; font-size: 0.85rem; align-items: center; background: #ffffff; }
+        .price-list-row { cursor: default; }
         .empty-text { text-align: center; color: #94a3b8; padding: 24px 0; font-size: 0.85rem; }
 
         .price-mgr-form { display: flex; gap: 6px; margin-bottom: 8px; }
@@ -371,6 +375,11 @@
         .btn-exp-add { background: #ef4444 !important; }
         .price-search-box { margin-bottom: 8px; }
         .price-search-box input { width: 100%; padding: 7px 10px; border: 1.5px solid #94a3b8; border-radius: 8px; font-size: 0.8rem; outline: none; background: #f8fafc; }
+
+        /* Inline Edit ในหน้าตั้งราคา */
+        .inline-edit-input { padding: 4px 8px; border: 1px solid #0284c7; border-radius: 6px; font-size: 0.85rem; outline: none; background: #fff; }
+        .btn-inline-save { background: #10b981; color: #fff; border: none; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
+        .btn-inline-cancel { background: #e2e8f0; color: #475569; border: none; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
 
         .export-section { margin-top: 16px; padding-top: 12px; border-top: 1.5px dashed #cbd5e1; }
         .btn-export { width: 100%; background: #10b981; color: #fff; border: none; padding: 8px; border-radius: 8px; font-size: 0.8rem; font-weight: 500; margin-bottom: 6px; cursor: pointer; }
@@ -480,13 +489,15 @@
         <button type="button" class="cat-btn" onclick="setCategory('ขนมปังปิ้ง', this)">🍞 ปังปิ้ง</button>
     </div>
 
+    <!-- แถบปุ่มลัดเมนูขายดี (คลิกปุ่มปุ๊บ สั่งรับออเดอร์ทันที) -->
     <div class="quick-pills">
-        <button type="button" class="quick-pill" onclick="quickAddPreset('ชาไทย เย็น')">🧋 ชาไทย เย็น</button>
-        <button type="button" class="quick-pill" onclick="quickAddPreset('ชาเขียว เย็น')">🍵 ชาเขียว เย็น</button>
-        <button type="button" class="quick-pill" onclick="quickAddPreset('โกโก้ เย็น')">🍫 โกโก้ เย็น</button>
-        <button type="button" class="quick-pill" onclick="quickAddPreset('อเมริกาโน่ เย็น')">☕ อเมริกาโน่</button>
-        <button type="button" class="quick-pill" onclick="quickAddPreset('เฟรนช์ฟรายส์')">🍟 เฟรนช์ฟรายส์</button>
-        <button type="button" class="quick-pill" onclick="quickAddPreset('ปังเนยนม')">🍞 ปังเนยนม</button>
+        <button type="button" class="quick-pill" onclick="quickOrderPreset('ชาไทย เย็น')">🧋 ชาไทย เย็น</button>
+        <button type="button" class="quick-pill" onclick="quickOrderPreset('ชาเขียว เย็น')">🍵 ชาเขียว เย็น</button>
+        <button type="button" class="quick-pill" onclick="quickOrderPreset('โกโก้ เย็น')">🍫 โกโก้ เย็น</button>
+        <button type="button" class="quick-pill" onclick="quickOrderPreset('อเมริกาโน่ เย็น')">☕ อเมริกาโน่</button>
+        <button type="button" class="quick-pill" onclick="quickOrderPreset('เฟรนช์ฟรายส์')">🍟 เฟรนช์ฟรายส์</button>
+        <button type="button" class="quick-pill" onclick="quickOrderPreset('ปังเนยนม')">🍞 ปังเนยนม</button>
+        <button type="button" class="quick-pill" onclick="quickOrderPreset('ข้าวกะเพรา ธรรมดา')">🍳 กะเพรา</button>
     </div>
 
     <form id="quickForm" class="quick-input-box" onsubmit="return handleAdd(event)">
@@ -497,7 +508,7 @@
         <div id="suggestBox" class="suggest-box"></div>
 
         <div class="backdate-control">
-            <span style="font-size:0.72rem; color:#64748b;">💡 พิมพ์ชื่อเมนูตามด้วยจำนวนได้ เช่น <b>ชาไทย เย็น 2</b></span>
+            <span style="font-size:0.72rem; color:#64748b;">💡 กดปุ่มเมนูขายดีด้านบน หรือพิมพ์ชื่อตามด้วยจำนวน</span>
             <button type="button" class="btn-toggle-backdate" id="btnToggleBackdate" onclick="toggleBackdateMode()">🕒 บันทึกย้อนหลัง</button>
         </div>
 
@@ -536,19 +547,19 @@
 
     <div class="list-container" id="pricesView" style="display: none;">
         <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:10px; margin-bottom:10px;">
-            <div style="font-size:0.8rem; font-weight:600; color:#0284c7; margin-bottom:6px;">➕ เพิ่ม / แก้ไขราคา & สูตรชง (ซิงค์ทุกเครื่องทันที)</div>
+            <div style="font-size:0.8rem; font-weight:600; color:#0284c7; margin-bottom:6px;">➕ เพิ่มเมนูใหม่ด่วน (ซิงค์ทุกเครื่องทันที)</div>
             <div class="price-mgr-form" style="margin-bottom:6px;">
                 <input type="text" id="newMenuName" placeholder="ชื่อเมนู เช่น ชาไทย เย็น" style="flex:2;">
                 <input type="number" id="newMenuPrice" placeholder="ราคา" style="flex:1;">
             </div>
             <div class="price-mgr-form" style="margin-bottom:6px;">
-                <textarea id="newMenuRecipe" placeholder="สูตรชง เช่น เบสชาไทย 120ml..." rows="3"></textarea>
+                <textarea id="newMenuRecipe" placeholder="สูตรชง เช่น เบสชาไทย 120ml..." rows="2"></textarea>
             </div>
-            <button type="button" onclick="addOrUpdatePrice(event)" style="width:100%; background:#0284c7; color:#fff; border:none; padding:8px; border-radius:8px; font-weight:600; cursor:pointer;">บันทึกเมนูและสูตร</button>
+            <button type="button" onclick="addOrUpdatePrice(event)" style="width:100%; background:#0284c7; color:#fff; border:none; padding:8px; border-radius:8px; font-weight:600; cursor:pointer;">เพิ่มเมนูใหม่</button>
         </div>
 
         <div class="price-search-box">
-            <input type="text" id="priceSearchInput" placeholder="🔍 ค้นหาเมนูเพื่อดู/แก้ไขสูตร..." oninput="renderPriceSettingList()">
+            <input type="text" id="priceSearchInput" placeholder="🔍 ค้นหาเมนูเพื่อแก้ไขราคาตรงนี้..." oninput="renderPriceSettingList()">
         </div>
         <div id="priceSettingList"></div>
 
@@ -823,16 +834,11 @@
     function normalizeDateStr(raw) {
         if (!raw) return "";
         let str = String(raw).trim();
-        
-        if (str.includes('T')) {
-            str = str.split('T')[0];
-        }
+        if (str.includes('T')) str = str.split('T')[0];
 
         if (str.includes('GMT') || str.includes('Mon') || str.includes('Tue') || str.includes('Wed') || str.includes('Thu') || str.includes('Fri') || str.includes('Sat') || str.includes('Sun')) {
             const d = new Date(str);
-            if (!isNaN(d.getTime())) {
-                return getBangkokDateStr(d);
-            }
+            if (!isNaN(d.getTime())) return getBangkokDateStr(d);
         }
 
         if (str.includes('/')) {
@@ -865,7 +871,6 @@
             if (y > 2400) y -= 543;
             return `${y}-${String(parsed.getMonth() + 1).padStart(2, '0')}-${String(parsed.getDate()).padStart(2, '0')}`;
         }
-
         return str;
     }
 
@@ -890,17 +895,11 @@
         const [y, m, d] = bkkStr.split('-').map(Number);
         const curDate = new Date(y, m - 1, d);
         const dayOfWeek = curDate.getDay() === 0 ? 7 : curDate.getDay();
-        
         const monday = new Date(curDate);
         monday.setDate(curDate.getDate() - dayOfWeek + 1);
-        
         const sunday = new Date(monday);
         sunday.setDate(monday.getDate() + 6);
-        
-        return {
-            start: getBangkokDateStr(monday),
-            end: getBangkokDateStr(sunday)
-        };
+        return { start: getBangkokDateStr(monday), end: getBangkokDateStr(sunday) };
     }
 
     function formatThaiDateTime(rawDate, rawTime) {
@@ -908,9 +907,7 @@
         let normD = normalizeDateStr(rawDate);
         let todayStr = getBangkokDateStr(new Date());
 
-        if (normD === todayStr) {
-            return `วันนี้ • ${cleanTime} น.`;
-        }
+        if (normD === todayStr) return `วันนี้ • ${cleanTime} น.`;
         
         let parts = normD.split('-');
         if (parts.length === 3) {
@@ -931,13 +928,10 @@
     function findRecipeText(name) {
         if (!name) return "";
         if (recipeBook[name]) return recipeBook[name];
-        
         const clean = name.replace(/\s+/g, '').toLowerCase();
-        
         for (let k in recipeBook) {
             if (k.replace(/\s+/g, '').toLowerCase() === clean) return recipeBook[k];
         }
-        
         for (let k in recipeBook) {
             const cleanK = k.replace(/\s+/g, '').toLowerCase();
             if (clean.includes(cleanK) || cleanK.includes(clean)) return recipeBook[k];
@@ -965,9 +959,7 @@
                 const serverIds = new Set(serverSales.map(s => String(s.id)));
                 
                 for (let [id, pendingItem] of localPendingSales.entries()) {
-                    if (serverIds.has(String(id))) {
-                        localPendingSales.delete(id);
-                    }
+                    if (serverIds.has(String(id))) localPendingSales.delete(id);
                 }
 
                 const unconfirmed = Array.from(localPendingSales.values());
@@ -994,7 +986,6 @@
         }
     }
 
-    // ซิงค์อัตโนมัติเบื้องหลังทุก 3 วินาที เพื่อให้ 3-4 เครื่องเห็นข้อมูลตรงกันตลอดเวลา
     setInterval(syncData, 3000);
     syncData();
     renderUI();
@@ -1105,7 +1096,8 @@
         return 'เครื่องดื่ม';
     }
 
-    async function quickAddPreset(name) {
+    // ฟังก์ชันกดปุ่มเมนูขายดีด้านบน เพื่อรับออเดอร์ทันที 1 คลิก
+    async function quickOrderPreset(name) {
         quickInput.value = name;
         await handleAdd();
     }
@@ -1114,7 +1106,6 @@
         let text = String(rawText).trim();
         if (!text) return null;
 
-        // 1. ตรวจสอบรูปแบบคูณจำนวน เช่น "ชาไทย เย็น x2" หรือ "ชีสบอล * 2"
         const multiMatch = text.match(/^(.+?)\s*[*xX]\s*(\d+)$/);
         if (multiMatch) {
             const name = multiMatch[1].trim();
@@ -1122,11 +1113,9 @@
             return { name, unitPrice: findPrice(name), qty };
         }
 
-        // 2. ถ้าพิมพ์ชื่อเมนูตรงกับฐานข้อมูลเป๊ะๆ (เช่น "ชาไทย เย็น")
         const foundP = findPrice(text);
         if (foundP > 0) return { name: text, unitPrice: foundP, qty: 1 };
 
-        // 3. ตรวจสอบรูปแบบเว้นวรรคจำนวนลงท้าย เช่น "ชาไทย เย็น 2" หรือ "ชีสบอล 2"
         const parts = text.split(/\s+/);
         if (parts.length >= 2) {
             const lastPart = parts[parts.length - 1];
@@ -1135,25 +1124,17 @@
             if (!isNaN(qtyNum) && qtyNum > 0 && qtyNum <= 100) {
                 const possibleName = parts.slice(0, parts.length - 1).join(' ').trim();
                 const price = findPrice(possibleName);
-
-                if (price > 0) {
-                    return { name: possibleName, unitPrice: price, qty: qtyNum };
-                }
+                if (price > 0) return { name: possibleName, unitPrice: price, qty: qtyNum };
             }
         }
 
-        // 4. กรณีพิมพ์ระบุราคาปิดท้ายเอง เช่น "เมนูพิเศษ 40"
         if (parts.length >= 2) {
             const lastPart = parts[parts.length - 1];
             const priceNum = parseFloat(lastPart);
             if (!isNaN(priceNum) && priceNum >= 5) {
                 const name = parts.slice(0, parts.length - 1).join(' ').trim();
                 const exactPrice = findPrice(name);
-                return { 
-                    name: name, 
-                    unitPrice: exactPrice > 0 ? exactPrice : priceNum, 
-                    qty: 1 
-                };
+                return { name: name, unitPrice: exactPrice > 0 ? exactPrice : priceNum, qty: 1 };
             }
         }
 
@@ -1217,9 +1198,8 @@
 
         quickInput.value = '';
         saveLocalBackup();
-        renderUI(); // อัปเดตหน้าจอทันที 0 วินาที
+        renderUI();
 
-        // ส่งข้อมูลซิงค์เบื้องหลังอัตโนมัติ (Background Sync)
         fetch(SCRIPT_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain' },
@@ -1494,24 +1474,81 @@
         }).join('') || '<div class="empty-text">ไม่มีข้อมูลสรุป</div>';
     }
 
+    // ฟังก์ชันแสดงรายการตั้งราคาแบบ Inline Edit (แก้ตรงแถวได้ทันที ไม่ต้องเลื่อนขึ้นบน)
     function renderPriceSettingList() {
         const kw = (priceSearchInput.value || '').trim().toLowerCase().replace(/\s+/g, '');
         const keys = Object.keys(priceBook).filter(k => k.toLowerCase().replace(/\s+/g, '').includes(kw)).sort();
-        priceSettingList.innerHTML = keys.map(name => `
-            <div class="summary-row price-list-row">
-                <span onclick="fillEditPrice('${name}', ${priceBook[name]})" style="flex:1;">📝 ${name}${findRecipeText(name) ? ' 📖' : ''}</span>
-                <div style="display:flex; align-items:center; gap:8px;">
-                    <b onclick="fillEditPrice('${name}', ${priceBook[name]})" style="color:#0284c7;">฿${priceBook[name]}</b>
-                    <button type="button" class="btn-del" onclick="deletePrice('${name}')">✕</button>
+        
+        priceSettingList.innerHTML = keys.map(name => {
+            const price = priceBook[name];
+            const safeName = name.replace(/'/g, "\\'");
+            return `
+            <div class="summary-row price-list-row" id="row-${btoa(encodeURIComponent(name))}">
+                <div style="flex:1; display:flex; align-items:center; gap:6px;">
+                    <span style="font-weight:500;">📝 ${name}</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <b style="color:#0284c7;">฿${price}</b>
+                    <button type="button" class="btn-inline-cancel" style="background:#0284c7; color:#fff;" onclick="enableInlineEdit('${safeName}', ${price})">แก้ไข</button>
+                    <button type="button" class="btn-del" onclick="deletePrice('${safeName}')">✕</button>
                 </div>
             </div>
-        `).join('') || '<div class="empty-text">ไม่พบเมนู</div>';
+        `;}).join('') || '<div class="empty-text">ไม่พบเมนู</div>';
     }
 
-    function fillEditPrice(name, price) {
-        document.getElementById('newMenuName').value = name;
-        document.getElementById('newMenuPrice').value = price;
-        document.getElementById('newMenuRecipe').value = findRecipeText(name) || '';
+    // เปิดโหมดแก้ไขทันทีในบรรทัดนั้น
+    function enableInlineEdit(name, currentPrice) {
+        const rowId = 'row-' + btoa(encodeURIComponent(name));
+        const rowEl = document.getElementById(rowId);
+        if (!rowEl) return;
+
+        const safeName = name.replace(/'/g, "\\'");
+        rowEl.innerHTML = `
+            <div style="flex:1; display:flex; gap:6px; align-items:center;">
+                <input type="text" id="edit-name-${rowId}" value="${name}" class="inline-edit-input" style="flex:2;">
+                <input type="number" id="edit-price-${rowId}" value="${currentPrice}" class="inline-edit-input" style="flex:1;">
+            </div>
+            <div style="display:flex; gap:4px; align-items:center;">
+                <button type="button" class="btn-inline-save" onclick="saveInlineEdit('${safeName}', '${rowId}')">บันทึก</button>
+                <button type="button" class="btn-inline-cancel" onclick="renderPriceSettingList()">ยกเลิก</button>
+            </div>
+        `;
+    }
+
+    // บันทึกข้อมูลที่แก้ไขจากบรรทัดนั้นทันที
+    async function saveInlineEdit(oldName, rowId) {
+        const newNameInput = document.getElementById(`edit-name-${rowId}`).value.trim();
+        const newPriceInput = parseFloat(document.getElementById(`edit-price-${rowId}`).value);
+
+        if (!newNameInput || isNaN(newPriceInput) || newPriceInput <= 0) {
+            alert('กรุณากรอกชื่อและราคาให้ถูกต้อง');
+            return;
+        }
+
+        if (oldName !== newNameInput) {
+            delete priceBook[oldName];
+            if (recipeBook[oldName]) {
+                recipeBook[newNameInput] = recipeBook[oldName];
+                delete recipeBook[oldName];
+            }
+        }
+
+        priceBook[newNameInput] = newPriceInput;
+        renderPriceSettingList();
+
+        fetch(SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({ action: 'update_price', name: newNameInput, price: newPriceInput, recipe: recipeBook[newNameInput] || '' })
+        }).catch(e => {});
+
+        if (oldName !== newNameInput) {
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({ action: 'delete_price', name: oldName })
+            }).catch(e => {});
+        }
     }
 
     async function addOrUpdatePrice(e) {
@@ -1522,7 +1559,6 @@
 
         if (!name || isNaN(price) || price <= 0) return alert('กรอกชื่อและราคาให้ถูกต้อง');
 
-        // บันทึกลงเครื่องทันที
         priceBook[name] = price;
         if (recipe) recipeBook[name] = recipe;
         renderPriceSettingList();
@@ -1531,7 +1567,6 @@
         document.getElementById('newMenuPrice').value = '';
         document.getElementById('newMenuRecipe').value = '';
 
-        // ซิงค์ราคาไปเครื่องอื่นแบบเบื้องหลัง
         fetch(SCRIPT_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain' },
