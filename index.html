@@ -365,7 +365,7 @@
             flex: 1;
         }
         
-        /* ปุ่มสถานะ (รอทำ / เสร็จแล้ว) */
+        /* ปุ่มสถานะใหม่ (รอทำ / เสร็จแล้ว) */
         .status-badge-btn {
             padding: 4px 8px;
             border-radius: 8px;
@@ -851,7 +851,7 @@
     <div class="bottom-sync-bar">
         <div class="sync-status-indicator">
             <span class="status-dot" id="syncDot"></span>
-            <span id="syncStatus">เชื่อมต่อข้อมูลสดออนไลน์</span>
+            <span id="syncStatus">เชื่อมต่อข้อมูลสดอัตโนมัติ</span>
         </div>
     </div>
 </div>
@@ -901,8 +901,15 @@
 </div>
 
 <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbwb_F6J-H-kynRwSYlleOQ4cFUm8YyGWJnizZ2Xw9qq3bDdbjNdFE2YbfQBvhw.../exec"; // ตรวจสอบลิงก์ Web App ให้ตรงกับของคุณ
+    const API_URL = "https://script.google.com/macros/s/AKfycbwb_F6J-H-kynRwSYlleOQ4cFUm8YyGWJnizZ2Xw9qq3bDdbjNdFE2YbfQBvhw.../exec"; // ใช้ URL ของคุณ
     const GOOGLE_SHEETS_URL = "https://docs.google.com/spreadsheets/d/1EEU-LsVCzD8jbisYSVmy5jMjdTotGOgIW-4ASJlzqYU/edit";
+
+    const STORAGE_KEY = 'FLUKCHAFE_SHARED_DB_V20';
+    const MENU_PRICES_KEY = 'FLUKCHAFE_SHARED_PRICES_V20';
+    const RECIPES_KEY = 'FLUKCHAFE_SHARED_RECIPES_V20';
+    const EXPENSES_KEY = 'FLUKCHAFE_SHARED_EXP_V20';
+    const DELETED_SALES_KEY = 'FLUKCHAFE_DELETED_SALES_IDS_V20';
+    const DELETED_EXP_KEY = 'FLUKCHAFE_DELETED_EXP_IDS_V20';
 
     const DEFAULT_RECIPES = {
         "เอสเพรสโซ่ เย็น": "📍 เอสเพรสโซ่ • เย็น 20 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 60 ml\n⁃ กาแฟ 3 ช้อนกาแฟ (15g)\n⁃ นมจืด 100 ml\n⁃ นมข้นหวาน 20 ml\n⁃ นมข้นจืด 20 ml\n⁃ น้ำเชื่อม 10 ml ( ถ้าหวานน้อยไม่ต้องใส่ )",
@@ -1048,16 +1055,16 @@
         "เฟรนช์ฟรายส์": 29, "ชีสบอล": 39, "ปังเนยนม": 20, "ข้าวกะเพรา 40": 40
     };
 
-    let sales = [];
-    let expenses = [];
-    let savedPrices = {};
-    let savedRecipes = {};
+    let sales = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    let expenses = JSON.parse(localStorage.getItem(EXPENSES_KEY)) || [];
+    let savedPrices = JSON.parse(localStorage.getItem(MENU_PRICES_KEY)) || {};
+    let savedRecipes = JSON.parse(localStorage.getItem(RECIPES_KEY)) || {};
 
     let priceBook = { ...DEFAULT_PRESET_PRICES, ...savedPrices };
     let recipeBook = { ...DEFAULT_RECIPES, ...savedRecipes };
     
-    let deletedSalesIds = new Set();
-    let deletedExpensesIds = new Set();
+    let deletedSalesIds = new Set(JSON.parse(localStorage.getItem(DELETED_SALES_KEY)) || []);
+    let deletedExpensesIds = new Set(JSON.parse(localStorage.getItem(DELETED_EXP_KEY)) || []);
 
     let selectedCategory = 'auto';
     let currentFilter = 'today';
@@ -1180,8 +1187,8 @@
         recipeModal.style.display = 'none';
     }
 
-    // ฟังก์ชันเปลี่ยนสถานะ (รอทำ / เสร็จแล้ว) แบบออนไลน์ตรงๆ
-    async function toggleStatus(id) {
+    // ฟังก์ชันเปลี่ยนสถานะ (รอทำ / เสร็จแล้ว) แบบปุ่มกด
+    function toggleStatus(id) {
         const targetId = String(id);
         const idx = sales.findIndex(s => String(s.id) === targetId);
         if (idx === -1) return;
@@ -1190,12 +1197,18 @@
         const nextStatus = (currentStatus === 'done') ? 'pending' : 'done';
         sales[idx].status = nextStatus;
 
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
         renderUI();
-        await saveToCloud({ action: "update_sale", item: sales[idx] });
+
+        fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify({ action: "update_sale", item: sales[idx] })
+        }).catch(() => {});
     }
 
-    // ฟังก์ชันเปลี่ยนวิธีชำระเงิน (สด / สแกน) แบบออนไลน์ตรงๆ
-    async function togglePayMethod(id) {
+    // ฟังก์ชันเปลี่ยนวิธีชำระเงิน (สด / สแกน)
+    function togglePayMethod(id) {
         const targetId = String(id);
         const idx = sales.findIndex(s => String(s.id) === targetId);
         if (idx !== -1) {
@@ -1203,8 +1216,14 @@
             const nextMethod = (currentMethod === 'cash') ? 'promptpay' : 'cash';
             sales[idx].paymentMethod = nextMethod;
 
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
             renderUI();
-            await saveToCloud({ action: "update_sale", item: sales[idx] });
+            
+            fetch(API_URL, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify({ action: "update_sale", item: sales[idx] })
+            }).catch(() => {});
         }
     }
 
@@ -1285,7 +1304,6 @@
         }
     });
 
-    // โหลดข้อมูลสดออนไลน์ 100% ตรงจาก Google Sheets
     async function loadFromCloud() {
         if (isSyncing) return;
         isSyncing = true;
@@ -1293,29 +1311,32 @@
         
         try {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 8000);
+            const timeoutId = setTimeout(() => controller.abort(), 7000);
             
             const res = await fetch(API_URL, { signal: controller.signal });
             clearTimeout(timeoutId);
             
             const data = await res.json();
-            if (data && data.status === "success") {
+            if (data) {
                 if (Array.isArray(data.sales)) {
-                    sales = data.sales.filter(item => item && item.id);
+                    sales = data.sales.filter(item => item && item.id && !deletedSalesIds.has(String(item.id)));
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
                 }
                 if (Array.isArray(data.expenses)) {
-                    expenses = data.expenses.filter(item => item && item.id);
+                    expenses = data.expenses.filter(item => item && item.id && !deletedExpensesIds.has(String(item.id)));
+                    localStorage.setItem(EXPENSES_KEY, JSON.stringify(expenses));
                 }
                 if (data.prices && typeof data.prices === 'object') {
                     priceBook = { ...DEFAULT_PRESET_PRICES, ...data.prices };
+                    localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
                 }
-                if (syncStatus) syncStatus.innerText = "เชื่อมต่อข้อมูลสดออนไลน์";
+                if (syncStatus) syncStatus.innerText = "เชื่อมต่อข้อมูลสดอัตโนมัติ";
                 if (syncDot) syncDot.className = 'status-dot';
                 renderUI();
             }
         } catch (e) {
-            if (syncStatus) syncStatus.innerText = "กำลังเชื่อมต่ออินเทอร์เน็ต...";
-            if (syncDot) syncDot.className = 'status-dot syncing';
+            if (syncStatus) syncStatus.innerText = "ใช้งานโหมดในเครื่อง (ออฟไลน์)";
+            if (syncDot) syncDot.className = 'status-dot';
         } finally {
             isSyncing = false;
         }
@@ -1334,7 +1355,6 @@
             await loadFromCloud();
         } catch (e) {
             if (syncDot) syncDot.className = 'status-dot';
-            alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ กรุณาตรวจสอบอินเทอร์เน็ต');
         }
     }
 
@@ -1410,6 +1430,7 @@
         }
 
         priceBook[name] = unitPrice;
+        localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
 
         const category = detectCategory(name);
         const totalPrice = unitPrice * qty;
@@ -1447,6 +1468,7 @@
         };
 
         sales.push(newItem);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
         renderUI();
         quickInput.value = '';
 
@@ -1489,6 +1511,7 @@
         };
 
         expenses.push(newExp);
+        localStorage.setItem(EXPENSES_KEY, JSON.stringify(expenses));
         document.getElementById('newExpenseName').value = '';
         document.getElementById('newExpenseCost').value = '';
         renderUI();
@@ -1502,8 +1525,13 @@
         const name = item ? item.name : '';
         
         if (confirm(`ท่านต้องการยืนยันการลบรายการต้นทุน "${name}" ออกจากระบบใช่หรือไม่?`)) {
+            deletedExpensesIds.add(targetId);
+            localStorage.setItem(DELETED_EXP_KEY, JSON.stringify(Array.from(deletedExpensesIds)));
+
             expenses = expenses.filter(item => item && String(item.id) !== targetId);
+            localStorage.setItem(EXPENSES_KEY, JSON.stringify(expenses));
             renderUI();
+
             await saveToCloud({ action: "delete_expense", id: targetId });
         }
     }
@@ -1514,8 +1542,13 @@
         const name = item ? item.name : '';
         
         if (confirm(`ท่านต้องการยืนยันการลบรายการออเดอร์ "${name}" ออกจากระบบใช่หรือไม่?`)) {
+            deletedSalesIds.add(targetId);
+            localStorage.setItem(DELETED_SALES_KEY, JSON.stringify(Array.from(deletedSalesIds)));
+
             sales = sales.filter(item => item && String(item.id) !== targetId);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
             renderUI();
+
             await saveToCloud({ action: "delete_sale", id: targetId });
         }
     }
@@ -1557,6 +1590,7 @@
             sales[idx].qty = qty;
             sales[idx].totalPrice = unitPrice * qty;
 
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
             renderUI();
             closeEditModal();
             await saveToCloud({ action: "update_sale", item: sales[idx] });
@@ -1612,8 +1646,8 @@
         }
 
         return {
-            sales: sales.filter(item => item && typeof item === 'object').filter(filterFn),
-            expenses: expenses.filter(item => item && typeof item === 'object').filter(filterFn)
+            sales: sales.filter(item => item && typeof item === 'object' && !deletedSalesIds.has(String(item.id))).filter(filterFn),
+            expenses: expenses.filter(item => item && typeof item === 'object' && !deletedExpensesIds.has(String(item.id))).filter(filterFn)
         };
     }
 
@@ -1879,12 +1913,14 @@
 
         if (name && !isNaN(price) && price > 0) {
             priceBook[name] = price;
+            localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
 
             if (recipe) {
                 recipeBook[name] = recipe;
             } else {
                 delete recipeBook[name];
             }
+            localStorage.setItem(RECIPES_KEY, JSON.stringify(recipeBook));
 
             document.getElementById('newMenuName').value = '';
             document.getElementById('newMenuPrice').value = '';
@@ -1900,6 +1936,8 @@
         if (confirm(`ท่านต้องการยืนยันการลบเมนู "${name}" ออกจากระบบใช่หรือไม่?`)) {
             delete priceBook[name];
             delete recipeBook[name];
+            localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
+            localStorage.setItem(RECIPES_KEY, JSON.stringify(recipeBook));
             renderUI();
             await saveToCloud({ action: "delete_price", name });
         }
@@ -1948,13 +1986,12 @@
         document.body.removeChild(link);
     }
 
-    // เริ่มต้นโหลดข้อมูลสดจากคลาวด์ทันทีเมื่อเปิดหน้าเว็บ
-    loadFromCloud();
+    renderUI();
     window.addEventListener('DOMContentLoaded', () => {
-        // ซิงค์ข้อมูลอัตโนมัติทุกๆ 10 วินาที
+        loadFromCloud();
         setInterval(() => {
             if (!document.hidden) loadFromCloud();
-        }, 10000);
+        }, 3000);
     });
 
     window.addEventListener('focus', () => {
