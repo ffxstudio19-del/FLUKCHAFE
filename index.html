@@ -944,14 +944,23 @@
     backdateTimeInput.value = getBangkokTimeStr(new Date());
 
     function findRecipeText(name) {
-        if (!name) return "";
-        if (recipeBook[name]) return recipeBook[name];
-        const cleanName = name.replace(/\s+/g, '');
-        for (let k in recipeBook) {
-            if (k.replace(/\s+/g, '') === cleanName) return recipeBook[k];
-        }
-        return "";
+    if (!name) return "";
+    if (recipeBook[name]) return recipeBook[name];
+    
+    const clean = name.replace(/\s+/g, '').toLowerCase();
+    
+    // ค้นหาแบบชื่อตรงกัน 100% โดยไม่นับเว้นวรรค
+    for (let k in recipeBook) {
+        if (k.replace(/\s+/g, '').toLowerCase() === clean) return recipeBook[k];
     }
+    
+    // ค้นหาแบบคำใกล้เคียง (สำหรับชื่อย่อ เช่น คารา -> นมสดโอริโอ้ คาราเมล)
+    for (let k in recipeBook) {
+        const cleanK = k.replace(/\s+/g, '').toLowerCase();
+        if (clean.includes(cleanK) || cleanK.includes(clean)) return recipeBook[k];
+    }
+    return "";
+}
 
     function findPrice(name) {
         if (!name) return 0;
@@ -1098,14 +1107,26 @@
     }
 
     function detectCategory(name) {
-        if (selectedCategory !== 'auto') return selectedCategory;
-        const n = String(name).toLowerCase();
-        if (n.includes('ปัง') || n.includes('โทสต์') || n.includes('เนยนม')) return 'ขนมปังปิ้ง';
-        if (n.includes('เฟรน') || n.includes('ฟราย') || n.includes('ชีส') || n.includes('ทอด') || n.includes('ไส้กรอก') || n.includes('ป๊อบ')) return 'ของทอด/ทานเล่น';
-        if (n.includes('กะเพรา') || n.includes('ข้าว') || n.includes('หมูปิ้ง') || n.includes('ไข่ดาว')) return 'อาหาร/กะเพรา';
-        return 'เครื่องดื่ม';
+    if (selectedCategory !== 'auto') return selectedCategory;
+    const n = String(name).toLowerCase();
+    
+    // 1. หมวดขนมปังปิ้ง
+    if (n.includes('ปัง') || n.includes('โทสต์') || n.includes('เนยนม') || n.includes('เนยน้ำตาล') || n.includes('แยม') || n.includes('ปิ้ง')) {
+        return 'ขนมปังปิ้ง';
     }
-
+    // 2. หมวดของทอด / ทานเล่น
+    if (n.includes('เฟรน') || n.includes('ฟราย') || n.includes('ชีส') || n.includes('ทอด') || 
+        n.includes('ไส้กรอก') || n.includes('ป๊อบ') || n.includes('นักเก็ต') || n.includes('ลูกชิ้น') || n.includes('เกี๊ยว')) {
+        return 'ของทอด/ทานเล่น';
+    }
+    // 3. หมวดอาหาร / ข้าว / กะเพรา
+    if (n.includes('กะเพรา') || n.includes('กระเพรา') || n.includes('ข้าว') || n.includes('หมูปิ้ง') || 
+        n.includes('ไข่ดาว') || n.includes('ไข่เจียว') || n.includes('มาม่า') || n.includes('ยำ')) {
+        return 'อาหาร/กะเพรา';
+    }
+    // ค่าเริ่มต้นเป็นเครื่องดื่ม
+    return 'เครื่องดื่ม';
+}
     async function quickAddPreset(name) {
         quickInput.value = name;
         await handleAdd();
