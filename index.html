@@ -497,7 +497,7 @@
         <div id="suggestBox" class="suggest-box"></div>
 
         <div class="backdate-control">
-            <span style="font-size:0.72rem; color:#64748b;">💡 ระบุจำนวน: เช่น "ชาไทย 2" "ชาเขียว x3"<b>,</b> ได้</span>
+            <span style="font-size:0.72rem; color:#64748b;">💡 ระบุจำนวน: เช่น <b>ชาไทย 2, โกโก้ 25</b></span>
             <button type="button" class="btn-toggle-backdate" id="btnToggleBackdate" onclick="toggleBackdateMode()">🕒 บันทึกย้อนหลัง</button>
         </div>
 
@@ -1391,7 +1391,34 @@
                 totalPieces += qty;
                 if (isQR) totalQrSum += price; else totalCashSum += price;
 
-                const cat = catStats[item.category] ? item.category : 'เครื่องดื่ม';
+                displaySales.forEach(item => {
+                const unitP = Number(item.unitPrice) || 0;
+                const qty = Number(item.qty) || 1;
+                const price = Number(item.totalPrice) > 0 ? Number(item.totalPrice) : (unitP * qty);
+                const isQR = item.paymentMethod === 'promptpay';
+
+                totalS += price;
+                totalPieces += qty;
+                if (isQR) totalQrSum += price; else totalCashSum += price;
+
+                // วางโค้ดใหม่แทนที่ตรงนี้
+                let cat = item.category;
+                if (!catStats[cat]) {
+                    const rawC = String(cat || '');
+                    if (rawC.includes('ทอด') || rawC.includes('เล่น')) cat = 'ของทอด/ทานเล่น';
+                    else if (rawC.includes('ปัง')) cat = 'ขนมปังปิ้ง';
+                    else if (rawC.includes('อาหาร') || rawC.includes('ข้าว') || rawC.includes('กะเพรา')) cat = 'อาหาร/กะเพรา';
+                    else cat = detectCategory(item.name);
+                }
+
+                catStats[cat].sum += price;
+                catStats[cat].count += qty;
+                if (isQR) catStats[cat].qr += price; else catStats[cat].cash += price;
+
+                if (!menuGrouped[cat][item.name]) menuGrouped[cat][item.name] = { qty: 0, sum: 0 };
+                menuGrouped[cat][item.name].qty += qty;
+                menuGrouped[cat][item.name].sum += price;
+            });
                 catStats[cat].sum += price;
                 catStats[cat].count += qty;
                 if (isQR) catStats[cat].qr += price; else catStats[cat].cash += price;
