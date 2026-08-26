@@ -161,26 +161,43 @@
         }
         .cat-btn.active { background: #0284c7; color: #ffffff; }
 
-        /* แถบปุ่มลัดเมนูขายดีด้านบน */
-        .quick-pills { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 8px; scrollbar-width: none; }
+        /* กล่องแยกเมนูขายดี */
+        .best-seller-section {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 8px 10px;
+            margin-bottom: 10px;
+        }
+        .best-seller-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #64748b;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .quick-pills { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
         .quick-pills::-webkit-scrollbar { display: none; }
         .quick-pill {
-            background: #0284c7;
-            color: #ffffff;
-            border: none;
-            padding: 6px 12px;
+            background: #ffffff;
+            color: #0284c7;
+            border: 1.5px solid #bae6fd;
+            padding: 5px 10px;
             border-radius: 20px;
-            font-size: 0.78rem;
+            font-size: 0.75rem;
             font-weight: 600;
             white-space: nowrap;
             cursor: pointer;
             flex-shrink: 0;
-            box-shadow: 0 2px 5px rgba(2, 132, 199, 0.3);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
             display: inline-flex;
             align-items: center;
             gap: 4px;
         }
-        .quick-pill:active { background: #0369a1; transform: scale(0.95); }
+        .quick-pill:active, .quick-pill:hover { background: #e0f2fe; border-color: #0284c7; }
 
         .quick-input-box { margin-bottom: 14px; position: relative; }
         .input-btn-group { display: flex; gap: 6px; }
@@ -376,7 +393,6 @@
         .price-search-box { margin-bottom: 8px; }
         .price-search-box input { width: 100%; padding: 7px 10px; border: 1.5px solid #94a3b8; border-radius: 8px; font-size: 0.8rem; outline: none; background: #f8fafc; }
 
-        /* Inline Edit ในหน้าตั้งราคา */
         .inline-edit-input { padding: 4px 8px; border: 1px solid #0284c7; border-radius: 6px; font-size: 0.85rem; outline: none; background: #fff; }
         .btn-inline-save { background: #10b981; color: #fff; border: none; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
         .btn-inline-cancel { background: #e2e8f0; color: #475569; border: none; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
@@ -489,15 +505,18 @@
         <button type="button" class="cat-btn" onclick="setCategory('ขนมปังปิ้ง', this)">🍞 ปังปิ้ง</button>
     </div>
 
-    <!-- แถบปุ่มลัดเมนูขายดี (คลิกปุ่มปุ๊บ สั่งรับออเดอร์ทันที) -->
-    <div class="quick-pills">
-        <button type="button" class="quick-pill" onclick="quickOrderPreset('ชาไทย เย็น')">🧋 ชาไทย เย็น</button>
-        <button type="button" class="quick-pill" onclick="quickOrderPreset('ชาเขียว เย็น')">🍵 ชาเขียว เย็น</button>
-        <button type="button" class="quick-pill" onclick="quickOrderPreset('โกโก้ เย็น')">🍫 โกโก้ เย็น</button>
-        <button type="button" class="quick-pill" onclick="quickOrderPreset('อเมริกาโน่ เย็น')">☕ อเมริกาโน่</button>
-        <button type="button" class="quick-pill" onclick="quickOrderPreset('เฟรนช์ฟรายส์')">🍟 เฟรนช์ฟรายส์</button>
-        <button type="button" class="quick-pill" onclick="quickOrderPreset('ปังเนยนม')">🍞 ปังเนยนม</button>
-        <button type="button" class="quick-pill" onclick="quickOrderPreset('ข้าวกะเพรา ธรรมดา')">🍳 กะเพรา</button>
+    <!-- กล่องแยกเมนูขายดี -->
+    <div class="best-seller-section">
+        <div class="best-seller-title">🔥 เมนูขายดี (คลิกเพื่อรับออเดอร์ทันที)</div>
+        <div class="quick-pills">
+            <button type="button" class="quick-pill" onclick="quickOrderPreset('ชาไทย เย็น')">🧋 ชาไทย เย็น</button>
+            <button type="button" class="quick-pill" onclick="quickOrderPreset('ชาเขียว เย็น')">🍵 ชาเขียว เย็น</button>
+            <button type="button" class="quick-pill" onclick="quickOrderPreset('โกโก้ เย็น')">🍫 โกโก้ เย็น</button>
+            <button type="button" class="quick-pill" onclick="quickOrderPreset('อเมริกาโน่ เย็น')">☕ อเมริกาโน่</button>
+            <button type="button" class="quick-pill" onclick="quickOrderPreset('เฟรนช์ฟรายส์')">🍟 เฟรนช์ฟรายส์</button>
+            <button type="button" class="quick-pill" onclick="quickOrderPreset('ปังเนยนม')">🍞 ปังเนยนม</button>
+            <button type="button" class="quick-pill" onclick="quickOrderPreset('ข้าวกะเพรา ธรรมดา')">🍳 กะเพรา</button>
+        </div>
     </div>
 
     <form id="quickForm" class="quick-input-box" onsubmit="return handleAdd(event)">
@@ -508,7 +527,7 @@
         <div id="suggestBox" class="suggest-box"></div>
 
         <div class="backdate-control">
-            <span style="font-size:0.72rem; color:#64748b;">💡 กดปุ่มเมนูขายดีด้านบน หรือพิมพ์ชื่อตามด้วยจำนวน</span>
+            <span style="font-size:0.72rem; color:#64748b;">💡 จิ้มเมนูขายดีด้านบน หรือพิมพ์ชื่อตามด้วยจำนวน</span>
             <button type="button" class="btn-toggle-backdate" id="btnToggleBackdate" onclick="toggleBackdateMode()">🕒 บันทึกย้อนหลัง</button>
         </div>
 
@@ -875,7 +894,9 @@
     }
 
     function getBangkokDateStr(d = new Date()) {
-        const parts = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Bangkok', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(d);
+        const options = { timeZone: 'Asia/Bangkok', year: 'numeric', month: '2-digit', day: '2-digit', hour12: false };
+        const formatter = new Intl.DateTimeFormat('en-CA', options);
+        const parts = formatter.formatToParts(d);
         const y = parts.find(p => p.type === 'year').value;
         const m = parts.find(p => p.type === 'month').value;
         const day = parts.find(p => p.type === 'day').value;
@@ -883,9 +904,11 @@
     }
 
     function getBangkokTimeStr(d = new Date()) {
-        const parts = new Intl.DateTimeFormat('th-TH', { timeZone: 'Asia/Bangkok', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(d);
-        const hh = parts.find(p => p.type === 'hour').value.padStart(2, '0');
-        const mm = parts.find(p => p.type === 'minute').value.padStart(2, '0');
+        const options = { timeZone: 'Asia/Bangkok', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+        const formatter = new Intl.DateTimeFormat('th-TH', options);
+        const parts = formatter.formatToParts(d);
+        const hh = (parts.find(p => p.type === 'hour')?.value || '00').padStart(2, '0');
+        const mm = (parts.find(p => p.type === 'minute')?.value || '00').padStart(2, '0');
         return `${hh}:${mm}`;
     }
 
@@ -1096,7 +1119,6 @@
         return 'เครื่องดื่ม';
     }
 
-    // ฟังก์ชันกดปุ่มเมนูขายดีด้านบน เพื่อรับออเดอร์ทันที 1 คลิก
     async function quickOrderPreset(name) {
         quickInput.value = name;
         await handleAdd();
@@ -1474,7 +1496,6 @@
         }).join('') || '<div class="empty-text">ไม่มีข้อมูลสรุป</div>';
     }
 
-    // ฟังก์ชันแสดงรายการตั้งราคาแบบ Inline Edit (แก้ตรงแถวได้ทันที ไม่ต้องเลื่อนขึ้นบน)
     function renderPriceSettingList() {
         const kw = (priceSearchInput.value || '').trim().toLowerCase().replace(/\s+/g, '');
         const keys = Object.keys(priceBook).filter(k => k.toLowerCase().replace(/\s+/g, '').includes(kw)).sort();
@@ -1496,7 +1517,6 @@
         `;}).join('') || '<div class="empty-text">ไม่พบเมนู</div>';
     }
 
-    // เปิดโหมดแก้ไขทันทีในบรรทัดนั้น
     function enableInlineEdit(name, currentPrice) {
         const rowId = 'row-' + btoa(encodeURIComponent(name));
         const rowEl = document.getElementById(rowId);
@@ -1515,7 +1535,6 @@
         `;
     }
 
-    // บันทึกข้อมูลที่แก้ไขจากบรรทัดนั้นทันที
     async function saveInlineEdit(oldName, rowId) {
         const newNameInput = document.getElementById(`edit-name-${rowId}`).value.trim();
         const newPriceInput = parseFloat(document.getElementById(`edit-price-${rowId}`).value);
