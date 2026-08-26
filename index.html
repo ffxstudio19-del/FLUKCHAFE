@@ -497,7 +497,7 @@
         <div id="suggestBox" class="suggest-box"></div>
 
         <div class="backdate-control">
-            <span style="font-size:0.72rem; color:#64748b;">💡 ระบุจำนวน: เช่น <b>ชาไทย 2, โกโก้ 25</b></span>
+            <span style="font-size:0.72rem; color:#64748b;">💡 สั่งหลายเมนูคั่นด้วยจุลภาค เช่น <b>ชาไทย 2, โกโก้ 25</b></span>
             <button type="button" class="btn-toggle-backdate" id="btnToggleBackdate" onclick="toggleBackdateMode()">🕒 บันทึกย้อนหลัง</button>
         </div>
 
@@ -772,7 +772,6 @@
     let priceBook = Object.assign({}, MASTER_PRICES);
     let recipeBook = Object.assign({}, MASTER_RECIPES);
 
-    // ดึงข้อมูลแคชจากเครื่องขึ้นมาทันที (ป้องกันหน้าเว็บโหลดแล้วโชว์ 0)
     try {
         const cachedSales = localStorage.getItem('flukchafe_sales_cache');
         if (cachedSales) sales = JSON.parse(cachedSales);
@@ -832,9 +831,6 @@
         } catch(e) {}
     }
 
-    // ========================================================
-    // 🔍 ตัวแปลงวันที่อัจฉริยะ (แก้บั๊ก พ.ศ. / ค.ศ. / Slash / Dash)
-    // ========================================================
     function normalizeDateStr(raw) {
         if (!raw) return "";
         let str = String(raw).trim();
@@ -944,23 +940,21 @@
     backdateTimeInput.value = getBangkokTimeStr(new Date());
 
     function findRecipeText(name) {
-    if (!name) return "";
-    if (recipeBook[name]) return recipeBook[name];
-    
-    const clean = name.replace(/\s+/g, '').toLowerCase();
-    
-    // ค้นหาแบบชื่อตรงกัน 100% โดยไม่นับเว้นวรรค
-    for (let k in recipeBook) {
-        if (k.replace(/\s+/g, '').toLowerCase() === clean) return recipeBook[k];
+        if (!name) return "";
+        if (recipeBook[name]) return recipeBook[name];
+        
+        const clean = name.replace(/\s+/g, '').toLowerCase();
+        
+        for (let k in recipeBook) {
+            if (k.replace(/\s+/g, '').toLowerCase() === clean) return recipeBook[k];
+        }
+        
+        for (let k in recipeBook) {
+            const cleanK = k.replace(/\s+/g, '').toLowerCase();
+            if (clean.includes(cleanK) || cleanK.includes(clean)) return recipeBook[k];
+        }
+        return "";
     }
-    
-    // ค้นหาแบบคำใกล้เคียง (สำหรับชื่อย่อ เช่น คารา -> นมสดโอริโอ้ คาราเมล)
-    for (let k in recipeBook) {
-        const cleanK = k.replace(/\s+/g, '').toLowerCase();
-        if (clean.includes(cleanK) || cleanK.includes(clean)) return recipeBook[k];
-    }
-    return "";
-}
 
     function findPrice(name) {
         if (!name) return 0;
@@ -972,9 +966,6 @@
         return 0;
     }
 
-    // ==========================================
-    // ⚡ ระบบดึงและซิงค์ข้อมูล
-    // ==========================================
     async function syncData() {
         document.getElementById('syncStatus').innerText = 'กำลังซิงค์...';
         try {
@@ -1016,7 +1007,7 @@
 
     setInterval(syncData, 5000);
     syncData();
-    renderUI(); // แสดงผลจากแคชทันทีที่เปิดเว็บ
+    renderUI();
 
     function showRecipe(menuName, category) {
         if (category !== 'เครื่องดื่ม') return;
@@ -1107,26 +1098,23 @@
     }
 
     function detectCategory(name) {
-    if (selectedCategory !== 'auto') return selectedCategory;
-    const n = String(name).toLowerCase();
-    
-    // 1. หมวดขนมปังปิ้ง
-    if (n.includes('ปัง') || n.includes('โทสต์') || n.includes('เนยนม') || n.includes('เนยน้ำตาล') || n.includes('แยม') || n.includes('ปิ้ง')) {
-        return 'ขนมปังปิ้ง';
+        if (selectedCategory !== 'auto') return selectedCategory;
+        const n = String(name).toLowerCase();
+        
+        if (n.includes('ปัง') || n.includes('โทสต์') || n.includes('เนยนม') || n.includes('เนยน้ำตาล') || n.includes('แยม') || n.includes('ปิ้ง')) {
+            return 'ขนมปังปิ้ง';
+        }
+        if (n.includes('เฟรน') || n.includes('ฟราย') || n.includes('ชีส') || n.includes('ทอด') || 
+            n.includes('ไส้กรอก') || n.includes('ป๊อบ') || n.includes('นักเก็ต') || n.includes('ลูกชิ้น') || n.includes('เกี๊ยว')) {
+            return 'ของทอด/ทานเล่น';
+        }
+        if (n.includes('กะเพรา') || n.includes('กระเพรา') || n.includes('ข้าว') || n.includes('หมูปิ้ง') || 
+            n.includes('ไข่ดาว') || n.includes('ไข่เจียว') || n.includes('มาม่า') || n.includes('ยำ')) {
+            return 'อาหาร/กะเพรา';
+        }
+        return 'เครื่องดื่ม';
     }
-    // 2. หมวดของทอด / ทานเล่น
-    if (n.includes('เฟรน') || n.includes('ฟราย') || n.includes('ชีส') || n.includes('ทอด') || 
-        n.includes('ไส้กรอก') || n.includes('ป๊อบ') || n.includes('นักเก็ต') || n.includes('ลูกชิ้น') || n.includes('เกี๊ยว')) {
-        return 'ของทอด/ทานเล่น';
-    }
-    // 3. หมวดอาหาร / ข้าว / กะเพรา
-    if (n.includes('กะเพรา') || n.includes('กระเพรา') || n.includes('ข้าว') || n.includes('หมูปิ้ง') || 
-        n.includes('ไข่ดาว') || n.includes('ไข่เจียว') || n.includes('มาม่า') || n.includes('ยำ')) {
-        return 'อาหาร/กะเพรา';
-    }
-    // ค่าเริ่มต้นเป็นเครื่องดื่ม
-    return 'เครื่องดื่ม';
-}
+
     async function quickAddPreset(name) {
         quickInput.value = name;
         await handleAdd();
@@ -1336,9 +1324,6 @@
         closeEditModal();
     }
 
-    // ==========================================
-    // 🔍 ตัวกรองข้อมูล (Timezone & Format Safe)
-    // ==========================================
     function getFilteredData() {
         const todayStr = getBangkokDateStr(new Date());
         const weekRange = getWeekRangeBKK();
@@ -1391,17 +1376,6 @@
                 totalPieces += qty;
                 if (isQR) totalQrSum += price; else totalCashSum += price;
 
-                displaySales.forEach(item => {
-                const unitP = Number(item.unitPrice) || 0;
-                const qty = Number(item.qty) || 1;
-                const price = Number(item.totalPrice) > 0 ? Number(item.totalPrice) : (unitP * qty);
-                const isQR = item.paymentMethod === 'promptpay';
-
-                totalS += price;
-                totalPieces += qty;
-                if (isQR) totalQrSum += price; else totalCashSum += price;
-
-                // วางโค้ดใหม่แทนที่ตรงนี้
                 let cat = item.category;
                 if (!catStats[cat]) {
                     const rawC = String(cat || '');
@@ -1411,14 +1385,6 @@
                     else cat = detectCategory(item.name);
                 }
 
-                catStats[cat].sum += price;
-                catStats[cat].count += qty;
-                if (isQR) catStats[cat].qr += price; else catStats[cat].cash += price;
-
-                if (!menuGrouped[cat][item.name]) menuGrouped[cat][item.name] = { qty: 0, sum: 0 };
-                menuGrouped[cat][item.name].qty += qty;
-                menuGrouped[cat][item.name].sum += price;
-            });
                 catStats[cat].sum += price;
                 catStats[cat].count += qty;
                 if (isQR) catStats[cat].qr += price; else catStats[cat].cash += price;
