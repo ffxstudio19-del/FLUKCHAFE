@@ -1224,7 +1224,6 @@
         }
 
         localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
-        // ส่งบันทึกเงียบๆ โดยไม่มีการแจ้งเตือนเด้งขึ้นมา
         fetch(API_URL, {
             method: "POST",
             headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -1243,7 +1242,6 @@
             localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
             renderUI();
             
-            // ส่งบันทึกเงียบๆ โดยไม่มีการแจ้งเตือนเด้งขึ้นมา
             fetch(API_URL, {
                 method: "POST",
                 headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -1336,13 +1334,13 @@
         
         try {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 7000);
+            const timeoutId = setTimeout(() => controller.abort(), 20000);
             
-            const res = await fetch(API_URL, { signal: controller.signal });
+            const res = await fetch(`${API_URL}?t=${Date.now()}`, { signal: controller.signal });
             clearTimeout(timeoutId);
             
             const data = await res.json();
-            if (data) {
+            if (data && data.status === "success") {
                 if (Array.isArray(data.sales)) {
                     sales = data.sales.filter(item => item && item.id && !deletedSalesIds.has(String(item.id)));
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
@@ -1389,7 +1387,6 @@
         btn.classList.add('active');
 
         customFilterBox.style.display = (filter === 'custom') ? 'block' : 'none';
-
         renderUI();
     }
 
@@ -2012,19 +2009,30 @@
     }
 
     renderUI();
+
+    // ส่วนจัดการ Polling และ Auto-sync ที่ปรับปรุงใหม่
+    let syncTimer = null;
+    async function syncLoop() {
+        if (!document.hidden && navigator.onLine) {
+            await loadFromCloud();
+        }
+        syncTimer = setTimeout(syncLoop, 15000);
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
-        loadFromCloud();
-        setInterval(() => {
-            if (!document.hidden) loadFromCloud();
-        }, 3000);
+        syncLoop();
     });
 
-    window.addEventListener('focus', () => {
-        loadFromCloud();
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+            clearTimeout(syncTimer);
+            syncLoop();
+        }
     });
 
     window.addEventListener('online', () => {
-        loadFromCloud();
+        clearTimeout(syncTimer);
+        syncLoop();
     });
 </script>
 </body>
