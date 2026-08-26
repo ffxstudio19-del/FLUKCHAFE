@@ -1135,22 +1135,28 @@
         if (foundP > 0) return { name: text, unitPrice: foundP, qty: 1 };
 
         const parts = text.split(/\s+/);
-        if (parts.length >= 3 && !isNaN(parts[parts.length - 1]) && !isNaN(parts[parts.length - 2])) {
-            return {
-                name: parts.slice(0, parts.length - 2).join(' ').trim(),
-                unitPrice: parseFloat(parts[parts.length - 2]) || 0,
-                qty: Math.max(1, parseInt(parts[parts.length - 1]) || 1)
-            };
-        }
-        if (parts.length >= 2 && !isNaN(parts[parts.length - 1])) {
-            const lastNum = parseFloat(parts[parts.length - 1]);
-            const pName = parts.slice(0, parts.length - 1).join(' ').trim();
-            const pPrice = findPrice(pName);
-            if (pPrice > 0) {
-                return lastNum <= 10 ? { name: pName, unitPrice: pPrice, qty: parseInt(lastNum) } : { name: pName, unitPrice: lastNum, qty: 1 };
+        if (parts.length >= 2) {
+            const lastPart = parts[parts.length - 1];
+            const secondLastPart = parts[parts.length - 2];
+
+            let lastNum = parseInt(lastPart);
+            let priceNum = parseFloat(secondLastPart);
+
+            if (!isNaN(lastNum) && !isNaN(priceNum) && priceNum >= 10) {
+                const name = parts.slice(0, parts.length - 2).join(' ').trim();
+                return { name, unitPrice: priceNum, qty: Math.max(1, lastNum) };
             }
-            return lastNum >= 15 ? { name: pName, unitPrice: lastNum, qty: 1 } : { name: pName, unitPrice: 0, qty: parseInt(lastNum) };
+
+            let singleNum = parseFloat(lastPart);
+            if (!isNaN(singleNum) && singleNum >= 5) {
+                const name = parts.slice(0, parts.length - 1).join(' ').trim();
+                return { name, unitPrice: singleNum, qty: 1 };
+            }
         }
+
+        const fallbackPrice = findPrice(text);
+        return { name: text, unitPrice: fallbackPrice > 0 ? fallbackPrice : 0, qty: 1 };
+    }
         return { name: text, unitPrice: findPrice(text), qty: 1 };
     }
 
