@@ -137,7 +137,16 @@
         .cat-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 8px 10px; }
         .cat-title { font-size: 0.75rem; color: #64748b; font-weight: 500; }
         .cat-val { font-size: 1.05rem; font-weight: 600; color: #0f172a; margin-top: 2px; }
-        .cat-count { font-size: 0.75rem; color: #0284c7; }
+        .cat-count { font-size: 0.72rem; color: #0284c7; font-weight: 500; }
+        .cat-pay-detail {
+            font-size: 0.65rem;
+            color: #475569;
+            margin-top: 4px;
+            padding-top: 3px;
+            border-top: 1px dashed #cbd5e1;
+            display: flex;
+            justify-content: space-between;
+        }
 
         .cat-selector { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 8px; }
         .cat-btn {
@@ -173,7 +182,7 @@
         .input-btn-group input {
             flex: 1;
             padding: 12px 14px;
-            font-size: 1.05rem;
+            font-size: 1.02rem;
             border: 2px solid #0284c7;
             border-radius: 12px;
             outline: none;
@@ -436,26 +445,31 @@
         </div>
     </div>
 
+    <!-- สรุป 4 หมวดหมู่ พร้อมแจกแจงสด/สแกน -->
     <div class="category-summary-grid">
         <div class="cat-box">
             <div class="cat-title">🧋 เครื่องดื่ม</div>
             <div class="cat-val" id="catDrinkSum">฿0</div>
             <div class="cat-count" id="catDrinkCount">0 แก้ว</div>
+            <div class="cat-pay-detail" id="catDrinkPay"><span>💵 ฿0</span><span>📱 ฿0</span></div>
         </div>
         <div class="cat-box">
             <div class="cat-title">🍟 ของทอด/ทานเล่น</div>
             <div class="cat-val" id="catSnackSum">฿0</div>
             <div class="cat-count" id="catSnackCount">0 รายการ</div>
+            <div class="cat-pay-detail" id="catSnackPay"><span>💵 ฿0</span><span>📱 ฿0</span></div>
         </div>
         <div class="cat-box">
-            <div class="cat-title">🍞 ปังปิ้ง</div>
+            <div class="cat-title">🍞 ขนมปังปิ้ง</div>
             <div class="cat-val" id="catBreadSum">฿0</div>
             <div class="cat-count" id="catBreadCount">0 ชิ้น</div>
+            <div class="cat-pay-detail" id="catBreadPay"><span>💵 ฿0</span><span>📱 ฿0</span></div>
         </div>
         <div class="cat-box">
             <div class="cat-title">🍳 กะเพรา/อาหาร/หมูปิ้ง</div>
             <div class="cat-val" id="catFoodSum">฿0</div>
-            <div class="cat-count" id="catFoodCount">0 ชุด/จาน</div>
+            <div class="cat-count" id="catFoodCount">0 จาน/ชุด</div>
+            <div class="cat-pay-detail" id="catFoodPay"><span>💵 ฿0</span><span>📱 ฿0</span></div>
         </div>
     </div>
 
@@ -477,13 +491,13 @@
 
     <form id="quickForm" class="quick-input-box" onsubmit="return handleAdd(event)">
         <div class="input-btn-group">
-            <input type="text" id="quickInput" placeholder="เช่น ชาไทย เย็น 2, โกโก้ x3, กะเพรา 40 2..." autocomplete="off" autofocus oninput="handleSearchSuggest(this.value)">
+            <input type="text" id="quickInput" placeholder="สั่งหลายเมนูคั่นด้วยจุลภาค เช่น ชาไทย 2, โกโก้ 25, กะเพรา 40 2" autocomplete="off" autofocus oninput="handleSearchSuggest(this.value)">
             <button type="submit" class="btn-order-submit" id="btnSubmitOrder">รับออเดอร์</button>
         </div>
         <div id="suggestBox" class="suggest-box"></div>
 
         <div class="backdate-control">
-            <span style="font-size:0.72rem; color:#64748b;">⚡ ซิงค์ข้อมูลอัตโนมัติ Google Sheets</span>
+            <span style="font-size:0.72rem; color:#64748b;">💡 พิมพ์หลายรายการคั่นด้วยเครื่องหมายจุลภาค <b>,</b> ได้</span>
             <button type="button" class="btn-toggle-backdate" id="btnToggleBackdate" onclick="toggleBackdateMode()">🕒 บันทึกย้อนหลัง</button>
         </div>
 
@@ -670,7 +684,7 @@
         "สตอเบอร์รี่โยเกิร์ต ปั่น": "📍 สตอเบอร์รี่ปั่น โยเกิร์ต • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ราดซอสสตอ,โยเกิร์ตรอบแก้ว )\n⁃ น้ำร้อน 40 ml\n⁃ ไซรัปสตอ 50 ml\n⁃ น้ำเชื่อม 50 ml\n⁃ ซอสสตอ 2 ช้อนโต๊ะ\n⁃ สตอเบอร์รี่ 3-4 ชิ้น\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ ราดไซรัปสตอ,โยเกิร์ต รอบแก้ว",
         "สตอเบอร์รี่ปั่น โยเกิร์ต": "📍 สตอเบอร์รี่ปั่น โยเกิร์ต • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ราดซอสสตอ,โยเกิร์ตรอบแก้ว )\n⁃ น้ำร้อน 40 ml\n⁃ ไซรัปสตอ 50 ml\n⁃ น้ำเชื่อม 50 ml\n⁃ ซอสสตอ 2 ช้อนโต๊ะ\n⁃ สตอเบอร์รี่ 3-4 ชิ้น\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ ราดไซรัปสตอ,โยเกิร์ต รอบแก้ว",
         "สตอเบอร์รี่ เย็น": "📍 สตอเบอร์รี่ • เย็น 20 ออนซ์\n( ไม่แยกชั้น ใส่สตอเบอร์รี่ )\n⁃ ไซรัปสตอ 60 ml\n⁃ น้ำเปล่า 140 ml\n⁃ ใส่สตอท็อปปิ้งบน 1 ชิ้น",
-        "สตอเบอร์รี่ ปั่น": "📍 สตอเบอร์รี่ • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ราดซอสสตอรอบแก้ว )\n⁃ น้ำร้อน 40 ml\n⁃ ไซรัปสตอ 50 ml\n⁃ น้ำเชื่อม 50 ml\n⁃ ซอสสตอ 2 ช้อนโต๊ะ\n⁃ สตอเบอร์รี่ 3-4 ชิ้น\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )",
+        "สตอเบอร์รี่ ปั่น": "📍 สตอเบอร์รี่ • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ราดซอสสตอรอบแก้ว )\n⁃ น้ำร้อน 40 ml\n⁃ ไซรัปสตอ 50 ml\n⁃ น้ำเชื่อม 50 ml\n⁃ ซอสสตอ 2 ช้อนโต๊ะ\n⁃ สตอเบอร์รี่ 3-4 ชิ้น\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ ราดไซรัปสตอรอบแก้ว",
         "ชาไทยนมสดสตอเบอร์รี่ เย็น": "📍 ชาไทยนมสดสตอเบอร์รี่ • เย็น 20 ออนซ์\n( แยก 3 ชั้น )\n⁃ ไซรัปสตอ 40 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n——————————————\n⁃ นมสด 100 ml\n⁃ นมข้นจืด 40 ml\n⁃ นมข้นหวาน 30 ml\n——————————————\n⁃ ราดเบสชาไทย 60 ml",
         "ชาไทยโกโก้ เย็น": "📍 ชาไทยโกโก้ • เย็น 20 ออนซ์\n( แยกชั้น )\n⁃ เบสชาไทย 90 ml\n⁃ นมข้นจืด 40 ml\n⁃ นมข้นหวาน 40 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n——————————————\n⁃ ผงโกโก้ 1 ช้อนกลาง ( 10g )\n⁃ น้ำร้อน 50 ml\n⁃ ราดบนสุด",
         "ชาเขียวนมสดสตอเบอร์รี่ เย็น": "📍 ชาเขียวนมสดสตอเบอร์รี่ • เย็น 20 ออนซ์\n( แยก 3 ชั้น )\n⁃ ไซรัปสตอ 40 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n——————————————\n⁃ นมสด 100 ml\n⁃ นมข้นจืด 40 ml\n⁃ นมข้นหวาน 30 ml\n——————————————\n⁃ ราดเบสชาเขียว 60 ml",
@@ -754,6 +768,7 @@
 
     let sales = [];
     let expenses = [];
+    let localPendingSales = new Map(); // คิวป้องกันออเดอร์แวบหายระหว่างซิงค์
     let priceBook = Object.assign({}, MASTER_PRICES);
     let recipeBook = Object.assign({}, MASTER_RECIPES);
 
@@ -802,10 +817,47 @@
 
     const THAI_MONTHS_SHORT = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
 
+    // ==========================================
+    // 🕒 ระบบคำนวณวัน-เวลา แบบล็อก Timezone ไทย
+    // ==========================================
+    function getBangkokDateStr(d = new Date()) {
+        const parts = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Bangkok', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(d);
+        const y = parts.find(p => p.type === 'year').value;
+        const m = parts.find(p => p.type === 'month').value;
+        const day = parts.find(p => p.type === 'day').value;
+        return `${y}-${m}-${day}`;
+    }
+
+    function getBangkokTimeStr(d = new Date()) {
+        const parts = new Intl.DateTimeFormat('th-TH', { timeZone: 'Asia/Bangkok', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(d);
+        const hh = parts.find(p => p.type === 'hour').value.padStart(2, '0');
+        const mm = parts.find(p => p.type === 'minute').value.padStart(2, '0');
+        return `${hh}:${mm}`;
+    }
+
+    function getWeekRangeBKK() {
+        const now = new Date();
+        const bkkStr = getBangkokDateStr(now);
+        const [y, m, d] = bkkStr.split('-').map(Number);
+        const curDate = new Date(y, m - 1, d);
+        const dayOfWeek = curDate.getDay() === 0 ? 7 : curDate.getDay(); // จันทร์=1, อาทิตย์=7
+        
+        const monday = new Date(curDate);
+        monday.setDate(curDate.getDate() - dayOfWeek + 1);
+        
+        const sunday = new Date(monday);
+        sunday.setDate(monday.getDate() + 6);
+        
+        return {
+            start: getBangkokDateStr(monday),
+            end: getBangkokDateStr(sunday)
+        };
+    }
+
     function formatThaiDateTime(rawDate, rawTime) {
         let cleanTime = rawTime || '00:00';
         let rawDStr = String(rawDate || '').substring(0, 10);
-        let todayStr = formatDateYMD(new Date());
+        let todayStr = getBangkokDateStr(new Date());
 
         if (rawDStr === todayStr) {
             return `วันนี้ • ${cleanTime} น.`;
@@ -821,17 +873,13 @@
         return `${rawDStr} • ${cleanTime} น.`;
     }
 
-    function formatDateYMD(d) {
-        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    }
+    // กำหนดค่าเริ่มต้นในตัวกรองวันที่
+    const initialBkkDate = getBangkokDateStr(new Date());
+    selectDateInput.value = initialBkkDate;
+    selectMonthInput.value = initialBkkDate.substring(0, 7);
+    backdateDateInput.value = initialBkkDate;
+    backdateTimeInput.value = getBangkokTimeStr(new Date());
 
-    const initD = new Date();
-    selectDateInput.value = formatDateYMD(initD);
-    selectMonthInput.value = `${initD.getFullYear()}-${String(initD.getMonth() + 1).padStart(2, '0')}`;
-    backdateDateInput.value = formatDateYMD(initD);
-    backdateTimeInput.value = initD.toTimeString().substring(0, 5);
-
-    // ฟังก์ชันค้นหาสูตรชงแบบยืดหยุ่น (รองรับเว้นวรรค/ไม่เว้นวรรค)
     function findRecipeText(name) {
         if (!name) return "";
         if (recipeBook[name]) return recipeBook[name];
@@ -842,7 +890,6 @@
         return "";
     }
 
-    // ฟังก์ชันค้นหาราคาแบบยืดหยุ่น
     function findPrice(name) {
         if (!name) return 0;
         if (priceBook[name] !== undefined) return priceBook[name];
@@ -854,7 +901,7 @@
     }
 
     // ==========================================
-    // ⚡ ระบบดึงและซิงค์ข้อมูลกับ Apps Script
+    // ⚡ ระบบดึงและซิงค์ข้อมูล (แก้ Race Condition)
     // ==========================================
     async function syncData() {
         document.getElementById('syncStatus').innerText = 'กำลังซิงค์...';
@@ -862,7 +909,28 @@
             const res = await fetch(SCRIPT_URL + '?action=get_all');
             const data = await res.json();
             if (data.status === 'success') {
-                sales = data.sales || [];
+                const serverSales = data.sales || [];
+                const serverIds = new Set(serverSales.map(s => String(s.id)));
+                
+                // ล้างรายการที่เซิร์ฟเวอร์ตอบรับเรียบร้อยแล้วออกจากคิวรอดำเนินการ
+                for (let [id, pendingItem] of localPendingSales.entries()) {
+                    if (serverIds.has(String(id))) {
+                        localPendingSales.delete(id);
+                    }
+                }
+
+                // นำรายการในเครื่องที่เซิร์ฟเวอร์ยังบันทึกไม่เสร็จมารวม ป้องกันออเดอร์แวบหาย
+                const unconfirmed = Array.from(localPendingSales.values());
+                const combined = [...unconfirmed, ...serverSales];
+                
+                const seen = new Set();
+                sales = combined.filter(item => {
+                    const itId = String(item.id);
+                    if (seen.has(itId)) return false;
+                    seen.add(itId);
+                    return true;
+                });
+
                 expenses = data.expenses || [];
                 priceBook = Object.assign({}, MASTER_PRICES, data.prices || {});
                 recipeBook = Object.assign({}, MASTER_RECIPES, data.recipes || {});
@@ -978,7 +1046,10 @@
         await handleAdd();
     }
 
-    function parseOrderInput(rawText) {
+    // ====================================================
+    // ✍️ ตัดคำสั่งออเดอร์เดี่ยว
+    // ====================================================
+    function parseSingleOrder(rawText) {
         let text = rawText.replace(/(แก้ว|ชิ้น|จาน|ถุง|ชุด|กล่อง)/g, '').trim();
         if (!text) return null;
 
@@ -1012,61 +1083,79 @@
         return { name: text, unitPrice: findPrice(text), qty: 1 };
     }
 
+    // ====================================================
+    // 🚀 รองรับสั่งหลายเมนูพร้อมกัน (Multi-item Order)
+    // ====================================================
     async function handleAdd(e) {
         if (e) e.preventDefault();
         if (isProcessingAdd) return false;
 
-        const text = quickInput.value.trim();
-        if (!text) return false;
+        const rawVal = quickInput.value.trim();
+        if (!rawVal) return false;
 
-        const parsed = parseOrderInput(text);
-        if (!parsed || !parsed.name) return false;
+        // แยกรายการด้วยเครื่องหมายจุลภาค , หรือ + หรือขึ้นบรรทัดใหม่
+        const segments = rawVal.split(/[,，\n+]/).map(s => s.trim()).filter(s => s.length > 0);
+        if (!segments.length) return false;
 
-        let { name, unitPrice, qty } = parsed;
-        if ((!unitPrice || unitPrice <= 0)) unitPrice = findPrice(name);
+        let parsedItems = [];
+        for (let seg of segments) {
+            const parsed = parseSingleOrder(seg);
+            if (!parsed || !parsed.name) continue;
 
-        if (!name || isNaN(unitPrice) || unitPrice <= 0) {
-            alert(`เมนู "${name}" ยังไม่มีราคาในระบบ\nกรุณาพิมพ์ชื่อพร้อมราคา เช่น "${name} 25"`);
-            return false;
+            let { name, unitPrice, qty } = parsed;
+            if ((!unitPrice || unitPrice <= 0)) unitPrice = findPrice(name);
+
+            if (!name || isNaN(unitPrice) || unitPrice <= 0) {
+                alert(`เมนู "${name}" ยังไม่มีราคาในระบบ\nกรุณาพิมพ์ชื่อพร้อมราคา เช่น "${name} 25"`);
+                return false;
+            }
+            parsedItems.push({ name, unitPrice, qty });
         }
+
+        if (!parsedItems.length) return false;
 
         isProcessingAdd = true;
         btnSubmitOrder.disabled = true;
 
-        let recordDate = formatDateYMD(new Date());
-        let recordTime = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+        let recordDate = getBangkokDateStr(new Date());
+        let recordTime = getBangkokTimeStr(new Date());
 
         if (isBackdateActive && backdateDateInput.value) {
             recordDate = backdateDateInput.value;
             recordTime = backdateTimeInput.value || '12:00';
         }
 
-        const newId = 'ORD-' + String(Date.now()) + '-' + Math.floor(Math.random() * 1000);
-        const newItem = {
-            id: newId,
-            date: recordDate,
-            time: recordTime,
-            name: name,
-            category: detectCategory(name),
-            unitPrice: Number(unitPrice),
-            qty: Number(qty),
-            totalPrice: Number(unitPrice * qty),
-            paymentMethod: 'cash',
-            status: 'pending'
-        };
+        const newItemsToPost = [];
+        parsedItems.forEach((it, idx) => {
+            const newId = 'ORD-' + String(Date.now() + idx) + '-' + Math.floor(Math.random() * 1000);
+            const newItem = {
+                id: newId,
+                date: recordDate,
+                time: recordTime,
+                name: it.name,
+                category: detectCategory(it.name),
+                unitPrice: Number(it.unitPrice),
+                qty: Number(it.qty),
+                totalPrice: Number(it.unitPrice * it.qty),
+                paymentMethod: 'cash',
+                status: 'pending'
+            };
+            localPendingSales.set(newId, newItem);
+            sales.unshift(newItem);
+            newItemsToPost.push(newItem);
+        });
 
         quickInput.value = '';
-        sales.unshift(newItem);
         renderUI();
 
         try {
             await fetch(SCRIPT_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain' },
-                body: JSON.stringify({ action: 'add_sale', items: [newItem] })
+                body: JSON.stringify({ action: 'add_sale', items: newItemsToPost })
             });
         } catch (err) {
-            console.error(err);
+            console.error("Post sales error:", err);
         } finally {
             isProcessingAdd = false;
             btnSubmitOrder.disabled = false;
@@ -1083,8 +1172,8 @@
         const newId = 'EXP-' + String(Date.now()) + '-' + Math.floor(Math.random() * 1000);
         const newExp = {
             id: newId,
-            date: formatDateYMD(new Date()),
-            time: new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }),
+            date: getBangkokDateStr(new Date()),
+            time: getBangkokTimeStr(new Date()),
             name: name,
             cost: cost
         };
@@ -1103,6 +1192,7 @@
 
     async function deleteItem(id) {
         if (!confirm('ยืนยันการลบออเดอร์นี้?')) return;
+        localPendingSales.delete(id);
         sales = sales.filter(s => String(s.id) !== String(id));
         renderUI();
         fetch(SCRIPT_URL, {
@@ -1151,6 +1241,7 @@
             item.unitPrice = unitPrice;
             item.qty = qty;
             item.totalPrice = unitPrice * qty;
+            if (localPendingSales.has(id)) localPendingSales.set(id, item);
             renderUI();
             fetch(SCRIPT_URL, {
                 method: 'POST',
@@ -1161,16 +1252,21 @@
         closeEditModal();
     }
 
+    // ==========================================
+    // 🔍 ตัวกรองข้อมูล (Timezone Safe)
+    // ==========================================
     function getFilteredData() {
-        const now = new Date();
-        const todayStr = formatDateYMD(now);
+        const todayStr = getBangkokDateStr(new Date());
+        const weekRange = getWeekRangeBKK();
 
         let filterFn = () => true;
         if (currentFilter === 'today') {
             filterFn = it => String(it.date).substring(0, 10) === todayStr;
         } else if (currentFilter === 'week') {
-            const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - (now.getDay() || 7) + 1).getTime();
-            filterFn = it => new Date(it.date).getTime() >= startOfWeek;
+            filterFn = it => {
+                const d = String(it.date).substring(0, 10);
+                return d >= weekRange.start && d <= weekRange.end;
+            };
         } else if (currentFilter === 'custom') {
             if (customFilterType === 'date' && selectDateInput.value) {
                 filterFn = it => String(it.date).substring(0, 10) === selectDateInput.value;
@@ -1187,7 +1283,13 @@
         
         displayExpenses.forEach(e => totalC += Number(e.cost) || 0);
 
-        const catStats = { 'เครื่องดื่ม': { sum: 0, count: 0 }, 'ของทอด/ทานเล่น': { sum: 0, count: 0 }, 'ขนมปังปิ้ง': { sum: 0, count: 0 }, 'อาหาร/กะเพรา': { sum: 0, count: 0 } };
+        // โครงสร้างสถิติแยกตามหมวดหมู่ พร้อมแยก สด/สแกน
+        const catStats = { 
+            'เครื่องดื่ม': { sum: 0, count: 0, cash: 0, qr: 0 }, 
+            'ของทอด/ทานเล่น': { sum: 0, count: 0, cash: 0, qr: 0 }, 
+            'ขนมปังปิ้ง': { sum: 0, count: 0, cash: 0, qr: 0 }, 
+            'อาหาร/กะเพรา': { sum: 0, count: 0, cash: 0, qr: 0 } 
+        };
         const menuGrouped = { 'เครื่องดื่ม': {}, 'ของทอด/ทานเล่น': {}, 'ขนมปังปิ้ง': {}, 'อาหาร/กะเพรา': {} };
 
         itemList.innerHTML = '';
@@ -1197,13 +1299,16 @@
             displaySales.forEach(item => {
                 const price = Number(item.totalPrice) || 0;
                 const qty = Number(item.qty) || 1;
+                const isQR = item.paymentMethod === 'promptpay';
+
                 totalS += price;
                 totalPieces += qty;
-                if (item.paymentMethod === 'promptpay') totalQrSum += price; else totalCashSum += price;
+                if (isQR) totalQrSum += price; else totalCashSum += price;
 
                 const cat = catStats[item.category] ? item.category : 'เครื่องดื่ม';
                 catStats[cat].sum += price;
                 catStats[cat].count += qty;
+                if (isQR) catStats[cat].qr += price; else catStats[cat].cash += price;
 
                 if (!menuGrouped[cat][item.name]) menuGrouped[cat][item.name] = { qty: 0, sum: 0 };
                 menuGrouped[cat][item.name].qty += qty;
@@ -1276,14 +1381,22 @@
         totalCost.innerText = `฿${totalC.toLocaleString()}`;
         totalProfit.innerText = `฿${(totalS - totalC).toLocaleString()}`;
 
+        // อัปเดตข้อมูลหมวดหมู่และแจกแจง สด/สแกน
         document.getElementById('catDrinkSum').innerText = `฿${catStats['เครื่องดื่ม'].sum.toLocaleString()}`;
         document.getElementById('catDrinkCount').innerText = `${catStats['เครื่องดื่ม'].count} แก้ว`;
+        document.getElementById('catDrinkPay').innerHTML = `<span>💵 ฿${catStats['เครื่องดื่ม'].cash.toLocaleString()}</span><span>📱 ฿${catStats['เครื่องดื่ม'].qr.toLocaleString()}</span>`;
+
         document.getElementById('catSnackSum').innerText = `฿${catStats['ของทอด/ทานเล่น'].sum.toLocaleString()}`;
         document.getElementById('catSnackCount').innerText = `${catStats['ของทอด/ทานเล่น'].count} รายการ`;
+        document.getElementById('catSnackPay').innerHTML = `<span>💵 ฿${catStats['ของทอด/ทานเล่น'].cash.toLocaleString()}</span><span>📱 ฿${catStats['ของทอด/ทานเล่น'].qr.toLocaleString()}</span>`;
+
         document.getElementById('catBreadSum').innerText = `฿${catStats['ขนมปังปิ้ง'].sum.toLocaleString()}`;
         document.getElementById('catBreadCount').innerText = `${catStats['ขนมปังปิ้ง'].count} ชิ้น`;
+        document.getElementById('catBreadPay').innerHTML = `<span>💵 ฿${catStats['ขนมปังปิ้ง'].cash.toLocaleString()}</span><span>📱 ฿${catStats['ขนมปังปิ้ง'].qr.toLocaleString()}</span>`;
+
         document.getElementById('catFoodSum').innerText = `฿${catStats['อาหาร/กะเพรา'].sum.toLocaleString()}`;
         document.getElementById('catFoodCount').innerText = `${catStats['อาหาร/กะเพรา'].count} จาน/ชุด`;
+        document.getElementById('catFoodPay').innerHTML = `<span>💵 ฿${catStats['อาหาร/กะเพรา'].cash.toLocaleString()}</span><span>📱 ฿${catStats['อาหาร/กะเพรา'].qr.toLocaleString()}</span>`;
 
         menuSummaryList.innerHTML = Object.entries(menuGrouped).map(([cat, items]) => {
             const keys = Object.keys(items);
@@ -1360,14 +1473,14 @@
         if (!sales.length) return alert('ไม่มีข้อมูลยอดขาย');
         let csv = '\uFEFFวันที่,เวลา,ชื่อเมนู,หมวดหมู่,วิธีชำระ,ราคา/หน่วย,จำนวน,ราคารวม\n';
         sales.forEach(s => csv += `"${s.date}","${s.time}","${s.name}","${s.category}","${s.paymentMethod==='promptpay'?'สแกน':'เงินสด'}",${s.unitPrice},${s.qty},${s.totalPrice}\n`);
-        downloadBlob(csv, `FLUKCHAFE_Sales_${formatDateYMD(new Date())}.csv`);
+        downloadBlob(csv, `FLUKCHAFE_Sales_${getBangkokDateStr(new Date())}.csv`);
     }
 
     function exportExpensesToCSV() {
         if (!expenses.length) return alert('ไม่มีข้อมูลต้นทุน');
         let csv = '\uFEFFวันที่,เวลา,รายการ,จำนวนเงิน\n';
         expenses.forEach(e => csv += `"${e.date}","${e.time}","${e.name}",${e.cost}\n`);
-        downloadBlob(csv, `FLUKCHAFE_Expenses_${formatDateYMD(new Date())}.csv`);
+        downloadBlob(csv, `FLUKCHAFE_Expenses_${getBangkokDateStr(new Date())}.csv`);
     }
 
     function downloadBlob(content, filename) {
