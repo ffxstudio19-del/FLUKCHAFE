@@ -14,9 +14,13 @@
     <link rel="icon" type="image/png" href="logo.png">
     <link rel="apple-touch-icon" href="logo.png">
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Firebase Realtime Engine (v8 Compat) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
     <style>
         * { box-sizing: border-box; font-family: 'Kanit', sans-serif; margin: 0; padding: 0; }
-        
         body { 
             background: #0f172a url('bg.jpg') no-repeat center center fixed;
             background-size: cover;
@@ -24,7 +28,6 @@
             padding: 12px; 
             color: #1e293b; 
         }
-
         .container { 
             max-width: 480px; 
             margin: 0 auto; 
@@ -36,7 +39,6 @@
             box-shadow: 0 10px 35px rgba(0, 0, 0, 0.4); 
             border: 1px solid rgba(255, 255, 255, 0.8);
         }
-        
         .brand-header { text-align: center; margin-bottom: 12px; position: relative; }
         .brand-logo { width: 75px; height: 75px; border-radius: 50%; object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 2.5px solid #0284c7; }
         .brand-name-en { font-size: 1.55rem; font-weight: 700; color: #0f172a; margin-top: 4px; line-height: 1.1; letter-spacing: 0.5px; }
@@ -77,18 +79,8 @@
             border-radius: 10px;
             padding: 8px 10px;
         }
-        .custom-filter-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-        }
-        .filter-input-group label {
-            display: block;
-            font-size: 0.7rem;
-            color: #475569;
-            margin-bottom: 3px;
-            font-weight: 600;
-        }
+        .custom-filter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .filter-input-group label { display: block; font-size: 0.7rem; color: #475569; margin-bottom: 3px; font-weight: 600; }
         .filter-input-group input {
             width: 100%;
             padding: 5px 6px;
@@ -137,11 +129,7 @@
             padding-top: 10px;
             border-top: 1px dashed rgba(255, 255, 255, 0.2);
         }
-        .secret-box {
-            background: rgba(255, 255, 255, 0.06);
-            border-radius: 10px;
-            padding: 8px 4px;
-        }
+        .secret-box { background: rgba(255, 255, 255, 0.06); border-radius: 10px; padding: 8px 4px; }
         .secret-title { font-size: 0.7rem; color: #94a3b8; }
         .secret-val { font-size: 1.1rem; font-weight: 600; margin-top: 2px; }
         .secret-val.cost { color: #f87171; }
@@ -149,28 +137,13 @@
         .secret-val.cash { color: #34d399; }
         .secret-val.qr { color: #38bdf8; }
 
-        .category-summary-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            margin-bottom: 12px;
-        }
-        .cat-box {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 8px 10px;
-        }
+        .category-summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+        .cat-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 8px 10px; }
         .cat-title { font-size: 0.75rem; color: #64748b; font-weight: 500; }
         .cat-val { font-size: 1.05rem; font-weight: 600; color: #0f172a; margin-top: 2px; }
         .cat-count { font-size: 0.75rem; color: #0284c7; }
 
-        .cat-selector {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 6px;
-            margin-bottom: 8px;
-        }
+        .cat-selector { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 8px; }
         .cat-btn {
             background: #e2e8f0;
             border: none;
@@ -183,14 +156,7 @@
         }
         .cat-btn.active { background: #0284c7; color: #ffffff; }
 
-        .quick-pills {
-            display: flex;
-            gap: 6px;
-            overflow-x: auto;
-            padding-bottom: 4px;
-            margin-bottom: 8px;
-            scrollbar-width: none;
-        }
+        .quick-pills { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 8px; scrollbar-width: none; }
         .quick-pills::-webkit-scrollbar { display: none; }
         .quick-pill {
             background: #e0f2fe;
@@ -203,7 +169,6 @@
             white-space: nowrap;
             cursor: pointer;
             flex-shrink: 0;
-            transition: background 0.1s;
         }
         .quick-pill:active { background: #bae6fd; }
 
@@ -232,19 +197,8 @@
             white-space: nowrap;
             box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);
         }
-        .btn-order-submit:disabled {
-            background: #94a3b8;
-            cursor: not-allowed;
-            box-shadow: none;
-        }
 
-        .backdate-control {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-top: 6px;
-            padding: 0 2px;
-        }
+        .backdate-control { display: flex; align-items: center; justify-content: space-between; margin-top: 6px; padding: 0 2px; }
         .btn-toggle-backdate {
             background: transparent;
             border: 1px solid #cbd5e1;
@@ -253,35 +207,12 @@
             border-radius: 8px;
             font-size: 0.72rem;
             cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
         }
-        .btn-toggle-backdate.active {
-            background: #fef3c7;
-            color: #b45309;
-            border-color: #f59e0b;
-            font-weight: 600;
-        }
+        .btn-toggle-backdate.active { background: #fef3c7; color: #b45309; border-color: #f59e0b; font-weight: 600; }
 
-        .backdate-box {
-            display: none;
-            background: #fffbeb;
-            border: 1.5px dashed #f59e0b;
-            border-radius: 10px;
-            padding: 8px;
-            margin-top: 6px;
-        }
-        .backdate-box-title {
-            font-size: 0.72rem;
-            color: #b45309;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-        .backdate-inputs {
-            display: flex;
-            gap: 6px;
-        }
+        .backdate-box { display: none; background: #fffbeb; border: 1.5px dashed #f59e0b; border-radius: 10px; padding: 8px; margin-top: 6px; }
+        .backdate-box-title { font-size: 0.72rem; color: #b45309; font-weight: 600; margin-bottom: 4px; }
+        .backdate-inputs { display: flex; gap: 6px; }
         .backdate-inputs input {
             flex: 1;
             padding: 6px 8px;
@@ -290,12 +221,11 @@
             font-size: 0.8rem;
             outline: none;
             background: #ffffff;
-            color: #0f172a;
         }
 
         .suggest-box {
             position: absolute;
-            top: 92px;
+            top: 50px;
             left: 0;
             right: 110px;
             background: #ffffff;
@@ -315,18 +245,9 @@
             justify-content: space-between;
             align-items: center;
             cursor: pointer;
-            color: #1e293b;
         }
-        .suggest-item:last-child { border-bottom: none; }
-        .suggest-item:active, .suggest-item:hover {
-            background: #e0f2fe;
-            color: #0369a1;
-        }
-        .suggest-price {
-            font-weight: 600;
-            color: #0284c7;
-            font-size: 0.85rem;
-        }
+        .suggest-item:hover, .suggest-item:active { background: #e0f2fe; color: #0369a1; }
+        .suggest-price { font-weight: 600; color: #0284c7; font-size: 0.85rem; }
 
         .tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 12px; }
         .tab-btn {
@@ -366,31 +287,12 @@
             background: #e0f2fe;
             padding: 3px 8px;
             border-radius: 6px;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
         }
-        .batch-total-price {
-            font-size: 0.95rem;
-            font-weight: 700;
-            color: #0f172a;
-        }
+        .batch-total-price { font-size: 0.95rem; font-weight: 700; color: #0f172a; }
 
-        .batch-item-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 7px 0;
-            border-bottom: 1px solid #f8fafc;
-        }
+        .batch-item-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid #f8fafc; }
         .batch-item-row:last-child { border-bottom: none; }
-        
-        .batch-item-left {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex: 1;
-        }
+        .batch-item-left { display: flex; align-items: center; gap: 10px; flex: 1; }
         
         .item-check-box {
             width: 24px;
@@ -406,130 +308,38 @@
             flex-shrink: 0;
             background: #ffffff;
             cursor: pointer;
-            user-select: none;
-            -webkit-user-select: none;
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
-            transition: all 0.1s ease;
         }
         
-        .item-done .item-check-box {
-            background: #10b981 !important;
-            border-color: #10b981 !important;
-            color: #ffffff !important;
-        }
-        .item-done .item-title-text {
-            text-decoration: line-through;
-            color: #94a3b8 !important;
-        }
-        .item-done .item-sub-detail {
-            text-decoration: line-through;
-            color: #cbd5e1 !important;
-        }
-        .item-done .item-price-text {
-            color: #94a3b8 !important;
-        }
+        .item-done .item-check-box { background: #10b981 !important; border-color: #10b981 !important; color: #ffffff !important; }
+        .item-done .item-title-text { text-decoration: line-through; color: #94a3b8 !important; }
+        .item-done .item-sub-detail { text-decoration: line-through; color: #cbd5e1 !important; }
+        .item-done .item-price-text { color: #94a3b8 !important; }
 
-        .item-title-text {
-            font-size: 0.9rem;
-            font-weight: 500;
-            color: #1e293b;
-            line-height: 1.25;
-        }
-        .item-title-text.has-recipe {
-            cursor: pointer;
-        }
-        .item-title-text.has-recipe:hover {
-            color: #0284c7;
-            text-decoration: underline;
-        }
-        .item-sub-detail {
-            font-size: 0.72rem;
-            color: #64748b;
-            margin-top: 1px;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 1px 5px;
-            border-radius: 4px;
-            font-size: 0.62rem;
-            margin-left: 4px;
-            background: #f1f5f9;
-            color: #475569;
-        }
+        .item-title-text { font-size: 0.9rem; font-weight: 500; color: #1e293b; }
+        .item-title-text.has-recipe { cursor: pointer; }
+        .item-title-text.has-recipe:hover { color: #0284c7; text-decoration: underline; }
+        .item-sub-detail { font-size: 0.72rem; color: #64748b; }
 
         .pay-badge {
             display: inline-flex;
             align-items: center;
-            gap: 2px;
             padding: 3px 6px;
             border-radius: 6px;
             font-size: 0.65rem;
             font-weight: 500;
             cursor: pointer;
             margin-right: 4px;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
         }
-        .pay-badge.qr {
-            background: #e0f2fe;
-            color: #0369a1;
-            border: 1px solid #bae6fd;
-        }
-        .pay-badge.cash {
-            background: #ecfdf5;
-            color: #047857;
-            border: 1px solid #a7f3d0;
-        }
+        .pay-badge.qr { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+        .pay-badge.cash { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
 
-        .btn-edit {
-            background: #f8fafc;
-            color: #0284c7;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            padding: 3px 6px;
-            font-size: 0.65rem;
-            font-weight: 600;
-            cursor: pointer;
-            margin-right: 3px;
-        }
+        .btn-edit { background: #f8fafc; color: #0284c7; border: 1px solid #cbd5e1; border-radius: 6px; padding: 3px 6px; font-size: 0.65rem; font-weight: 600; cursor: pointer; margin-right: 3px; }
+        .btn-del { background: #fee2e2; color: #ef4444; border: none; border-radius: 6px; padding: 3px 6px; font-size: 0.65rem; font-weight: 600; cursor: pointer; }
 
-        .btn-del {
-            background: #fee2e2;
-            color: #ef4444;
-            border: none;
-            border-radius: 6px;
-            padding: 3px 6px;
-            font-size: 0.65rem;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .summary-group-title {
-            background: #f1f5f9;
-            padding: 5px 8px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: #475569;
-            border-radius: 6px;
-            margin: 8px 0 4px 0;
-        }
-        .summary-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 5px 6px;
-            border-bottom: 1px solid #f8fafc;
-            font-size: 0.85rem;
-            align-items: center;
-        }
-        .price-list-row {
-            cursor: pointer;
-            transition: background 0.15s;
-        }
-        .price-list-row:hover, .price-list-row:active {
-            background: #e0f2fe;
-        }
+        .summary-group-title { background: #f1f5f9; padding: 5px 8px; font-size: 0.8rem; font-weight: 600; color: #475569; border-radius: 6px; margin: 8px 0 4px 0; }
+        .summary-row { display: flex; justify-content: space-between; padding: 5px 6px; border-bottom: 1px solid #f8fafc; font-size: 0.85rem; align-items: center; }
+        .price-list-row { cursor: pointer; }
+        .price-list-row:hover { background: #e0f2fe; }
         .empty-text { text-align: center; color: #94a3b8; padding: 24px 0; font-size: 0.85rem; }
 
         .price-mgr-form { display: flex; gap: 6px; margin-bottom: 8px; }
@@ -540,7 +350,6 @@
             font-size: 0.85rem;
             outline: none;
             background: #ffffff;
-            color: #0f172a;
             width: 100%;
         }
         .price-mgr-form button {
@@ -553,184 +362,23 @@
             font-size: 0.85rem;
             font-weight: 500;
             white-space: nowrap;
-            height: fit-content;
         }
-        .btn-exp-add {
-            background: #ef4444 !important;
-        }
-        .price-search-box {
-            margin-bottom: 8px;
-        }
-        .price-search-box input {
-            width: 100%;
-            padding: 7px 10px;
-            border: 1.5px solid #94a3b8;
-            border-radius: 8px;
-            font-size: 0.8rem;
-            outline: none;
-            background: #f8fafc;
-            color: #0f172a;
-        }
-        .price-search-box input:focus {
-            border-color: #0284c7;
-            background: #fff;
-        }
+        .btn-exp-add { background: #ef4444 !important; }
+        .price-search-box { margin-bottom: 8px; }
+        .price-search-box input { width: 100%; padding: 7px 10px; border: 1.5px solid #94a3b8; border-radius: 8px; font-size: 0.8rem; outline: none; background: #f8fafc; }
 
-        .export-section {
-            margin-top: 16px;
-            padding-top: 12px;
-            border-top: 1.5px dashed #cbd5e1;
-        }
-        .btn-export {
-            width: 100%;
-            background: #10b981;
-            color: #fff;
-            border: none;
-            padding: 8px;
-            border-radius: 8px;
-            font-size: 0.8rem;
-            font-weight: 500;
-            margin-bottom: 6px;
-            cursor: pointer;
-        }
-        .btn-export:active { background: #059669; }
-        
-        .btn-sheets-link {
-            width: 100%;
-            background: #0f766e;
-            color: #fff;
-            border: none;
-            padding: 8px;
-            border-radius: 8px;
-            font-size: 0.8rem;
-            font-weight: 500;
-            margin-bottom: 6px;
-            cursor: pointer;
-            display: block;
-            text-align: center;
-            text-decoration: none;
-        }
-        .btn-sheets-link:active { background: #115e59; }
+        .export-section { margin-top: 16px; padding-top: 12px; border-top: 1.5px dashed #cbd5e1; }
+        .btn-export { width: 100%; background: #10b981; color: #fff; border: none; padding: 8px; border-radius: 8px; font-size: 0.8rem; font-weight: 500; margin-bottom: 6px; cursor: pointer; }
 
-        .bottom-sync-bar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-top: 14px;
-            padding-top: 8px;
-            border-top: 1px solid #f1f5f9;
-        }
-        .sync-status-indicator {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 0.68rem;
-            color: #64748b;
-            padding: 3px 8px;
-            border-radius: 12px;
-            background: #f8fafc;
-        }
-        .status-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: #10b981;
-            display: inline-block;
-            box-shadow: 0 0 6px #10b981;
-        }
-        .status-dot.syncing {
-            background: #0284c7;
-            box-shadow: 0 0 6px #0284c7;
-            animation: pulse 0.8s infinite alternate;
-        }
-        @keyframes pulse {
-            from { opacity: 0.3; }
-            to { opacity: 1; }
-        }
+        .bottom-sync-bar { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; padding-top: 8px; border-top: 1px solid #f1f5f9; }
+        .sync-status-indicator { display: inline-flex; align-items: center; gap: 5px; font-size: 0.68rem; color: #64748b; padding: 3px 8px; border-radius: 12px; background: #f8fafc; }
+        .status-dot { width: 6px; height: 6px; border-radius: 50%; background: #10b981; display: inline-block; box-shadow: 0 0 6px #10b981; }
 
-        .btn-sync-now {
-            background: #f1f5f9;
-            border: 1px solid #cbd5e1;
-            color: #0284c7;
-            padding: 3px 10px;
-            border-radius: 10px;
-            font-size: 0.72rem;
-            font-weight: 600;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            transition: all 0.15s;
-        }
-        .btn-sync-now:active {
-            background: #e0f2fe;
-            transform: scale(0.96);
-        }
-
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(4px);
-            z-index: 2000;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 16px;
-        }
-        .modal-box {
-            background: #ffffff;
-            border-radius: 16px;
-            padding: 18px;
-            width: 100%;
-            max-width: 380px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
-            max-height: 90vh;
-            display: flex;
-            flex-direction: column;
-        }
-        .modal-title {
-            font-size: 1.15rem;
-            font-weight: 600;
-            color: #0284c7;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            flex-shrink: 0;
-        }
-        .recipe-content {
-            background: #f0f9ff;
-            border: 1px solid #bae6fd;
-            border-radius: 10px;
-            padding: 12px;
-            font-size: 0.95rem;
-            color: #0369a1;
-            white-space: pre-line;
-            line-height: 1.5;
-            margin-bottom: 14px;
-            overflow-y: auto;
-        }
-        .btn-modal-close-large {
-            width: 100%;
-            background: #0284c7;
-            color: #fff;
-            border: none;
-            padding: 12px;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(2, 132, 199, 0.3);
-            flex-shrink: 0;
-        }
-        .btn-modal-close-large:active {
-            background: #0369a1;
-            transform: scale(0.98);
-        }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 16px; }
+        .modal-box { background: #ffffff; border-radius: 16px; padding: 18px; width: 100%; max-width: 380px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); max-height: 90vh; display: flex; flex-direction: column; }
+        .modal-title { font-size: 1.15rem; font-weight: 600; color: #0284c7; margin-bottom: 8px; }
+        .recipe-content { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 10px; padding: 12px; font-size: 0.95rem; color: #0369a1; white-space: pre-line; line-height: 1.5; margin-bottom: 14px; overflow-y: auto; }
+        .btn-modal-close-large { width: 100%; background: #0284c7; color: #fff; border: none; padding: 12px; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -739,18 +387,17 @@
     <div class="brand-header">
         <img src="logo.png" alt="FLUKCHAFE" class="brand-logo" onerror="this.style.display='none'">
         <div class="brand-name-en">FLUKCHAFE</div>
-        <div class="brand-name-th">ฟลุ๊ค ชาเฟ่</div>
+        <div class="brand-name-th">ฟลุ๊ค ชาเฟ่ (ระบบเรียลไทม์)</div>
     </div>
 
     <!-- แถบเลือกช่วงเวลา -->
     <div class="time-filter">
         <button type="button" class="filter-btn active" onclick="setTimeFilter('today', this)">☀️ วันนี้</button>
         <button type="button" class="filter-btn" onclick="setTimeFilter('week', this)">📅 อาทิตย์นี้</button>
-        <button type="button" class="filter-btn" onclick="setTimeFilter('custom', this)">📆 กำหนดช่วงเวลา</button>
+        <button type="button" class="filter-btn" onclick="setTimeFilter('custom', this)">📆 กำหนดวัน</button>
         <button type="button" class="filter-btn" onclick="setTimeFilter('all', this)">📋 ทั้งหมด</button>
     </div>
 
-    <!-- กล่องเลือกวันที่และเดือน -->
     <div class="custom-filter-box" id="customFilterBox">
         <div class="custom-filter-grid">
             <div class="filter-input-group">
@@ -768,11 +415,8 @@
     <div class="total-banner">
         <div class="amount" id="totalSales">฿0</div>
         <div class="sub" id="totalSalesSub">ยอดขายรวม</div>
-        
         <div>
-            <button type="button" class="btn-toggle-profit" id="btnToggleProfit" onclick="toggleProfitPanel()">
-                📊 สรุปผลประกอบการ
-            </button>
+            <button type="button" class="btn-toggle-profit" id="btnToggleProfit" onclick="toggleProfitPanel()">📊 สรุปผลประกอบการ</button>
         </div>
 
         <div class="secret-profit-panel" id="secretProfitPanel">
@@ -825,36 +469,25 @@
         <button type="button" class="cat-btn" onclick="setCategory('ขนมปังปิ้ง', this)">🍞 ปังปิ้ง</button>
     </div>
 
-    <!-- แถบปุ่มลัดเมนูด่วน -->
     <div class="quick-pills">
         <button type="button" class="quick-pill" onclick="quickAddPreset('ชาไทย เย็น')">🧋 ชาไทย เย็น</button>
         <button type="button" class="quick-pill" onclick="quickAddPreset('ชาเขียว เย็น')">🍵 ชาเขียว เย็น</button>
         <button type="button" class="quick-pill" onclick="quickAddPreset('โกโก้ เย็น')">🍫 โกโก้ เย็น</button>
         <button type="button" class="quick-pill" onclick="quickAddPreset('อเมริกาโน่ เย็น')">☕ อเมริกาโน่</button>
-        <button type="button" class="quick-pill" onclick="quickAddPreset('เฟรนช์ฟรายส์')">🍟 เฟรนช์ฟรายส์</button>
-        <button type="button" class="quick-pill" onclick="quickAddPreset('ปังเนยนม')">🍞 ปังเนยนม</button>
+        <button type="button" class="quick-pill" onclick="quickAddPreset('ชาเขียวมัทฉะลาเต้ เย็น')">🍵 มัทฉะ</button>
+        <button type="button" class="quick-pill" onclick="quickAddPreset('ข้าวกะเพรา ธรรมดา')">🍳 กะเพรา</button>
     </div>
 
-    <!-- ช่องพิมพ์รับออเดอร์ -->
     <form id="quickForm" class="quick-input-box" onsubmit="return handleAdd(event)">
         <div class="input-btn-group">
-            <input 
-                type="text" 
-                id="quickInput" 
-                placeholder="เช่น ชาไทย เย็น 2, โกโก้ x3, กะเพรา 40 2..." 
-                autocomplete="off" 
-                autofocus
-                oninput="handleSearchSuggest(this.value)"
-            >
+            <input type="text" id="quickInput" placeholder="เช่น ชาไทย เย็น 2, โกโก้ x3, กะเพรา 40 2..." autocomplete="off" autofocus oninput="handleSearchSuggest(this.value)">
             <button type="submit" class="btn-order-submit" id="btnSubmitOrder">รับออเดอร์</button>
         </div>
         <div id="suggestBox" class="suggest-box"></div>
 
         <div class="backdate-control">
-            <span style="font-size:0.72rem; color:#64748b;">💡 ระบุจำนวน: เช่น "ชาไทย 2" หรือ "ชาเขียว x3"</span>
-            <button type="button" class="btn-toggle-backdate" id="btnToggleBackdate" onclick="toggleBackdateMode()">
-                🕒 บันทึกย้อนหลัง
-            </button>
+            <span style="font-size:0.72rem; color:#10b981; font-weight:500;">⚡ ซิงค์สดระดับเสี้ยววินาที (Realtime DB)</span>
+            <button type="button" class="btn-toggle-backdate" id="btnToggleBackdate" onclick="toggleBackdateMode()">🕒 บันทึกย้อนหลัง</button>
         </div>
 
         <div class="backdate-box" id="backdateBox">
@@ -869,7 +502,7 @@
     <div class="tabs">
         <button type="button" class="tab-btn active" id="tabHistory" onclick="switchTab('history')">ประวัติการขาย</button>
         <button type="button" class="tab-btn" id="tabSummary" onclick="switchTab('summary')">สรุปรายเมนู</button>
-        <button type="button" class="tab-btn" id="tabExpenses" onclick="switchTab('expenses')">💸 บันทึกต้นทุน</button>
+        <button type="button" class="tab-btn" id="tabExpenses" onclick="switchTab('expenses')">💸 ต้นทุน</button>
         <button type="button" class="tab-btn" id="tabPrices" onclick="switchTab('prices')">⚙️ ตั้งราคา</button>
     </div>
 
@@ -881,7 +514,6 @@
         <div id="menuSummaryList"></div>
     </div>
 
-    <!-- หน้าบันทึกต้นทุนซื้อของเข้าร้าน -->
     <div class="list-container" id="expensesView" style="display: none;">
         <div class="price-mgr-form">
             <input type="text" id="newExpenseName" placeholder="รายการซื้อของ เช่น ชา/นม/ของทอด" style="flex:2;">
@@ -891,16 +523,15 @@
         <div id="expenseList"></div>
     </div>
 
-    <!-- หน้าจัดการราคาเมนู + สูตรชง (ซิงค์คลาวด์ 100%) -->
     <div class="list-container" id="pricesView" style="display: none;">
         <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:10px; margin-bottom:10px;">
-            <div style="font-size:0.8rem; font-weight:600; color:#0284c7; margin-bottom:6px;">➕ เพิ่ม / แก้ไขราคา & สูตรชง (แชร์ทุกเครื่อง)</div>
+            <div style="font-size:0.8rem; font-weight:600; color:#0284c7; margin-bottom:6px;">➕ เพิ่ม / แก้ไขราคา & สูตรชง (ซิงค์ทุกเครื่องทันที)</div>
             <div class="price-mgr-form" style="margin-bottom:6px;">
                 <input type="text" id="newMenuName" placeholder="ชื่อเมนู เช่น ชาไทย เย็น" style="flex:2;">
                 <input type="number" id="newMenuPrice" placeholder="ราคา" style="flex:1;">
             </div>
             <div class="price-mgr-form" style="margin-bottom:6px;">
-                <textarea id="newMenuRecipe" placeholder="สูตรชง เช่น เบสชาไทย 120ml, นมข้นหวาน 45ml..." rows="3"></textarea>
+                <textarea id="newMenuRecipe" placeholder="สูตรชง เช่น เบสชาไทย 120ml..." rows="3"></textarea>
             </div>
             <button type="button" onclick="addOrUpdatePrice()" style="width:100%; background:#0284c7; color:#fff; border:none; padding:8px; border-radius:8px; font-weight:600; cursor:pointer;">บันทึกเมนูและสูตร</button>
         </div>
@@ -911,8 +542,7 @@
         <div id="priceSettingList"></div>
 
         <div class="export-section">
-            <div style="font-size: 0.75rem; color: #64748b; font-weight: 600; margin-bottom: 6px;">📊 จัดการข้อมูล & รายงาน (Google Sheets / Excel)</div>
-            <button type="button" class="btn-sheets-link" onclick="openGoogleSheets()">🟢 เปิดดูข้อมูลบน Google Sheets</button>
+            <div style="font-size: 0.75rem; color: #64748b; font-weight: 600; margin-bottom: 6px;">📊 จัดการข้อมูล & รายงาน (Excel)</div>
             <button type="button" class="btn-export" onclick="exportSalesToCSV()">📥 ดาวน์โหลดรายงานยอดขาย (CSV/Excel)</button>
             <button type="button" class="btn-export" style="background:#6366f1;" onclick="exportExpensesToCSV()">📥 ดาวน์โหลดรายงานต้นทุน (CSV/Excel)</button>
         </div>
@@ -920,16 +550,12 @@
 
     <div class="bottom-sync-bar">
         <div class="sync-status-indicator">
-            <span class="status-dot" id="syncDot"></span>
-            <span id="syncStatus">เชื่อมต่อข้อมูลสด</span>
+            <span class="status-dot"></span>
+            <span id="syncStatus">⚡ เชื่อมต่อสด Firebase Realtime สำเร็จ</span>
         </div>
-        <button type="button" class="btn-sync-now" id="btnManualSync" onclick="triggerManualSync()">
-            🔄 ซิงค์ด่วน
-        </button>
     </div>
 </div>
 
-<!-- Modal หน้าต่างแสดงสูตรชงเฉพาะเครื่องดื่ม -->
 <div class="modal-overlay" id="recipeModal" onclick="closeRecipeModal(event)">
     <div class="modal-box" onclick="event.stopPropagation()">
         <div class="modal-title" id="recipeModalTitle">📖 สูตรชงเมนู</div>
@@ -938,224 +564,107 @@
     </div>
 </div>
 
-<!-- Modal หน้าต่างแก้ไขข้อมูลออเดอร์ -->
 <div class="modal-overlay" id="editModal">
     <div class="modal-box">
         <div class="modal-title">✏️ แก้ไขข้อมูลออเดอร์</div>
         <input type="hidden" id="editItemId">
-        <div class="modal-group">
-            <label>ชื่อเมนู:</label>
-            <input type="text" id="editItemName">
+        <div class="modal-group" style="margin-bottom:8px;">
+            <label style="font-size:0.75rem; color:#64748b;">ชื่อเมนู:</label>
+            <input type="text" id="editItemName" style="width:100%; padding:6px; border:1px solid #cbd5e1; border-radius:6px;">
         </div>
-        <div class="modal-group">
-            <label>หมวดหมู่:</label>
-            <select id="editItemCategory">
+        <div class="modal-group" style="margin-bottom:8px;">
+            <label style="font-size:0.75rem; color:#64748b;">หมวดหมู่:</label>
+            <select id="editItemCategory" style="width:100%; padding:6px; border:1px solid #cbd5e1; border-radius:6px;">
                 <option value="เครื่องดื่ม">🧋 เครื่องดื่ม</option>
                 <option value="ของทอด/ทานเล่น">🍟 ของทอด/ทานเล่น</option>
                 <option value="ขนมปังปิ้ง">🍞 ขนมปังปิ้ง</option>
                 <option value="อาหาร/กะเพรา">🍳 อาหาร/กะเพรา</option>
             </select>
         </div>
-        <div class="modal-group" style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:12px;">
             <div>
-                <label>ราคาต่อหน่วย (฿):</label>
-                <input type="number" id="editItemUnitPrice">
+                <label style="font-size:0.75rem; color:#64748b;">ราคา/หน่วย:</label>
+                <input type="number" id="editItemUnitPrice" style="width:100%; padding:6px; border:1px solid #cbd5e1; border-radius:6px;">
             </div>
             <div>
-                <label>จำนวน:</label>
-                <input type="number" id="editItemQty" min="1">
+                <label style="font-size:0.75rem; color:#64748b;">จำนวน:</label>
+                <input type="number" id="editItemQty" min="1" style="width:100%; padding:6px; border:1px solid #cbd5e1; border-radius:6px;">
             </div>
         </div>
-        <div class="modal-buttons" style="display: flex; gap: 8px; margin-top: 16px;">
-            <button type="button" class="btn-modal-cancel" style="flex:1; padding: 8px; border-radius: 8px; background: #e2e8f0; border: none; font-weight: 600; color: #475569;" onclick="closeEditModal()">ยกเลิก</button>
-            <button type="button" class="btn-modal-save" style="flex:1; padding: 8px; border-radius: 8px; background: #0284c7; border: none; font-weight: 600; color: #fff;" onclick="saveEditedItem()">บันทึกการแก้ไข</button>
+        <div style="display: flex; gap: 8px;">
+            <button type="button" style="flex:1; padding: 8px; border-radius: 8px; background: #e2e8f0; border: none; font-weight: 600;" onclick="closeEditModal()">ยกเลิก</button>
+            <button type="button" style="flex:1; padding: 8px; border-radius: 8px; background: #0284c7; border: none; font-weight: 600; color: #fff;" onclick="saveEditedItem()">บันทึก</button>
         </div>
     </div>
 </div>
 
 <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbwuVtheTjpEPp33z7VswY70n-C22KfgvnmfzD7yUiyDr4VN_1XFT0zKCd4KMj4ctOMiYA/exec";
-    const GOOGLE_SHEETS_URL = "https://docs.google.com/spreadsheets/d/1EEU-LsVCzD8jbisYSVmy5jMjdTotGOgIW-4ASJlzqYU/edit";
+    // ==========================================
+    // ⚙️ ข้อมูลการเชื่อมต่อ Firebase ของ FLUKCHAFE
+    // ==========================================
+    const firebaseConfig = {
+      apiKey: "AIzaSyD4itM3w5WLXkGiY80s8BsmDEwQeeO7jSE",
+      authDomain: "flukchafe.firebaseapp.com",
+      databaseURL: "https://flukchafe-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "flukchafe",
+      storageBucket: "flukchafe.firebasestorage.app",
+      messagingSenderId: "811727403623",
+      appId: "1:811727403623:web:e3fde9c3722ef81ac9b2c2"
+    };
 
-    const STORAGE_KEY = 'FLUKCHAFE_SHARED_DB_V27';
-    const MENU_PRICES_KEY = 'FLUKCHAFE_SHARED_PRICES_V27';
-    const RECIPES_KEY = 'FLUKCHAFE_SHARED_RECIPES_V27';
-    const EXPENSES_KEY = 'FLUKCHAFE_SHARED_EXP_V27';
-    const DELETED_SALES_KEY = 'FLUKCHAFE_DELETED_SALES_IDS_V27';
-    const DELETED_EXP_KEY = 'FLUKCHAFE_DELETED_EXP_IDS_V27';
-    const OFFLINE_QUEUE_KEY = 'FLUKCHAFE_OFFLINE_QUEUE_V27';
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.database();
 
-    const FAST_POLL_INTERVAL = 3500;
-
-    const DEFAULT_RECIPES = {
+    // ฐานข้อมูลสูตรชงและเมนูมาตรฐาน
+    const MASTER_RECIPES = {
         "เอสเพรสโซ่ เย็น": "📍 เอสเพรสโซ่ • เย็น 20 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 60 ml\n⁃ กาแฟ 3 ช้อนกาแฟ ( 15g )\n⁃ นมจืด 100 ml\n⁃ นมข้นหวาน 20 ml\n⁃ นมข้นจืด 20 ml\n⁃ น้ำเชื่อม 10 ml ( ถ้าหวานน้อยไม่ต้องใส่ )",
-        "เอสเพรสโซ่ ปั่น": "📍 เอสเพรสโซ่ • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 30 ml\n⁃ กาแฟ 5 ช้อนกาแฟ ( 25g )\n⁃ ครีมเทียม(ฟ้า) 1 ช้อนโต๊ะ\n⁃ นมข้นหวาน 60 ml\n⁃ น้ำเชื่อม 40 ml\n⁃ นมข้นจืด 40 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วพูนนิดๆ )",
-        "คาปูชิโน่ เย็น": "📍 คาปูชิโน่ • เย็น 20 ออนซ์\n( ไม่แยกชั้น ใส่ฟองนม )\n⁃ น้ำร้อน 60 ml\n⁃ กาแฟ 3 ช้อนกาแฟ ( 15g )\n⁃ นมจืด 120 ml\n⁃ นมข้นจืด 40 ml\n⁃ น้ำเชื่อม 20 ml ( ถ้าหวานน้อยก็ลดลง )\n⁃ ตีฟองนมใส่ 30 ml",
-        "คาปูชิโน่ ปั่น": "📍 คาปูชิโน่ • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ใส่ฟองนม )\n⁃ น้ำร้อน 30 ml\n⁃ กาแฟ 4 ช้อนกาแฟ ( 20g )\n⁃ ครีมเทียม(ฟ้า) 1 ช้อนโต๊ะ\n⁃ นมจืด 20 ml\n⁃ น้ำเชื่อม 50 ml\n⁃ นมข้นจืด 40 ml\n⁃ น้ำแข็ง 400 g. ( 1 แก้วเต็ม )\n⁃ ตีฟองนมใส่ 30 ml",
+        "เอสเพรสโซ่ ปั่น": "📍 เอสเพรสโซ่ • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 30 ml\n⁃ กาแฟ 5 ช้อนกาแฟ ( 25g )\n⁃ ครีมเทียม(ฟ้า) 1 ช้อนโต๊ะ\n⁃ นมข้นหวาน 60 ml\n⁃ น้ำเชื่อม 40 ml\n⁃ นมข้นจืด 40 ml\n⁃ น้ำแข็ง 440 g.",
+        "คาปูชิโน่ เย็น": "📍 คาปูชิโน่ • เย็น 20 ออนซ์\n( ไม่แยกชั้น ใส่ฟองนม )\n⁃ น้ำร้อน 60 ml\n⁃ กาแฟ 3 ช้อนกาแฟ ( 15g )\n⁃ นมจืด 120 ml\n⁃ นมข้นจืด 40 ml\n⁃ น้ำเชื่อม 20 ml\n⁃ ตีฟองนมใส่ 30 ml",
+        "คาปูชิโน่ ปั่น": "📍 คาปูชิโน่ • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ใส่ฟองนม )\n⁃ น้ำร้อน 30 ml\n⁃ กาแฟ 4 ช้อนกาแฟ ( 20g )\n⁃ ครีมเทียม(ฟ้า) 1 ช้อนโต๊ะ\n⁃ นมจืด 20 ml\n⁃ น้ำเชื่อม 50 ml\n⁃ นมข้นจืด 40 ml\n⁃ น้ำแข็ง 400 g.\n⁃ ตีฟองนมใส่ 30 ml",
         "ลาเต้ เย็น": "📍 ลาเต้ • เย็น 20 ออนซ์\n( แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 60 ml\n⁃ กาแฟ 3 ช้อนกาแฟ ( 15g )\n——————————————\n⁃ นมจืด 100 ml\n⁃ นมข้นจืด 40 ml\n⁃ นมข้นหวาน 40 ml",
-        "ลาเต้ ปั่น": "📍 ลาเต้ • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 30 ml\n⁃ กาแฟ 4 ช้อนกาแฟ ( 20g )\n⁃ ครีมเทียม(ฟ้า) 1 ช้อนโต๊ะ\n⁃ นมจืด 20 ml\n⁃ นมข้นจืด 40 ml\n⁃ นมข้นหวาน 60 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วพูนนิดๆ )",
-        "มอคค่า เย็น": "📍 มอคค่า • เย็น 20 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 60 ml\n⁃ กาแฟ 3.5 ช้อนกาแฟ ( 17g )\n⁃ ผงโกโก้ 2 ช้อนกาแฟ\n⁃ นมจืด 100 ml\n⁃ นมข้นจืด 15 ml\n⁃ นมข้นหวาน 25 ml\n⁃ น้ำเชื่อม 10 ml ( ถ้าหวานน้อยก็ไม่ต้องใส่ )",
-        "มอคค่า ปั่น": "📍 มอคค่า • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 30 ml\n⁃ กาแฟ 5 ช้อนกาแฟ ( 25g )\n⁃ ครีมเทียม(ฟ้า) 1 ช้อนโต๊ะ\n⁃ นมข้นจืด 40 ml\n⁃ นมข้นหวาน 60 ml\n⁃ น้ำเชื่อม 40 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วพูนนิดๆ )",
+        "ลาเต้ ปั่น": "📍 ลาเต้ • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 30 ml\n⁃ กาแฟ 4 ช้อนกาแฟ ( 20g )\n⁃ ครีมเทียม(ฟ้า) 1 ช้อนโต๊ะ\n⁃ นมจืด 20 ml\n⁃ นมข้นจืด 40 ml\n⁃ นมข้นหวาน 60 ml\n⁃ น้ำแข็ง 440 g.",
+        "มอคค่า เย็น": "📍 มอคค่า • เย็น 20 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 60 ml\n⁃ กาแฟ 3.5 ช้อนกาแฟ ( 17g )\n⁃ ผงโกโก้ 2 ช้อนกาแฟ\n⁃ นมจืด 100 ml\n⁃ นมข้นจืด 15 ml\n⁃ นมข้นหวาน 25 ml\n⁃ น้ำเชื่อม 10 ml",
+        "มอคค่า ปั่น": "📍 มอคค่า • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 30 ml\n⁃ กาแฟ 5 ช้อนกาแฟ ( 25g )\n⁃ ครีมเทียม(ฟ้า) 1 ช้อนโต๊ะ\n⁃ นมข้นจืด 40 ml\n⁃ นมข้นหวาน 60 ml\n⁃ น้ำเชื่อม 40 ml\n⁃ น้ำแข็ง 440 g.",
         "คาราเมล มัคคิอาโต เย็น": "📍 คาราเมล มัคคิอาโต • เย็น 20 ออนซ์\n( แยกชั้น ใส่ฟองนม ใส่ซอสคาราเมล )\n⁃ น้ำร้อน 60 ml\n⁃ กาแฟ 3 ช้อนกาแฟ ( 15g )\n⁃ นมจืด 100 ml\n⁃ นมข้นจืด 30 ml\n⁃ นมข้นหวาน 20 ml\n⁃ ตีฟองนม 30 ml\n⁃ ราดซอสคาราเมลบนฟองนมและรอบแก้ว",
-        "คาราเมล มัคคิอาโต ปั่น": "📍 คาราเมล มัคคิอาโต • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 30 ml\n⁃ กาแฟ 5 ช้อนกาแฟ ( 25g )\n⁃ ครีมเทียม(ฟ้า) 1 ช้อนโต๊ะ\n⁃ นมจืด 20 ml\n⁃ นมข้นจืด 30 ml\n⁃ นมข้นหวาน 30 ml\n⁃ ซอสคาราเมล 60 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วพูนนิดๆ )\n⁃ ฟองนมบนแก้ว ราดซอสคาราเมลท็อป",
-        "อเมริกาโน่ เย็น": "📍 อเมริกาโน่ • เย็น 20 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 60 ml\n⁃ กาแฟ 3 ช้อนกาแฟ ( 15g )\n⁃ น้ำเปล่า 130 ml\n⁃ น้ำเชื่อม 20 ml ( ถ้าหวานน้อยก็ไม่ต้องใส่ )",
-        "อเมริกาโน่ ปั่น": "📍 อเมริกาโน่ • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 30 ml\n⁃ กาแฟ 4 ช้อนกาแฟ ( 20g )\n⁃ น้ำเปล่า 60 ml\n⁃ น้ำเชื่อม 60 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วพูนนิดๆ )",
-        "อเมริกาโน่น้ำส้ม เย็น": "📍 อเมริกาโน่ น้ำส้ม • เย็น 20 ออนซ์\n( แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 60 ml\n⁃ กาแฟ 3 ช้อนกาแฟ ( 15g )\n⁃ น้ำเปล่า 100 ml\n⁃ น้ำส้ม 40 ml\n⁃ น้ำเชื่อม 15 ml ( ถ้าหวานน้อยก็ไม่ต้องใส่ )",
-        "อเมริกาโน่น้ำส้ม ปั่น": "📍 อเมริกาโน่ น้ำส้ม • ปั่น 22 ออนซ์\n( แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 20 ml\n⁃ กาแฟ 2 ช้อนกาแฟ ( 10g )——————————————\n⁃ น้ำส้ม 90 ml\n⁃ น้ำเปล่า 40 ml\n⁃ น้ำเชื่อม 40 ml\n⁃ เกลือ 1/32 ช้อนชา\n⁃ น้ำแข็ง 440 g. ( 1 แก้วพูนนิดๆ )\n⁃ ส้มซันคิสตกแต่งบนแก้ว",
-        "อเมริกาโน่น้ำผึ้ง เย็น": "📍 อเมริกาโน่ น้ำผึ้ง • เย็น 20 ออนซ์\n( แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 60 ml\n⁃ กาแฟ 3 ช้อนกาแฟ ( 15g )\n⁃ น้ำเปล่า 100 ml\n⁃ น้ำผึ้ง 30 ml\n⁃ น้ำเชื่อม 10 ml ( ถ้าหวานน้อยก็ไม่ต้องใส่ )",
-        "อเมริกาโน่น้ำผึ้ง ปั่น": "📍 อเมริกาโน่ น้ำผึ้ง • ปั่น 22 ออนซ์\n( แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 20 ml\n⁃ กาแฟ 2 ช้อนกาแฟ ( 10g )——————————————\n⁃ น้ำผึ้ง 80 ml\n⁃ น้ำเปล่า 60 ml\n⁃ น้ำเชื่อม 30 ml\n⁃ เกลือ 1/32 ช้อนชา\n⁃ น้ำแข็ง 440 g. ( 1 แก้วพูนนิดๆ )",
-        "อเมริกาโน่น้ำผึ้งมะนาว เย็น": "📍 อเมริกาโน่ น้ำผึ้งมะนาว • เย็น 20 ออนซ์\n( แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 60 ml\n⁃ กาแฟ 3 ช้อนกาแฟ ( 15g )\n⁃ น้ำเปล่า 100 ml\n⁃ น้ำผึ้ง 30 ml\n⁃ น้ำเชื่อม 10 ml\n⁃ น้ำมะนาวแป้น 10 ml",
-        "อเมริกาโน่น้ำผึ้งมะนาว ปั่น": "📍 อเมริกาโน่ น้ำผึ้งมะนาว • ปั่น 22 ออนซ์\n( แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 20 ml\n⁃ กาแฟ 2 ช้อนกาแฟ ( 10g )——————————————\n⁃ น้ำผึ้ง 80 ml\n⁃ น้ำมะนาว 20 ml\n⁃ น้ำเปล่า 40 ml\n⁃ น้ำเชื่อม 30 ml\n⁃ เกลือ 1/32 ช้อนชา\n⁃ น้ำแข็ง 440 g. ( 1 แก้วพูนนิดๆ )",
-        "อเมริกาโน่ลิ้นจี่ เย็น": "📍 อเมริกาโน่ ลิ้นจี่ • เย็น 20 ออนซ์\n( แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 60 ml\n⁃ กาแฟ 3 ช้อนกาแฟ ( 15g )\n⁃ น้ำเปล่า 100 ml\n⁃ ไซรัปลิ้นจี่ 30 ml\n⁃ น้ำเชื่อม 10 ml",
-        "อเมริกาโน่ลิ้นจี่ ปั่น": "📍 อเมริกาโน่ ลิ้นจี่ • ปั่น 22 ออนซ์\n( แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 20 ml\n⁃ กาแฟ 2 ช้อนกาแฟ ( 10g )——————————————\n⁃ ไซรัปลิ้นจี่ 80 ml\n⁃ น้ำเปล่า 60 ml\n⁃ น้ำเชื่อม 30 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วพูนนิดๆ )",
-        "ชามะนาว เย็น": "📍 ชามะนาว • เย็น 20 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 180 ml\n⁃ ผงชา 5 ช้อนชา ( 25g )\n⁃ น้ำมะนาว 10 ml",
-        "ชามะนาว ปั่น": "📍 ชามะนาว • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 170 ml\n⁃ ผงชา 4 ช้อนชา ( 20g )\n⁃ เกลือปลายช้อน\n⁃ น้ำเชื่อม 60 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วพูนนิดๆ )",
-        "ชามะนาวน้ำผึ้ง เย็น": "📍 ชามะนาวน้ำผึ้ง • เย็น 20 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 170 ml\n⁃ ผงชา 4 ช้อนชา ( 20g )\n⁃ น้ำผึ้ง 30 ml",
-        "ชามะนาวน้ำผึ้ง ปั่น": "📍 ชามะนาวน้ำผึ้ง • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 170 ml\n⁃ ผงชา 4 ช้อนชา ( 20g )\n⁃ เกลือปลายช้อน\n⁃ น้ำผึ้ง 60 ml\n⁃ น้ำเชื่อม 10 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วพูนนิดๆ )",
-        "ชาดำ เย็น": "📍 ชาดำ • เย็น 20 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ เบสชาไทย 150 ml\n⁃ น้ำเชื่อม 40 ml ( ถ้าหวานน้อยก็ลดลง )\n⁃ น้ำเปล่า 40 ml",
-        "ชาดำ ปั่น": "📍 ชาดำ • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ เบสชา 150 ml\n⁃ น้ำเชื่อม 40 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )",
-        "ชาดำมะนาว เย็น": "📍 ชาดำมะนาว • เย็น 20 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ เบสชาไทย 120 ml\n⁃ น้ำเชื่อม 40 ml ( ถ้าหวานน้อยก็ลดลง )\n⁃ น้ำเปล่า 40 ml\n⁃ น้ำมะนาว 30 ml",
-        "ชาดำมะนาว ปั่น": "📍 ชาดำมะนาว • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ เบสชา 150 ml\n⁃ น้ำเชื่อม 40 ml\n⁃ น้ำมะนาว 30 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )",
-        "ชาดำน้ำผึ้ง เย็น": "📍 ชาดำน้ำผึ้ง • เย็น 20 ออนซ์\n( แยกชั้น ไม่ใส่ฟองนม )\n⁃ เบสชาไทย 70 ml\n⁃ ———————————\n⁃ น้ำเปล่า 100 ml\n⁃ น้ำผึ้ง 30 ml\n⁃ น้ำร้อน 15 ml",
-        "ชาดำน้ำผึ้ง ปั่น": "📍 ชาดำน้ำผึ้ง • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ เบสชา 150 ml\n⁃ น้ำเปล่า 20 ml\n⁃ น้ำผึ้ง 50 ml\n⁃ น้ำมะนาว 15 ml ( หรือผงชามะนาว 1-2 ชช. )\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )",
-        "ชาดำมะนาวน้ำผึ้ง เย็น": "📍 ชาดำมะนาวน้ำผึ้ง • เย็น 20 ออนซ์\n( แยกชั้น ไม่ใส่ฟองนม )\n⁃ เบสชาไทย 100 ml\n⁃ ———————————\n⁃ น้ำร้อน 75 ml\n⁃ น้ำผึ้ง 45 ml\n⁃ น้ำมะนาว 15 ml ( หรือผงชามะนาว 1-2 ชช. )",
-        "ชาดำมะนาวน้ำผึ้ง ปั่น": "📍 ชาดำมะนาวน้ำผึ้ง • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ เบสชา 150 ml\n⁃ น้ำเปล่า 20 ml\n⁃ น้ำผึ้ง 50 ml\n⁃ น้ำมะนาว 15 ml ( หรือผงชามะนาว 1-2 ชช. )\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )",
-        "ชาไทย เย็น": "📍 ชาไทย • เย็น 20 ออนซ์ ( ชาใต้ )\n( ไม่แยกชั้น ใส่ฟองนม )\n⁃ เบสชาไทย 120 ml\n⁃ ครีมเทียม(แดง) 1 ช้อนโต๊ะ ( 15g )\n⁃ น้ำตาลทรายขาว 1 ช้อนขาว ( 5g )\n⁃ นมข้นหวาน 45 ml\n⁃ นมจืด 15 ml\n\n• ผงอเคดี้ 20 ออนซ์ •\n⁃ ผง 3 ช้อนโต๊ะ\n⁃ น้ำร้อน 120 ml\n⁃ นมข้นจืด 40 ml\n⁃ นมข้นหวาน 15 ml\n\n• ผงอเคดี้ 12 ออนซ์ •\n⁃ ผง 1.5-2 ช้อนโต๊ะ\n⁃ น้ำร้อน 75 ml\n⁃ นมข้นจืด 25 ml\n⁃ นมข้นหวาน 10 ml",
-        "ชาไทย ปั่น": "📍 ชาไทย • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ เบสชาไทย 150 ml\n⁃ ครีมเทียม(แดง) 1 ช้อนโต๊ะ\n⁃ นมข้นหวาน 60 ml\n⁃ น้ำเชื่อม 35 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )",
-        "ชาเขียว เย็น": "📍 ชาเขียว • เย็น 20 ออนซ์ ( ชาใต้ )\n( ไม่แยกชั้น ใส่ฟองนม )\n⁃ เบสชาเขียว 120 ml\n⁃ ครีมเทียม(แดง) 1 ช้อนโต๊ะ ( 15g )\n⁃ น้ำตาลทรายขาว 1 ช้อนขาว ( 5g )\n⁃ นมข้นหวาน 45 ml\n⁃ นมจืด 15 ml\n\n• ผงอเคดี้ 20 ออนซ์ •\n⁃ ผง 3 ช้อนโต๊ะ\n⁃ น้ำร้อน 120 ml\n⁃ นมข้นจืด 40 ml\n⁃ นมข้นหวาน 15 ml\n\n• ผงอเคดี้ 12 ออนซ์ •\n⁃ ผง 1.5-2 ช้อนโต๊ะ\n⁃ น้ำร้อน 75 ml\n⁃ นมข้นจืด 25 ml\n⁃ นมข้นหวาน 10 ml",
-        "ชาเขียว ปั่น": "📍 ชาเขียว • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ เบสชาไทย 150 ml\n⁃ ครีมเทียม(แดง) 1 ช้อนโต๊ะ\n⁃ นมข้นหวาน 60 ml\n⁃ น้ำเชื่อม 35 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )",
-        "ชานม เย็น": "📍 ชานม • เย็น 20 ออนซ์ ( อเคดี้ )\n( ไม่แยกชั้น ใส่ฟองนม )\n⁃ น้ำร้อน 120 ml\n⁃ ผง 3 ช้อนโต๊ะ\n⁃ นมข้นจืด 40 ml\n⁃ นมข้นหวาน 15 ml\n⁃ นมสด 15 ml",
-        "ชานม ปั่น": "📍 ชานม • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 70 ml\n⁃ ผง 3.5 - 4 ช้อนโต๊ะ\n⁃ นมข้นจืด 50 ml\n⁃ นมข้นหวาน 30 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วพูนนิดๆ )",
-        "โกโก้ เย็น": "📍 โโกโก้ • เย็น 20 ออนซ์ ( ดัทช์ช้อย )\n( ไม่แยกชั้น ใส่ฟองนม )\n⁃ น้ำร้อน 100 ml\n⁃ ผง 2 ช้อนโต๊ะ\n⁃ ครีมเทียม(แดง) 1 ช้อนกลาง ( 10g )\n⁃ น้ำตาลทรายขาว 1 ช้อนกลาง ( 10g )\n⁃ นมข้นจืด 20 ml\n⁃ นมข้นหวาน 50 ml\n⁃ นมสด 15 ml",
-        "โกโก้ ปั่น": "📍 โกโก้ • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 90 ml\n⁃ ผง 2 ช้อนโต๊ะ\n⁃ ครีมเทียม(แดง) 1 ช้อนกลาง ( 10g )\n⁃ น้ำตาลทรายขาว 1 ช้อนกลาง ( 10g )\n⁃ นมข้นจืด 30 ml\n⁃ นมข้นหวาน 45 ml\n⁃ น้ำเชื่อม 35 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วพูนนิดๆ )",
-        "นมชมพู เย็น": "📍 นมชมพู • เย็น 20 ออนซ์ ( อเคดี้ )\n( ไม่แยกชั้น ใส่ฟองนม )\n⁃ น้ำร้อน 120 ml\n⁃ ผง 3 ช้อนโต๊ะ\n⁃ นมข้นจืด 40 ml\n⁃ นมข้นหวาน 20 ml\n⁃ นมสด 15 ml",
-        "นมชมพู ปั่น": "📍 นมชมพู • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 70 ml\n⁃ ผง 3.5 - 4 ช้อนโต๊ะ\n⁃ นมข้นจืด 50 ml\n⁃ นมข้นหวาน 30 ml\n⁃ น้ำเชื่อม 20 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วพูนนิดๆ )",
-        "โอวัลติน เย็น": "📍 โอวัลติน • เย็น 20 ออนซ์ ( อเคดี้ )\n( ไม่แยกชั้น ใส่ฟองนม )\n⁃ น้ำร้อน 120 ml\n⁃ ผง 3.5 ช้อนโต๊ะ\n⁃ นมข้นจืด 20 ml\n⁃ นมข้นหวาน 30 ml\n⁃ นมสด 30 ml",
-        "โอวัลติน ปั่น": "📍 โอวัลติน • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 100 ml\n⁃ ผง 3.5 - 4 ช้อนโต๊ะ\n⁃ นมข้นจืด 40 ml\n⁃ นมข้นหวาน 40 ml\n⁃ น้ำเชื่อม 25 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วพูนนิดๆ )",
-        "เผือก เย็น": "📍 เผือก • เย็น 20 ออนซ์ ( อเคดี้ )\n( ไม่แยกชั้น ใส่ฟองนม )\n⁃ น้ำร้อน 120 ml\n⁃ ผง 3 ช้อนโต๊ะ\n⁃ นมข้นจืด 20 ml\n⁃ นมข้นหวาน 30 ml\n⁃ นมสด 30 ml",
-        "เผือก ปั่น": "📍 เผือก • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 60 ml\n⁃ ผง 3.5 - 4 ช้อนโต๊ะ\n⁃ นมข้นจืด 50 ml\n⁃ นมข้นหวาน 40 ml\n⁃ น้ำเชื่อม 30 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วพูนนิดๆ )",
-        "แคนตาลูป เย็น": "📍 แคนตาลูป • เย็น 20 ออนซ์ ( อเคดี้ )\n( ไม่แยกชั้น ใส่ฟองนม )\n⁃ น้ำร้อน 100 ml\n⁃ ผง 3 ช้อนโต๊ะ\n⁃ นมข้นจืด 30 ml\n⁃ นมข้นหวาน 30 ml\n⁃ นมสด 30 ml",
-        "แคนตาลูป ปั่น": "📍 แคนตาลูป • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 60 ml\n⁃ ผง 3.5 - 4 ช้อนโต๊ะ\n⁃ นมข้นจืด 50 ml\n⁃ นมข้นหวาน 40 ml\n⁃ น้ำเชื่อม 30 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วพูนนิดๆ )",
-        "ชาเขียวมัทฉะลาเต้ เย็น": "📍 ชาเขียวมัทฉะลาเต้ • เย็น 20 ออนซ์ ( อเคดี้ )\n( ไม่แยกชั้น ใส่ฟองนม )\n⁃ น้ำร้อน 120 ml\n⁃ ผง 3 ช้อนโต๊ะ\n⁃ นมข้นจืด 40 ml\n⁃ นมข้นหวาน 20 ml\n⁃ นมสด 15 ml",
-        "ชาเขียวมัทฉะลาเต้ ปั่น": "📍 ชาเขียวมัทฉะลาเต้ • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 70 ml\n⁃ ผง 3.5 - 4 ช้อนโต๊ะ\n⁃ นมข้นจืด 40 ml\n⁃ นมข้นหวาน 30 ml\n⁃ น้ำเชื่อม 30 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วพูนนิดๆ )",
-        "นมสด เย็น": "📍 นมสด • เย็น 20 ออนซ์ ( ผงอเคดี้ )\n( ไม่แยกชั้น ใส่ฟองนม )\n⁃ น้ำร้อน 120 ml\n⁃ ผง 3 ช้อนโต๊ะ\n⁃ นมข้นจืด 40 ml\n⁃ นมข้นหวาน 20 ml\n⁃ นมสด 15 ml",
-        "นมสด ปั่น": "📍 นมสด • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 70 ml\n⁃ ผง 3.5 - 4 ช้อนโต๊ะ\n⁃ นมข้นจืด 50 ml\n⁃ นมข้นหวาน 30 ml\n⁃ น้ำเชื่อม 20 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วพูนนิดๆ )",
-        "นมสดคาราเมล เย็น": "📍 นมสดคาราเมล • เย็น 20 ออนซ์ ( ผงอเคดี้ )\n( ไม่แยกชั้น ราดซอสคาราเมล )\n⁃ น้ำร้อน 140 ml\n⁃ ผงนมสด 3.5 ช้อนโต๊ะ\n⁃ นมข้นจืด 40 ml\n⁃ ไซรัปคาราเมล 40 ml\n⁃ นมข้นหวาน 20 ml\n⁃ ราดซอสคาราเมลรอบแก้ว",
-        "นมสดคาราเมล ปั่น": "📍 นมสดคาราเมล • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ราดซอสคาราเมล )\n⁃ น้ำร้อน 100 ml\n⁃ ผงนมสด 3.5 ช้อนโต๊ะ\n⁃ นมข้นจืด 40 ml\n⁃ ไซรัปคาราเมล 60 ml\n⁃ นมข้นหวาน 20 ml\n⁃ น้ำเชื่อม 20 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วพูนนิดๆ )\n⁃ ราดซอสคาราเมลรอบแก้ว",
-        "นมสดบราวน์ชูการ์ เย็น": "📍 นมสดบราวน์ชูการ์ • เย็น 20 ออนซ์ ( ผงอเคดี้ )\n( ไม่แยกชั้น ราดซอสบราวน์ชูการ์ )\n⁃ น้ำร้อน 120 ml\n⁃ ผงนมสด 3.5 ช้อนโต๊ะ\n⁃ นมข้นจืด 30 ml\n⁃ นมข้นหวาน 40 ml\n⁃ บราวน์ชูการ์ราดรอบแก้ว",
-        "นมสดบราวน์ชูการ์ ปั่น": "📍 นมสดบราวน์ชูการ์ • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ราดซอสคาราเมล )\n⁃ น้ำร้อน 60 ml\n⁃ ผงนมสด 2 ช้อนโต๊ะ\n⁃ นมข้นจืด 40 ml\n⁃ บราวน์ชูการ์ 40 ml\n⁃ นมข้นหวาน 30 ml\n⁃ น้ำเชื่อม 10 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ ราดบราวน์ชูการ์รอบแก้ว",
-        "นมสดสตอเบอร์รี่ เย็น": "📍 นมสดสตอเบอร์รี่ • เย็น 20 ออนซ์\n( แยกชั้น ใส่ซอสสตอเบอร์รี่ )\n⁃ ไซรัปสตอ 40 ml\n⁃ ซอสสตอ 2 ช้อนโต๊ะ\n——————————————\n⁃ นมสดเมจิ 140 ml\n⁃ นมข้นหวาน 30 ml\n⁃ นมข้นจืด 30 ml",
-        "นมสดสตอเบอร์รี่ ปั่น": "📍 นมสดสตอเบอร์รี่ • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ราดไซรัปสตอรอบแก้ว )\n⁃ ไซรัปสตอ 50 ml\n⁃ นมข้นหวาน 50 ml\n⁃ นมสดเมจิ 50 ml\n⁃ น้ำเชื่อม 10 ml\n⁃ ซอสสตอ 2 ช้อนโต๊ะ\n⁃ สตอเบอร์รี่ 3-4 ชิ้น\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ ราดไซรัปสตอรอบแก้ว",
-        "สตอเบอร์รี่ปั่น โยเกิร์ต": "📍 สตอเบอร์รี่ปั่น โยเกิร์ต • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ราดซอสสตอ,โยเกิร์ตรอบแก้ว )\n⁃ น้ำร้อน 40 ml\n⁃ ไซรัปสตอ 50 ml\n⁃ น้ำเชื่อม 50 ml\n⁃ ซอสสตอ 2 ช้อนโต๊ะ\n⁃ สตอเบอร์รี่ 3-4 ชิ้น\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ ราดไซรัปสตอ,โยเกิร์ต รอบแก้ว",
-        "สตอเบอร์รี่ เย็น": "📍 สตอเบอร์รี่ • เย็น 20 ออนซ์\n( ไม่แยกชั้น ใส่สตอเบอร์รี่ )\n⁃ ไซรัปสตอ 60 ml\n⁃ น้ำเปล่า 140 ml\n⁃ ใส่สตอท็อปปิ้งบน 1 ชิ้น",
-        "สตอเบอร์รี่ ปั่น": "📍 สตอเบอร์รี่ • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ราดซอสสตอรอบแก้ว )\n⁃ น้ำร้อน 40 ml\n⁃ ไซรัปสตอ 50 ml\n⁃ น้ำเชื่อม 50 ml\n⁃ ซอสสตอ 2 ช้อนโต๊ะ\n⁃ สตอเบอร์รี่ 3-4 ชิ้น\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )",
-        "ชาไทยนมสดสตอเบอร์รี่ เย็น": "📍 ชาไทยนมสดสตอเบอร์รี่ • เย็น 20 ออนซ์\n( แยก 3 ชั้น )\n⁃ ไซรัปสตอ 40 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n———————————\n⁃ นมสด 100 ml\n⁃ นมข้นจืด 40 ml\n⁃ นมข้นหวาน 30 ml\n———————————\n⁃ ราดเบสชาไทย 60 ml",
-        "ชาไทยโกโก้ เย็น": "📍 ชาไทยโกโก้ • เย็น 20 ออนซ์\n( แยกชั้น )\n⁃ เบสชาไทย 90 ml\n⁃ นมข้นจืด 40 ml\n⁃ นมข้นหวาน 40 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n———————————\n⁃ ผงโกโก้ 1 ช้อนกลาง ( 10g )\n⁃ น้ำร้อน 50 ml \n⁃ ราดบนสุด",
-        "ชาเขียวนมสดสตอเบอร์รี่ เย็น": "📍 ชาเขียวนมสดสตอเบอร์รี่ • เย็น 20 ออนซ์\n( แยก 3 ชั้น )\n⁃ ไซรัปสตอ 40 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n———————————\n⁃ นมสด 100 ml\n⁃ นมข้นจืด 40 ml\n⁃ นมข้นหวาน 30 ml\n———————————\n⁃ ราดเบสชาเขียว 60 ml",
-        "ชาเขียวโกโก้ เย็น": "📍 ชาเขียวโกโก้ • เย็น 20 ออนซ์\n( แยกชั้น )\n⁃ เบสชาเขียว 90 ml\n⁃ นมข้นจืด 40 ml\n⁃ นมข้นหวาน 40 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n———————————\n⁃ ผงโกโก้ 1 ช้อนกลาง ( 10g )\n⁃ น้ำร้อน 50 ml \n⁃ ราดบนสุด",
-        "นมสดโอริโอ้ ปั่น": "📍 นมสดโอริโอ้ปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น เสียบโอริโอ้ 1 ชิ้น )\n⁃ นมสด 100 ml\n⁃ นมข้นหวาน 60 ml\n⁃ นมข้นจืด 30 ml\n⁃ น้ำเชื่อม 20 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ โอริโอ้ปั่น 2 ชิ้น ( เสียบบน 1 ชิ้น )",
-        "นมสดโอริโอ้ คาราเมล ปั่น": "📍 นมสดโอริโอ้ คาราเมล • ปั่น 22 ออนซ์\n( ไม่แยกชั้น เสียบโอริโอ้ 1 ชิ้น )\n⁃ นมสด 100 ml\n⁃ ไซรัปคาราเมล 45 ml\n⁃ นมข้นหวาน 60 ml\n⁃ นมข้นจืด 30 ml\n⁃ น้ำเชื่อม 30 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ โอริโอ้ปั่น 2 ชิ้น ( เสียบบน 1 ชิ้น )",
-        "ชาไทยโอริโอ้ ปั่น": "📍 ชาไทยโอริโอ้ปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น เสียบโอริโอ้ 1 ชิ้น )\n⁃ เบสชา 120 ml\n⁃ ครีมเทียม 1 ช้อนโต๊ะ\n⁃ นมข้นหวาน 60 ml\n⁃ นมข้นจืด 30 ml\n⁃ น้ำเชื่อม 30 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ โอริโอ้ปั่น 2 ชิ้น ( เสียบบน 1 ชิ้น )",
-        "ชาเขียวโอริโอ้ ปั่น": "📍 ชาเขียวโอริโอ้ปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น เสียบโอริโอ้ 1 ชิ้น )\n⁃ เบสชา 120 ml\n⁃ ครีมเทียม 1 ช้อนโต๊ะ\n⁃ นมข้นหวาน 60 ml\n⁃ นมข้นจืด 30 ml\n⁃ น้ำเชื่อม 30 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ โอริโอ้ปั่น 2 ชิ้น ( เสียบบน 1 ชิ้น )",
-        "โกโก้โอริโอ้ ปั่น": "📍 โโกโก้โอริโอ้ปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น เสียบโอริโอ้ 1 ชิ้น )\n⁃ น้ำร้อน 100 ml\n⁃ ผงโกโก้ 2 ช้อนโต๊ะ\n⁃ ครีมเทียม 1 ช้อนกลาง ( 10g )\n⁃ นมข้นหวาน 50 ml\n⁃ นมข้นจืด 30 ml\n⁃ น้ำเชื่อม 30 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ โอริโอ้ปั่น 2 ชิ้น ( เสียบบน 1 ชิ้น )",
-        "นมชมพูโอริโอ้ ปั่น": "📍 นมชมพูโอริโอ้ปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น เสียบโอริโอ้ 1 ชิ้น )\n⁃ น้ำร้อน 70 ml\n⁃ ผง 3.5 - 4 ช้อนโต๊ะ\n⁃ นมข้นจืด 50 ml\n⁃ นมข้นหวาน 30 ml\n⁃ น้ำเชื่อม 20 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ โอริโอ้ปั่น 2 ชิ้น ( เสียบบน 1 ชิ้น )",
-        "โอวัลตินโอริโอ้ ปั่น": "📍 โอวัลตินโอริโอ้ปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น เสียบโอริโอ้ 1 ชิ้น )\n⁃ น้ำร้อน 100 ml\n⁃ ผง 3.5 - 4 ช้อนโต๊ะ\n⁃ นมข้นจืด 40 ml\n⁃ นมข้นหวาน 40 ml\n⁃ น้ำเชื่อม 25 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ โอริโอ้ปั่น 2 ชิ้น ( เสียบบน 1 ชิ้น )",
-        "กาแฟโอริโอ้ ปั่น": "📍 กาแฟโอริโอ้ปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น เสียบโอริโอ้ 1 ชิ้น )\n⁃ น้ำร้อน 30 ml\n⁃ กาแฟ 4 ช้อนกาแฟ ( 20g )\n⁃ ครีมเทียม(ฟ้า) 1 ช้อนโต๊ะ \n⁃ นมจืด 20 ml\n⁃ น้ำเชื่อม 50 ml\n⁃ นมข้นจืด 40 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ โอริโอ้ปั่น 2 ชิ้น ( เสียบบน 1 ชิ้น )",
-        "นมเผือกโอริโอ้ ปั่น": "📍 นมเผือกโอริโอ้ปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น เสียบโอริโอ้ 1 ชิ้น )\n⁃ น้ำร้อน 60 ml\n⁃ ผง 3.5 - 4 ช้อนโต๊ะ\n⁃ นมข้นจืด 50 ml\n⁃ นมข้นหวาน 40 ml\n⁃ น้ำเชื่อม 30 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ โอริโอ้ปั่น 2 ชิ้น ( เสียบบน 1 ชิ้น )",
-        "มะพร้าวปั่นนมสด": "📍 มะพร้าวปั่นนมสด • ปั่น 22 ออนซ์\n( ไม่แยกชั้น )\n⁃ ไซรัปมะพร้าว 50 ml\n⁃ นมข้นหวาน 10 ml\n⁃ น้ำร้อน 20 ml\n⁃ นมสด 100 ml\n⁃ น้ำเชื่อม 10 ml",
-        "แอปเปิ้ล ปั่น": "📍 แอปเปิ้ลปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ราดไซรัปรอบแก้ว )\n⁃ ไซรัปแอปเปิ้ล 60 ml\n⁃ น้ำเชื่อม 20 ml\n⁃ น้ำโซดา 150 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ ราดไซรัปแอปเปิ้ลรอบแก้ว",
-        "บลูฮาวาย ปั่น": "📍 บลูฮาวายปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น )\n⁃ ไซรัปบลูฮาวาย 100 ml\n⁃ น้ำเชื่อม 30 ml\n⁃ น้ำร้อน 30 ml\n⁃ น้ำแข็ง 400 g. ( 1 แก้ว )",
-        "ลิ้นจี่ ปั่น": "📍 ลิ้นจี่ปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ราดไซรัปรอบแก้ว )\n⁃ ไซรัปลิ้นจี่ 50 ml\n⁃ น้ำเชื่อม 40 ml\n⁃ น้ำเปล่า 80 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ ราดไซรัปรอบแก้ว",
-        "กีวี่ ปั่น": "📍 กีวี่ปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ราดไซรัปรอบแก้ว )\n⁃ ไซรัปกีวี่ 45 ml\n⁃ น้ำเชื่อม 40 ml\n⁃ น้ำเปล่า 120 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ ราดไซรัปแอปเปิ้ลรอบแก้ว",
-        "ส้ม ปั่น": "📍 ส้มปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ราดไซรัปรอบแก้ว )\n⁃ ไซรัปส้ม 70 ml\n⁃ น้ำเชื่อม 30 ml\n⁃ น้ำเปล่า 50 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ ราดไซรัปแอปเปิ้ลรอบแก้ว",
-        "องุ่น ปั่น": "📍 องุ่นปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ราดไซรัปรอบแก้ว )\n⁃ ไซรัปองุ่น 70 ml\n⁃ น้ำเชื่อม 30 ml\n⁃ น้ำโซดา 100 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ ราดไซรัปแอปเปิ้ลรอบแก้ว",
-        "บลูเบอร์รี่ ปั่น": "📍 บลูเบอร์รี่ปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ราดไซรัปรอบแก้ว )\n⁃ ไซรัป 70 ml\n⁃ น้ำเชื่อม 30 ml\n⁃ น้ำโซดา 100 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ ราดไซรัปแอปเปิ้ลรอบแก้ว",
-        "แดงโซดา เย็น": "📍 แดงโซดา • เย็น 20 ออนซ์\n( แยกชั้น )\n⁃ แดงเฮลูบอย 45 ml\n⁃ น้ำโซดา 45 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n⁃ เทโซดาให้เต็มแก้ว",
+        "อเมริกาโน่ เย็น": "📍 อเมริกาโน่ • เย็น 20 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 60 ml\n⁃ กาแฟ 3 ช้อนกาแฟ ( 15g )\n⁃ น้ำเปล่า 130 ml\n⁃ น้ำเชื่อม 20 ml ( ถ้าหวานน้อยไม่ต้องใส่ )",
+        "อเมริกาโน่ ปั่น": "📍 อเมริกาโน่ • ปั่น 22 ออนซ์\n⁃ น้ำร้อน 30 ml\n⁃ กาแฟ 4 ช้อนกาแฟ ( 20g )\n⁃ น้ำเปล่า 60 ml\n⁃ น้ำเชื่อม 60 ml\n⁃ น้ำแข็ง 440 g.",
+        "อเมริกาโน่น้ำส้ม เย็น": "📍 อเมริกาโน่ น้ำส้ม • เย็น 20 ออนซ์\n( แยกชั้น )\n⁃ น้ำร้อน 60 ml\n⁃ กาแฟ 3 ช้อนกาแฟ ( 15g )\n⁃ น้ำเปล่า 100 ml\n⁃ น้ำส้ม 40 ml\n⁃ น้ำเชื่อม 15 ml",
+        "ชาไทย เย็น": "📍 ชาไทย • เย็น 20 ออนซ์ ( ชาใต้ )\n( ไม่แยกชั้น ใส่ฟองนม )\n⁃ เบสชาไทย 120 ml\n⁃ ครีมเทียม(แดง) 1 ช้อนโต๊ะ ( 15g )\n⁃ น้ำตาลทรายขาว 1 ช้อนขาว ( 5g )\n⁃ นมข้นหวาน 45 ml\n⁃ นมจืด 15 ml",
+        "ชาไทย ปั่น": "📍 ชาไทย • ปั่น 22 ออนซ์\n⁃ เบสชาไทย 150 ml\n⁃ ครีมเทียม(แดง) 1 ช้อนโต๊ะ\n⁃ นมข้นหวาน 60 ml\n⁃ น้ำเชื่อม 35 ml\n⁃ น้ำแข็ง 440 g.",
+        "ชาเขียว เย็น": "📍 ชาเขียว • เย็น 20 ออนซ์ ( ชาใต้ )\n( ไม่แยกชั้น ใส่ฟองนม )\n⁃ เบสชาเขียว 120 ml\n⁃ ครีมเทียม(แดง) 1 ช้อนโต๊ะ ( 15g )\n⁃ น้ำตาลทรายขาว 1 ช้อนขาว ( 5g )\n⁃ นมข้นหวาน 45 ml\n⁃ นมจืด 15 ml",
+        "ชาเขียว ปั่น": "📍 ชาเขียว • ปั่น 22 ออนซ์\n⁃ เบสชาเขียว 150 ml\n⁃ ครีมเทียม(แดง) 1 ช้อนโต๊ะ\n⁃ นมข้นหวาน 60 ml\n⁃ น้ำเชื่อม 35 ml\n⁃ น้ำแข็ง 440 g.",
+        "ชามะนาว เย็น": "📍 ชามะนาว • เย็น 20 ออนซ์\n⁃ น้ำร้อน 180 ml\n⁃ ผงชา 5 ช้อนชา ( 25g )\n⁃ น้ำมะนาว 10 ml",
+        "โกโก้ เย็น": "📍 โกโก้ • เย็น 20 ออนซ์ ( ดัทช์ช้อย )\n⁃ น้ำร้อน 100 ml\n⁃ ผง 2 ช้อนโต๊ะ\n⁃ ครีมเทียม(แดง) 1 ช้อนกลาง ( 10g )\n⁃ น้ำตาลทรายขาว 1 ช้อนกลาง ( 10g )\n⁃ นมข้นจืด 20 ml\n⁃ นมข้นหวาน 50 ml\n⁃ นมสด 15 ml",
+        "โกโก้ ปั่น": "📍 โกโก้ • ปั่น 22 ออนซ์\n⁃ น้ำร้อน 90 ml\n⁃ ผง 2 ช้อนโต๊ะ\n⁃ ครีมเทียม(แดง) 1 ช้อนกลาง ( 10g )\n⁃ นมข้นจืด 30 ml\n⁃ นมข้นหวาน 45 ml\n⁃ น้ำเชื่อม 35 ml\n⁃ น้ำแข็ง 440 g.",
+        "นมสดโอริโอ้ ปั่น": "📍 นมสดโอริโอ้ปั่น • ปั่น 22 ออนซ์\n⁃ นมสด 100 ml\n⁃ นมข้นหวาน 60 ml\n⁃ นมข้นจืด 30 ml\n⁃ น้ำเชื่อม 20 ml\n⁃ น้ำแข็ง 440 g.\n⁃ โอริโอ้ปั่น 2 ชิ้น ( เสียบบน 1 ชิ้น )",
+        "ชาเขียวมัทฉะลาเต้ เย็น": "📍 ชาเขียวมัทฉะลาเต้ • เย็น 20 ออนซ์\n⁃ น้ำร้อน 120 ml\n⁃ ผง 3 ช้อนโต๊ะ\n⁃ นมข้นจืด 40 ml\n⁃ นมข้นหวาน 20 ml\n⁃ นมสด 15 ml",
         "แดงมะนาวโซดา เย็น": "📍 แดงมะนาวโซดา • เย็น 20 ออนซ์\n( แยกชั้น )\n⁃ แดงเฮลูบอย 45 ml\n⁃ น้ำมะนาว 20 ml\n⁃ น้ำโซดา 100 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n⁃ เทโซดาให้เต็มแก้ว",
-        "เขียวโซดา เย็น": "📍 เขียวโซดา • เย็น 20 ออนซ์\n( แยกชั้น )\n⁃ เขียวเฮลูบอย 45 ml\n⁃ น้ำโซดา 45 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n⁃ เทโซดาให้เต็มแก้ว",
-        "เขียวมะนาวโซดา เย็น": "📍 เขียวมะนาวโซดา • เย็น 20 ออนซ์\n( แยกชั้น )\n⁃ เขียวเฮลูบอย 45 ml\n⁃ น้ำมะนาว 20\n⁃ น้ำโซดา 100 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n⁃ เทโซดาให้เต็มแก้ว",
-        "ชามะนาวโซดา เย็น": "📍 ชามะนาวโซดา • เย็น 20 ออนซ์\n( แยกชั้น )\n⁃ น้ำร้อน 80 ml\n⁃ ผงชามะนาว 2 ช้อนชา ( 10g )\n⁃ น้ำมะนาว 10 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n⁃ เทโซดาให้เต็มแก้ว",
-        "บลูฮาวายโซดา เย็น": "📍 บลูฮาวายโซดา • เย็น 20 ออนซ์\n( แยกชั้น )\n⁃ ไซรัป 45 ml\n⁃ น้ำโซดา 100 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n⁃ เทโซดาให้เต็มแก้ว",
-        "สตอเบอร์รี่โซดา เย็น": "📍 สตอเบอร์รี่โซดา • เย็น 20 ออนซ์\n( แยกชั้น )\n⁃ ไซรัป 45 ml\n⁃ น้ำโซดา 100 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n⁃ เทโซดาให้เต็มแก้ว",
-        "ลิ้นจี่โซดา เย็น": "📍 ลิ้นจี่โซดา • เย็น 20 ออนซ์\n( แยกชั้น )\n⁃ ไซรัป 45 ml\n⁃ น้ำโซดา 100 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n⁃ เทโซดาให้เต็มแก้ว",
-        "กีวี่โซดา เย็น": "📍 กีวี่โซดา • เย็น 20 ออนซ์\n( แยกชั้น )\n⁃ ไซรัป 45 ml\n⁃ น้ำโซดา 100 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n⁃ เทโซดาให้เต็มแก้ว",
-        "ส้มโซดา เย็น": "📍 ส้มโซดา • เย็น 20 ออนซ์\n( แยกชั้น )\n⁃ ไซรัป 45 ml\n⁃ น้ำโซดา 100 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n⁃ เทโซดาให้เต็มแก้ว",
-        "แอปเปิ้ลโซดา เย็น": "📍 แอปเปิ้ลโซดา • เย็น 20 ออนซ์\n( แยกชั้น )\n⁃ ไซรัป 45 ml\n⁃ น้ำโซดา 100 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n⁃ เทโซดาให้เต็มแก้ว",
-        "องุ่นโซดา เย็น": "📍 องุ่นโซดา • เย็น 20 ออนซ์\n( แยกชั้น )\n⁃ ไซรัป 45 ml\n⁃ น้ำโซดา 100 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n⁃ เทโซดาให้เต็มแก้ว",
-        "บลูเบอร์รี่โซดา เย็น": "📍 บลูเบอร์รี่โซดา • เย็น 20 ออนซ์\n( แยกชั้น )\n⁃ ไซรัป 45 ml\n⁃ น้ำโซดา 100 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n⁃ เทโซดาให้เต็มแก้ว",
-        "น้ำผึ้งมะนาวโซดา เย็น": "📍 น้ำผึ้งมะนาวโซดา • เย็น 20 ออนซ์\n( แยกชั้น )\n⁃ น้ำร้อน 20 ml\n⁃ น้ำผึ้ง 30 ml\n⁃ น้ำมะนาว 25 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n⁃ เทโซดาให้เต็มแก้ว",
-        "ชาพีช เย็น": "📍 ชาพีช • เย็น 20 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 150 ml\n⁃ ผงชาพีช 3 ช้อนชา\n⁃ น้ำเชื่อม 20 ml",
-        "ชาพีช ปั่น": "📍 ชาพีช • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 120 ml\n⁃ ผงชาพีช 4 ช้อนชา\n⁃ น้ำเชื่อม 50 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วพูนนิดๆ )",
-        "มัทฉะน้ำผึ้งมะนาว เย็น": "📍 มัทฉะน้ำผึ้งมะนาว • เย็น 20 ออนซ์\n( แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 100 ml\n⁃ ผงมัทฉะ 2 ช้อนชา\n⁃ น้ำผึ้ง 30 ml\n⁃ น้ำมะนาว 15 ml"
-    };
-    
-    const DEFAULT_PRESET_PRICES = {
-        "เอสเพรสโซ่ เย็น": 30, "เอสเพรสโซ่ ปั่น": 35,
-        "คาปูชิโน่ เย็น": 30, "คาปูชิโน่ ปั่น": 35,
-        "ลาเต้ เย็น": 30, "ลาเต้ ปั่น": 35,
-        "มอคค่า เย็น": 30, "มอคค่า ปั่น": 35,
-        "คาราเมล มัคคิอาโต เย็น": 35, "คาราเมล มัคคิอาโต ปั่น": 40,
-        "อเมริกาโน่ เย็น": 30, "อเมริกาโน่ ปั่น": 35,
-        "อเมริกาโน่น้ำส้ม เย็น": 40, "อเมริกาโน่น้ำส้ม ปั่น": 45,
-        "อเมริกาโน่น้ำผึ้ง เย็น": 35, "อเมริกาโน่น้ำผึ้ง ปั่น": 40,
-        "อเมริกาโน่น้ำผึ้งมะนาว เย็น": 40, "อเมริกาโน่น้ำผึ้งมะนาว ปั่น": 45,
-        "อเมริกาโน่ลิ้นจี่ เย็น": 40, "อเมริกาโน่ลิ้นจี่ ปั่น": 45,
-        "ชามะนาว เย็น": 25, "ชามะนาว ปั่น": 30,
-        "ชามะนาวน้ำผึ้ง เย็น": 25, "ชามะนาวน้ำผึ้ง ปั่น": 30,
-        "ชาดำ เย็น": 25, "ชาดำ ปั่น": 30,
-        "ชาดำมะนาว เย็น": 25, "ชาดำมะนาว ปั่น": 30,
-        "ชาดำน้ำผึ้ง เย็น": 25, "ชาดำน้ำผึ้ง ปั่น": 30,
-        "ชาดำมะนาวน้ำผึ้ง เย็น": 30, "ชาดำมะนาวน้ำผึ้ง ปั่น": 35,
-        "ชาไทย เย็น": 25, "ชาไทย ปั่น": 30,
-        "ชาเขียว เย็น": 25, "ชาเขียว ปั่น": 30,
-        "ชานม เย็น": 25, "ชานม ปั่น": 30,
-        "โกโก้ เย็น": 25, "โกโก้ ปั่น": 30,
-        "นมชมพู เย็น": 25, "นมชมพู ปั่น": 30,
-        "โอวัลติน เย็น": 25, "โอวัลติน ปั่น": 30,
-        "เผือก เย็น": 25, "เผือก ปั่น": 30,
-        "แคนตาลูป เย็น": 25, "แคนตาลูป ปั่น": 30,
-        "ชาเขียวมัทฉะลาเต้ เย็น": 30, "ชาเขียวมัทฉะลาเต้ ปั่น": 35,
-        "นมสด เย็น": 25, "นมสด ปั่น": 30,
-        "นมสดคาราเมล เย็น": 30, "นมสดคาราเมล ปั่น": 35,
-        "นมสดบราวน์ชูการ์ เย็น": 30, "นมสดบราวน์ชูการ์ ปั่น": 35,
-        "นมสดสตอเบอร์รี่ เย็น": 30, "นมสดสตอเบอร์รี่ ปั่น": 35,
-        "สตอเบอร์รี่ปั่น โยเกิร์ต": 35, "สตอเบอร์รี่ เย็น": 25, "สตอเบอร์รี่ ปั่น": 30,
-        "ชาไทยนมสดสตอเบอร์รี่ เย็น": 35, "ชาไทยโกโก้ เย็น": 30,
-        "ชาเขียวนมสดสตอเบอร์รี่ เย็น": 35, "ชาเขียวโกโก้ เย็น": 30,
-        "นมสดโอริโอ้ ปั่น": 35, "นมสดโอริโอ้ คาราเมล ปั่น": 40,
-        "ชาไทยโอริโอ้ ปั่น": 35, "ชาเขียวโอริโอ้ ปั่น": 35,
-        "โกโก้โอริโอ้ ปั่น": 35, "นมชมพูโอริโอ้ ปั่น": 35,
-        "โอวัลตินโอริโอ้ ปั่น": 35, "กาแฟโอริโอ้ ปั่น": 40, "นมเผือกโอริโอ้ ปั่น": 35,
-        "มะพร้าวปั่นนมสด": 35, "แอปเปิ้ล ปั่น": 30, "บลูฮาวาย ปั่น": 30,
-        "ลิ้นจี่ ปั่น": 30, "กีวี่ ปั่น": 30, "ส้ม ปั่น": 30, "องุ่น ปั่น": 30, "บลูเบอร์รี่ ปั่น": 30,
-        "แดงโซดา เย็น": 25, "แดงมะนาวโซดา เย็น": 25, "เขียวโซดา เย็น": 25, "เขียวมะนาวโซดา เย็น": 25,
-        "ชามะนาวโซดา เย็น": 25, "บลูฮาวายโซดา เย็น": 25, "สตอเบอร์รี่โซดา เย็น": 25, "ลิ้นจี่โซดา เย็น": 25,
-        "กีวี่โซดา เย็น": 25, "ส้มโซดา เย็น": 25, "แอปเปิ้ลโซดา เย็น": 25, "องุ่นโซดา เย็น": 25,
-        "บลูเบอร์รี่โซดา เย็น": 25, "น้ำผึ้งมะนาวโซดา เย็น": 25,
-        "ชาพีช เย็น": 25, "ชาพีช ปั่น": 30, "มัทฉะน้ำผึ้งมะนาว เย็น": 35,
-        "เฟรนช์ฟรายส์": 29, "ชีสบอล": 39, "ปังเนยนม": 20, "ข้าวกะเพรา 40": 40
+        "สตอเบอร์รี่โซดา เย็น": "📍 สตอเบอร์รี่โซดา • เย็น 20 ออนซ์\n( แยกชั้น )\n⁃ ไซรัป 45 ml\n⁃ น้ำโซดา 100 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n⁃ เทโซดาให้เต็มแก้ว"
     };
 
-    let sales = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-    let expenses = JSON.parse(localStorage.getItem(EXPENSES_KEY)) || [];
-    let savedPrices = JSON.parse(localStorage.getItem(MENU_PRICES_KEY)) || {};
-    let savedRecipes = JSON.parse(localStorage.getItem(RECIPES_KEY)) || {};
-    let offlineQueue = JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY)) || [];
+    const MASTER_PRICES = {
+        "ชาไทย เย็น": 25, "ชาไทย ปั่น": 30, "ชาเขียว เย็น": 25, "ชาเขียว ปั่น": 30,
+        "โกโก้ เย็น": 25, "โกโก้ ปั่น": 30, "อเมริกาโน่ เย็น": 30, "อเมริกาโน่ ปั่น": 35,
+        "เอสเพรสโซ่ เย็น": 30, "เอสเพรสโซ่ ปั่น": 35, "ลาเต้ เย็น": 30, "ลาเต้ ปั่น": 35,
+        "คาปูชิโน่ เย็น": 30, "คาปูชิโน่ ปั่น": 35, "มอคค่า เย็น": 30, "มอคค่า ปั่น": 35,
+        "คาราเมล มัคคิอาโต เย็น": 35, "อเมริกาโน่น้ำส้ม เย็น": 35, "ชามะนาว เย็น": 25,
+        "นมสดโอริโอ้ ปั่น": 35, "ชาเขียวมัทฉะลาเต้ เย็น": 35, "แดงมะนาวโซดา เย็น": 25, "สตอเบอร์รี่โซดา เย็น": 25,
+        "ข้าวกะเพรา ธรรมดา": 40, "ข้าวกะเพรา พิเศษ": 45, "ไก่ป๊อบ": 39, "ชีสบอล พิเศษ": 100,
+        "ไส้กรอกแดง ชุดเล็ก": 20, "ไส้กรอกแดง ชุดใหญ่": 40, "ปังเนยน้ำตาล": 20, "ปังโอริโอ้": 30, "ปังโอวัลติน": 25
+    };
 
-    let priceBook = { ...DEFAULT_PRESET_PRICES, ...savedPrices };
-    let recipeBook = { ...DEFAULT_RECIPES, ...savedRecipes };
-    
-    let deletedSalesIds = new Set(JSON.parse(localStorage.getItem(DELETED_SALES_KEY)) || []);
-    let deletedExpensesIds = new Set(JSON.parse(localStorage.getItem(DELETED_EXP_KEY)) || []);
+    let sales = [];
+    let expenses = [];
+    let priceBook = {};
+    let recipeBook = {};
 
     let selectedCategory = 'auto';
     let currentFilter = 'today';
     let customFilterType = 'date';
     let isProfitShown = false;
     let isBackdateActive = false;
-    let isSyncing = false;
-    let isFlushingQueue = false;
-    let isProcessingAdd = false;
 
     const quickInput = document.getElementById('quickInput');
     const suggestBox = document.getElementById('suggestBox');
@@ -1171,13 +680,10 @@
     const menuSummaryList = document.getElementById('menuSummaryList');
     const expenseList = document.getElementById('expenseList');
     const priceSettingList = document.getElementById('priceSettingList');
-    const syncStatus = document.getElementById('syncStatus');
-    const syncDot = document.getElementById('syncDot');
     const customFilterBox = document.getElementById('customFilterBox');
     const selectDateInput = document.getElementById('selectDateInput');
     const selectMonthInput = document.getElementById('selectMonthInput');
     const priceSearchInput = document.getElementById('priceSearchInput');
-    const btnSubmitOrder = document.getElementById('btnSubmitOrder');
 
     const btnToggleBackdate = document.getElementById('btnToggleBackdate');
     const backdateBox = document.getElementById('backdateBox');
@@ -1195,59 +701,19 @@
     const recipeModalTitle = document.getElementById('recipeModalTitle');
     const recipeModalBody = document.getElementById('recipeModalBody');
 
-    const THAI_MONTHS_SHORT = [
-        "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.",
-        "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."
-    ];
+    const THAI_MONTHS_SHORT = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
 
     function formatThaiDateTime(rawDate, rawTime, ts = null) {
-        let d = null;
-        if (ts && !isNaN(ts)) {
-            d = new Date(Number(ts));
-        } else if (rawDate && typeof rawDate === 'string' && rawDate.includes('-')) {
-            const parts = rawDate.split('T')[0].split('-');
-            if (parts.length === 3) {
-                d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
-            }
-        }
-        
-        if (!d || isNaN(d.getTime())) {
-            d = new Date();
-        }
-
+        let d = ts ? new Date(Number(ts)) : new Date();
         const now = new Date();
         const isToday = (d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate());
-        
-        const yesterday = new Date();
-        yesterday.setDate(now.getDate() - 1);
-        const isYesterday = (d.getFullYear() === yesterday.getFullYear() && d.getMonth() === yesterday.getMonth() && d.getDate() === yesterday.getDate());
-
-        let cleanTime = '';
-        if (rawTime && typeof rawTime === 'string') {
-            const timeMatch = rawTime.match(/\d{1,2}:\d{2}/);
-            if (timeMatch) cleanTime = timeMatch[0];
-        }
-        if (!cleanTime) {
-            cleanTime = d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', hour12: false });
-        }
-
-        if (isToday) {
-            return `วันนี้ • ${cleanTime} น.`;
-        } else if (isYesterday) {
-            return `เมื่อวานนี้ • ${cleanTime} น.`;
-        } else {
-            const day = d.getDate();
-            const monthName = THAI_MONTHS_SHORT[d.getMonth()] || '';
-            const thaiYearShort = String(d.getFullYear() + 543).slice(-2);
-            return `${day} ${monthName} ${thaiYearShort} • ${cleanTime} น.`;
-        }
+        let cleanTime = rawTime || d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', hour12: false });
+        if (isToday) return `วันนี้ • ${cleanTime} น.`;
+        return `${d.getDate()} ${THAI_MONTHS_SHORT[d.getMonth()]} ${String(d.getFullYear() + 543).slice(-2)} • ${cleanTime} น.`;
     }
 
     function formatDateYMD(d) {
-        const year = d.getFullYear();
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        const day = String(d.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     }
 
     const initD = new Date();
@@ -1256,278 +722,106 @@
     backdateDateInput.value = formatDateYMD(initD);
     backdateTimeInput.value = initD.toTimeString().substring(0, 5);
 
-    function isDrinkCategory(category) {
-        return category === 'เครื่องดื่ม';
-    }
+    // ==========================================
+    // ⚡ Realtime Data Synchronizer
+    // ==========================================
+    db.ref('sales').on('value', snapshot => {
+        const data = snapshot.val();
+        sales = data ? Object.values(data) : [];
+        renderUI();
+    });
+
+    db.ref('expenses').on('value', snapshot => {
+        const data = snapshot.val();
+        expenses = data ? Object.values(data) : [];
+        renderUI();
+    });
+
+    db.ref('prices').on('value', snapshot => {
+        const data = snapshot.val();
+        if (!data || Object.keys(data).length === 0) {
+            // ดันข้อมูลเมนูเริ่มต้นขึ้น Firebase ครั้งแรก
+            db.ref('prices').set(MASTER_PRICES);
+            db.ref('recipes').set(MASTER_RECIPES);
+            priceBook = MASTER_PRICES;
+        } else {
+            priceBook = data;
+        }
+        renderPriceSettingList();
+    });
+
+    db.ref('recipes').on('value', snapshot => {
+        recipeBook = snapshot.val() || MASTER_RECIPES;
+        renderPriceSettingList();
+    });
 
     function showRecipe(menuName, category) {
-        if (!isDrinkCategory(category)) return;
+        if (category !== 'เครื่องดื่ม') return;
         recipeModalTitle.innerText = `📖 สูตรชง: ${menuName}`;
-        const recipeText = recipeBook[menuName] || "ยังไม่มีการบันทึกสูตรชงสำหรับเมนูนี้\n(คุณสามารถเพิ่มสูตรได้ที่แท็บตั้งราคา)";
-        recipeModalBody.innerText = recipeText;
+        recipeModalBody.innerText = recipeBook[menuName] || "ยังไม่มีการบันทึกสูตรชงสำหรับเมนูนี้\n(เพิ่มได้ที่แท็บตั้งราคา)";
         recipeModal.style.display = 'flex';
     }
 
-    function closeRecipeModal() {
-        recipeModal.style.display = 'none';
-    }
+    function closeRecipeModal() { recipeModal.style.display = 'none'; }
 
-    async function fastToggle(event, id, el) {
-        if (event) {
-            event.stopPropagation();
-            if (event.type === 'touchstart') {
-                el._touched = true;
-            } else if (event.type === 'click' && el._touched) {
-                el._touched = false;
-                return;
-            }
+    async function fastToggle(event, id) {
+        if (event) event.stopPropagation();
+        const item = sales.find(s => String(s.id) === String(id));
+        if (item) {
+            const nextStatus = item.status === 'done' ? 'pending' : 'done';
+            await db.ref('sales/' + id).update({ status: nextStatus });
         }
-
-        const targetId = String(id).trim();
-        const row = el.closest('.batch-item-row');
-        if (!row) return;
-
-        const idx = sales.findIndex(s => String(s.id).trim() === targetId);
-        if (idx === -1) return;
-
-        const currentStatus = sales[idx].status || 'pending';
-        const nextStatus = (currentStatus === 'done') ? 'pending' : 'done';
-        sales[idx].status = nextStatus;
-
-        if (nextStatus === 'done') {
-            row.classList.add('item-done');
-            el.innerText = '✓';
-        } else {
-            row.classList.remove('item-done');
-            el.innerText = '';
-        }
-
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
-        await saveToCloudWithQueue({ action: "update_sale", item: sales[idx] });
     }
 
     async function togglePayMethod(id) {
-        const targetId = String(id).trim();
-        const idx = sales.findIndex(s => String(s.id).trim() === targetId);
-        if (idx !== -1) {
-            const currentMethod = sales[idx].paymentMethod || 'cash';
-            const nextMethod = (currentMethod === 'cash') ? 'promptpay' : 'cash';
-            sales[idx].paymentMethod = nextMethod;
-
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
-            renderUI();
-            
-            await saveToCloudWithQueue({ action: "update_sale", item: sales[idx] });
-        }
-    }
-
-    function openGoogleSheets() {
-        if (GOOGLE_SHEETS_URL && GOOGLE_SHEETS_URL.includes("docs.google.com")) {
-            window.open(GOOGLE_SHEETS_URL, '_blank');
-        } else {
-            alert('กรุณาระบุ URL ของ Google Sheets ในโค้ดก่อนใช้งาน');
+        const item = sales.find(s => String(s.id) === String(id));
+        if (item) {
+            const nextMethod = item.paymentMethod === 'cash' ? 'promptpay' : 'cash';
+            await db.ref('sales/' + id).update({ paymentMethod: nextMethod });
         }
     }
 
     function toggleProfitPanel() {
         isProfitShown = !isProfitShown;
-        if (isProfitShown) {
-            secretProfitPanel.style.display = 'grid';
-            btnToggleProfit.innerText = '🔒 ปิดผลประกอบการ';
-        } else {
-            secretProfitPanel.style.display = 'none';
-            btnToggleProfit.innerText = '📊 สรุปผลประกอบการ';
-        }
+        secretProfitPanel.style.display = isProfitShown ? 'grid' : 'none';
+        btnToggleProfit.innerText = isProfitShown ? '🔒 ปิดผลประกอบการ' : '📊 สรุปผลประกอบการ';
     }
 
     function toggleBackdateMode() {
         isBackdateActive = !isBackdateActive;
-        if (isBackdateActive) {
-            backdateBox.style.display = 'block';
-            btnToggleBackdate.classList.add('active');
-            btnToggleBackdate.innerText = '🕒 เปิดโหมดลงย้อนหลังอยู่';
-        } else {
-            backdateBox.style.display = 'none';
-            btnToggleBackdate.classList.remove('active');
-            btnToggleBackdate.innerText = '🕒 บันทึกย้อนหลัง';
-        }
+        backdateBox.style.display = isBackdateActive ? 'block' : 'none';
+        btnToggleBackdate.classList.toggle('active', isBackdateActive);
     }
 
     function handleSearchSuggest(val) {
         const query = val.trim().toLowerCase();
-        if (!query) {
-            suggestBox.style.display = 'none';
-            suggestBox.innerHTML = '';
-            return;
-        }
+        if (!query) { suggestBox.style.display = 'none'; return; }
 
-        const matched = [];
-        for (const [name, price] of Object.entries(priceBook)) {
-            if (name.toLowerCase().includes(query)) {
-                matched.push({ name, price });
-            }
-        }
+        const matched = Object.entries(priceBook).filter(([name]) => name.toLowerCase().includes(query));
+        if (!matched.length) { suggestBox.style.display = 'none'; return; }
 
-        if (matched.length === 0) {
-            suggestBox.style.display = 'none';
-            suggestBox.innerHTML = '';
-            return;
-        }
-
-        suggestBox.innerHTML = '';
-        matched.slice(0, 8).forEach(item => {
-            const div = document.createElement('div');
-            div.className = 'suggest-item';
-            div.innerHTML = `
-                <span>${item.name}</span>
-                <span class="suggest-price">฿${item.price}</span>
-            `;
-            div.onclick = () => {
-                quickInput.value = item.name;
-                suggestBox.style.display = 'none';
-                quickInput.focus();
-            };
-            suggestBox.appendChild(div);
-        });
+        suggestBox.innerHTML = matched.slice(0, 8).map(([name, price]) => `
+            <div class="suggest-item" onclick="quickInput.value='${name}'; suggestBox.style.display='none'; quickInput.focus();">
+                <span>${name}</span>
+                <span class="suggest-price">฿${price}</span>
+            </div>
+        `).join('');
         suggestBox.style.display = 'block';
     }
 
-    document.addEventListener('click', (e) => {
-        if (!quickInput.contains(e.target) && !suggestBox.contains(e.target)) {
-            suggestBox.style.display = 'none';
-        }
+    document.addEventListener('click', e => {
+        if (!quickInput.contains(e.target) && !suggestBox.contains(e.target)) suggestBox.style.display = 'none';
     });
-
-    async function flushQueue() {
-        if (offlineQueue.length === 0 || !navigator.onLine || isFlushingQueue) return;
-        isFlushingQueue = true;
-        if (syncDot) syncDot.className = 'status-dot syncing';
-        
-        while (offlineQueue.length > 0) {
-            const payload = offlineQueue[0];
-            try {
-                const res = await fetch(API_URL, {
-                    method: "POST",
-                    headers: { "Content-Type": "text/plain;charset=utf-8" },
-                    body: JSON.stringify(payload)
-                });
-                
-                if (res.ok) {
-                    const result = await res.json();
-                    if (result && (result.status === "success" || result.status === "error")) {
-                        offlineQueue.shift();
-                        localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(offlineQueue));
-                    } else {
-                        break;
-                    }
-                } else {
-                    break;
-                }
-            } catch (err) {
-                break;
-            }
-        }
-        
-        isFlushingQueue = false;
-        if (syncDot) syncDot.className = 'status-dot';
-    }
-
-    async function saveToCloudWithQueue(payload) {
-        if (payload.action === "add_sale" && payload.item) {
-            const alreadyInQueue = offlineQueue.some(q => q.action === "add_sale" && q.item && String(q.item.id).trim() === String(payload.item.id).trim());
-            if (alreadyInQueue) return;
-        }
-
-        offlineQueue.push(payload);
-        localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(offlineQueue));
-        
-        if (navigator.onLine) {
-            await flushQueue();
-            await loadFromCloud();
-        } else {
-            if (syncStatus) syncStatus.innerText = "บันทึกคิวออฟไลน์แล้ว";
-        }
-    }
-
-    async function loadFromCloud(isManual = false) {
-        if (isSyncing) return;
-        isSyncing = true;
-        if (syncDot) syncDot.className = 'status-dot syncing';
-        if (isManual && syncStatus) syncStatus.innerText = "กำลังซิงค์...";
-        
-        if (navigator.onLine && offlineQueue.length > 0) {
-            await flushQueue();
-        }
-        
-        try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 10000);
-            
-            const res = await fetch(`${API_URL}?t=${Date.now()}`, { signal: controller.signal });
-            clearTimeout(timeoutId);
-            
-            const data = await res.json();
-            if (data && data.status === "success") {
-                if (Array.isArray(data.sales)) {
-                    const cleanMap = new Map();
-                    data.sales.forEach(item => {
-                        if (item && item.id && !deletedSalesIds.has(String(item.id).trim())) {
-                            cleanMap.set(String(item.id).trim(), item);
-                        }
-                    });
-                    sales = Array.from(cleanMap.values());
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
-                }
-                if (Array.isArray(data.expenses)) {
-                    expenses = data.expenses.filter(item => item && item.id && !deletedExpensesIds.has(String(item.id).trim()));
-                    localStorage.setItem(EXPENSES_KEY, JSON.stringify(expenses));
-                }
-                if (data.prices && typeof data.prices === 'object') {
-                    priceBook = { ...DEFAULT_PRESET_PRICES, ...data.prices };
-                    localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
-                }
-                if (data.recipes && typeof data.recipes === 'object') {
-                    recipeBook = { ...DEFAULT_RECIPES, ...data.recipes };
-                    localStorage.setItem(RECIPES_KEY, JSON.stringify(recipeBook));
-                }
-                if (syncStatus) syncStatus.innerText = "เชื่อมต่อข้อมูลสด";
-                if (syncDot) syncDot.className = 'status-dot';
-                renderUI();
-            }
-        } catch (e) {
-            if (syncStatus) syncStatus.innerText = "ใช้งานโหมดในเครื่อง";
-            if (syncDot) syncDot.className = 'status-dot';
-        } finally {
-            isSyncing = false;
-        }
-    }
-
-    async function triggerManualSync() {
-        const btn = document.getElementById('btnManualSync');
-        if (btn) {
-            btn.innerText = '⏳ กำลังซิงค์...';
-            btn.disabled = true;
-        }
-        await loadFromCloud(true);
-        if (btn) {
-            btn.innerText = '🔄 ซิงค์ด่วน';
-            btn.disabled = false;
-        }
-    }
 
     function setTimeFilter(filter, btn) {
         currentFilter = filter;
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-
-        customFilterBox.style.display = (filter === 'custom') ? 'block' : 'none';
+        customFilterBox.style.display = filter === 'custom' ? 'block' : 'none';
         renderUI();
     }
 
-    function applyCustomFilter(type) {
-        customFilterType = type;
-        renderUI();
-    }
+    function applyCustomFilter(type) { customFilterType = type; renderUI(); }
 
     function setCategory(cat, btn) {
         selectedCategory = cat;
@@ -1539,9 +833,9 @@
     function detectCategory(name) {
         if (selectedCategory !== 'auto') return selectedCategory;
         const n = String(name).toLowerCase();
-        if (n.includes('ปัง') || n.includes('โทสต์') || n.includes('เนยนม') || n.includes('สังขยา') || n.includes('เนยน้ำตาล')) return 'ขนมปังปิ้ง';
-        if (n.includes('เฟรน') || n.includes('ฟราย') || n.includes('ชีส') || n.includes('บอล') || n.includes('ป๊อบ') || n.includes('เก็ต') || n.includes('ไส้กรอก') || n.includes('ทอด') || n.includes('ลูกชิ้น')) return 'ของทอด/ทานเล่น';
-        if (n.includes('กะเพรา') || n.includes('ข้าว') || n.includes('หมูปิ้ง') || n.includes('ไก่ย่าง') || n.includes('ไข่ดาว') || n.includes('ผัด') || n.includes('มาม่า') || n.includes('ยำ')) return 'อาหาร/กะเพรา';
+        if (n.includes('ปัง') || n.includes('โทสต์') || n.includes('เนยนม')) return 'ขนมปังปิ้ง';
+        if (n.includes('เฟรน') || n.includes('ฟราย') || n.includes('ชีส') || n.includes('ทอด')) return 'ของทอด/ทานเล่น';
+        if (n.includes('กะเพรา') || n.includes('ข้าว') || n.includes('หมูปิ้ง')) return 'อาหาร/กะเพรา';
         return 'เครื่องดื่ม';
     }
 
@@ -1551,700 +845,341 @@
     }
 
     function parseOrderInput(rawText) {
-        let text = rawText.trim();
+        let text = rawText.replace(/(แก้ว|ชิ้น|จาน|ถุง|ชุด|กล่อง)/g, '').trim();
         if (!text) return null;
-
-        text = text.replace(/(แก้ว|ชิ้น|จาน|ถุง|ชุด|กล่อง)/g, '').trim();
-
-        let name = '';
-        let unitPrice = 0;
-        let qty = 1;
 
         const multiMatch = text.match(/^(.+?)\s*[*xX]\s*(\d+)$/);
         if (multiMatch) {
-            name = multiMatch[1].trim();
-            qty = Math.min(500, Math.max(1, parseInt(multiMatch[2]) || 1));
-            if (priceBook[name]) {
-                unitPrice = Number(priceBook[name]);
-            }
-            return { name, unitPrice, qty };
+            const name = multiMatch[1].trim();
+            const qty = Math.max(1, parseInt(multiMatch[2]) || 1);
+            return { name, unitPrice: Number(priceBook[name]) || 0, qty };
         }
 
-        if (priceBook[text]) {
-            return { name: text, unitPrice: Number(priceBook[text]), qty: 1 };
-        }
+        if (priceBook[text]) return { name: text, unitPrice: Number(priceBook[text]), qty: 1 };
 
-        var parts = text.split(/\s+/);
-
+        const parts = text.split(/\s+/);
         if (parts.length >= 3 && !isNaN(parts[parts.length - 1]) && !isNaN(parts[parts.length - 2])) {
-            var pQty = Math.min(500, Math.max(1, parseInt(parts[parts.length - 1]) || 1));
-            var pPrice = Math.max(0, parseFloat(parts[parts.length - 2]) || 0);
-            var pName = parts.slice(0, parts.length - 2).join(' ').trim();
-            return { name: pName, unitPrice: pPrice, qty: pQty };
+            return {
+                name: parts.slice(0, parts.length - 2).join(' ').trim(),
+                unitPrice: parseFloat(parts[parts.length - 2]) || 0,
+                qty: Math.max(1, parseInt(parts[parts.length - 1]) || 1)
+            };
         }
-
         if (parts.length >= 2 && !isNaN(parts[parts.length - 1])) {
-            var lastNum = parseFloat(parts[parts.length - 1]);
-            var pName2 = parts.slice(0, parts.length - 1).join(' ').trim();
-
-            if (priceBook[pName2]) {
-                if (lastNum <= 10) {
-                    return { name: pName2, unitPrice: Number(priceBook[pName2]), qty: Math.max(1, parseInt(lastNum)) };
-                } else {
-                    return { name: pName2, unitPrice: lastNum, qty: 1 };
-                }
-            } else {
-                if (lastNum >= 15) {
-                    return { name: pName2, unitPrice: lastNum, qty: 1 };
-                } else {
-                    return { name: pName2, unitPrice: 0, qty: Math.max(1, parseInt(lastNum)) };
-                }
+            const lastNum = parseFloat(parts[parts.length - 1]);
+            const pName = parts.slice(0, parts.length - 1).join(' ').trim();
+            if (priceBook[pName]) {
+                return lastNum <= 10 ? { name: pName, unitPrice: Number(priceBook[pName]), qty: parseInt(lastNum) } : { name: pName, unitPrice: lastNum, qty: 1 };
             }
+            return lastNum >= 15 ? { name: pName, unitPrice: lastNum, qty: 1 } : { name: pName, unitPrice: 0, qty: parseInt(lastNum) };
         }
-
         return { name: text, unitPrice: Number(priceBook[text]) || 0, qty: 1 };
     }
 
     async function handleAdd(e) {
-        if (e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-        
-        if (isProcessingAdd) return false;
-
-        var text = quickInput.value.trim();
+        if (e) e.preventDefault();
+        const text = quickInput.value.trim();
         if (!text) return false;
 
-        isProcessingAdd = true;
-        if (btnSubmitOrder) btnSubmitOrder.disabled = true;
+        const parsed = parseOrderInput(text);
+        if (!parsed || !parsed.name) return false;
 
-        try {
-            suggestBox.style.display = 'none';
-            var parsed = parseOrderInput(text);
+        let { name, unitPrice, qty } = parsed;
+        if ((!unitPrice || unitPrice <= 0) && priceBook[name]) unitPrice = Number(priceBook[name]);
 
-            if (!parsed || !parsed.name) {
-                return false;
-            }
-
-            var name = parsed.name;
-            var unitPrice = parsed.unitPrice;
-            var qty = Math.min(500, Math.max(1, parseInt(parsed.qty) || 1));
-
-            if ((isNaN(unitPrice) || unitPrice <= 0) && priceBook[name]) {
-                unitPrice = Number(priceBook[name]);
-            }
-
-            if (!name || isNaN(unitPrice) || unitPrice <= 0 || isNaN(qty) || qty <= 0) {
-                alert('เมนู "' + name + '" ยังไม่มีราคาในระบบ\nกรุณาพิมพ์ชื่อพร้อมราคา เช่น "' + name + ' 25"');
-                return false;
-            }
-
-            priceBook[name] = unitPrice;
-            localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
-
-            var category = detectCategory(name);
-            var totalPrice = unitPrice * qty;
-            
-            var recordDate = '';
-            var recordTime = '';
-            var recordTs = Date.now();
-
-            if (isBackdateActive && backdateDateInput.value) {
-                recordDate = backdateDateInput.value;
-                recordTime = backdateTimeInput.value || '12:00';
-                var dParts = recordDate.split('-').map(Number);
-                var tParts = recordTime.split(':').map(Number);
-                recordTs = new Date(dParts[0], dParts[1] - 1, dParts[2], tParts[0] || 12, tParts[1] || 0).getTime();
-            } else {
-                var now = new Date();
-                recordDate = formatDateYMD(now);
-                recordTime = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
-                recordTs = Date.now();
-            }
-
-            var newId = String(Date.now()) + '-' + String(Math.floor(Math.random() * 10000));
-            var newItem = { 
-                id: newId,
-                ts: Number(recordTs),
-                date: String(recordDate),
-                name: String(name), 
-                unitPrice: Number(unitPrice), 
-                qty: Number(qty), 
-                totalPrice: Number(totalPrice), 
-                category: String(category),
-                paymentMethod: 'cash',
-                time: String(recordTime),
-                status: 'pending'
-            };
-
-            sales.push(newItem);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
-            renderUI();
-            quickInput.value = '';
-
-            await saveToCloudWithQueue({ action: "add_sale", item: newItem });
-        } finally {
-            setTimeout(function() {
-                isProcessingAdd = false;
-                if (btnSubmitOrder) btnSubmitOrder.disabled = false;
-            }, 250);
+        if (!name || isNaN(unitPrice) || unitPrice <= 0) {
+            alert(`เมนู "${name}" ยังไม่มีราคาในระบบ\nกรุณาพิมพ์ชื่อพร้อมราคา เช่น "${name} 25"`);
+            return false;
         }
 
-        return false;
-    }
-
-    async function addExpense() {
-        var name = document.getElementById('newExpenseName').value.trim();
-        var cost = parseFloat(document.getElementById('newExpenseCost').value);
-        if (!name || isNaN(cost) || cost <= 0) {
-            alert('กรุณากรอกรายการและจำนวนเงินต้นทุนให้ถูกต้อง');
-            return;
-        }
-
-        var recordDate = '';
-        var recordTime = '';
-        var recordTs = Date.now();
+        let recordDate = formatDateYMD(new Date());
+        let recordTime = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+        let recordTs = Date.now();
 
         if (isBackdateActive && backdateDateInput.value) {
             recordDate = backdateDateInput.value;
             recordTime = backdateTimeInput.value || '12:00';
-            var dParts = recordDate.split('-').map(Number);
-            var tParts = recordTime.split(':').map(Number);
-            recordTs = new Date(dParts[0], dParts[1] - 1, dParts[2], tParts[0] || 12, tParts[1] || 0).getTime();
-        } else {
-            var now = new Date();
-            recordDate = formatDateYMD(now);
-            recordTime = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
-            recordTs = Date.now();
+            const [y, m, d] = recordDate.split('-').map(Number);
+            const [hh, mm] = recordTime.split(':').map(Number);
+            recordTs = new Date(y, m - 1, d, hh || 12, mm || 0).getTime();
         }
 
-        var newExp = {
-            id: String(Date.now()) + '-' + String(Math.floor(Math.random() * 10000)),
+        const newId = String(Date.now()) + '-' + Math.floor(Math.random() * 1000);
+        const newItem = {
+            id: newId,
             ts: Number(recordTs),
-            date: String(recordDate),
-            name: String(name),
-            cost: Number(cost),
-            time: String(recordTime)
+            date: recordDate,
+            time: recordTime,
+            name: name,
+            category: detectCategory(name),
+            unitPrice: Number(unitPrice),
+            qty: Number(qty),
+            totalPrice: Number(unitPrice * qty),
+            paymentMethod: 'cash',
+            status: 'pending'
         };
 
-        expenses.push(newExp);
-        localStorage.setItem(EXPENSES_KEY, JSON.stringify(expenses));
-        document.getElementById('newExpenseName').value = '';
-        document.getElementById('newExpenseCost').value = '';
-        renderUI();
-
-        await saveToCloudWithQueue({ action: "add_expense", item: newExp });
+        quickInput.value = '';
+        await db.ref('sales/' + newId).set(newItem);
+        if (!priceBook[name]) await db.ref('prices/' + name).set(unitPrice);
+        return false;
     }
 
-    async function deleteExpense(id) {
-        var targetId = String(id).trim();
-        var item = expenses.find(e => String(e.id).trim() === targetId);
-        var name = item ? item.name : '';
-        
-        if (confirm('ยืนยันการลบรายการต้นทุน "' + name + '" หรือไม่?')) {
-            deletedExpensesIds.add(targetId);
-            localStorage.setItem(DELETED_EXP_KEY, JSON.stringify(Array.from(deletedExpensesIds)));
+    async function addExpense() {
+        const name = document.getElementById('newExpenseName').value.trim();
+        const cost = parseFloat(document.getElementById('newExpenseCost').value);
+        if (!name || isNaN(cost) || cost <= 0) return alert('กรอกรายการและจำนวนเงินให้ถูกต้อง');
 
-            expenses = expenses.filter(item => item && String(item.id).trim() !== targetId);
-            localStorage.setItem(EXPENSES_KEY, JSON.stringify(expenses));
-            renderUI();
+        const newId = String(Date.now()) + '-' + Math.floor(Math.random() * 1000);
+        const newExp = {
+            id: newId,
+            ts: Date.now(),
+            date: formatDateYMD(new Date()),
+            time: new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }),
+            name: name,
+            cost: cost
+        };
 
-            await saveToCloudWithQueue({ action: "delete_expense", id: targetId });
-        }
+        document.getElementById('newExpenseName').value = '';
+        document.getElementById('newExpenseCost').value = '';
+        await db.ref('expenses/' + newId).set(newExp);
     }
 
     async function deleteItem(id) {
-        var targetId = String(id).trim();
-        var item = sales.find(s => String(s.id).trim() === targetId);
-        var name = item ? item.name : '';
-        
-        if (confirm('ยืนยันการลบรายการออเดอร์ "' + name + '" หรือไม่?')) {
-            deletedSalesIds.add(targetId);
-            localStorage.setItem(DELETED_SALES_KEY, JSON.stringify(Array.from(deletedSalesIds)));
+        if (confirm('ยืนยันการลบออเดอร์นี้?')) await db.ref('sales/' + id).remove();
+    }
 
-            sales = sales.filter(item => item && String(item.id).trim() !== targetId);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
-            renderUI();
-
-            await saveToCloudWithQueue({ action: "delete_sale", id: targetId });
-        }
+    async function deleteExpense(id) {
+        if (confirm('ยืนยันการลบรายการต้นทุนนี้?')) await db.ref('expenses/' + id).remove();
     }
 
     function openEditModal(id) {
-        var item = sales.find(s => String(s.id).trim() === String(id).trim());
+        const item = sales.find(s => String(s.id) === String(id));
         if (!item) return;
-
         editItemId.value = item.id;
-        editItemName.value = item.name.replace(/\s*\*\*\s*/g, '');
+        editItemName.value = item.name;
         editItemCategory.value = item.category || 'เครื่องดื่ม';
         editItemUnitPrice.value = item.unitPrice;
         editItemQty.value = item.qty;
-
         editModal.style.display = 'flex';
     }
-
-    function closeEditModal() {
-        editModal.style.display = 'none';
-    }
+    function closeEditModal() { editModal.style.display = 'none'; }
 
     async function saveEditedItem() {
-        var id = editItemId.value;
-        var name = editItemName.value.trim();
-        var category = editItemCategory.value;
-        var unitPrice = parseFloat(editItemUnitPrice.value);
-        var qty = Math.min(500, Math.max(1, parseInt(editItemQty.value) || 1));
+        const id = editItemId.value;
+        const name = editItemName.value.trim();
+        const category = editItemCategory.value;
+        const unitPrice = parseFloat(editItemUnitPrice.value);
+        const qty = parseInt(editItemQty.value);
 
-        if (!name || isNaN(unitPrice) || unitPrice <= 0 || isNaN(qty) || qty <= 0) {
-            alert('กรุณากรอกข้อมูลให้ครบถ้วนและถูกต้อง');
-            return;
-        }
+        if (!name || isNaN(unitPrice) || isNaN(qty)) return alert('กรอกข้อมูลให้ถูกต้อง');
 
-        var idx = sales.findIndex(s => String(s.id).trim() === String(id).trim());
-        if (idx !== -1) {
-            sales[idx].name = name;
-            sales[idx].category = category;
-            sales[idx].unitPrice = unitPrice;
-            sales[idx].qty = qty;
-            sales[idx].totalPrice = unitPrice * qty;
-
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
-            renderUI();
-            closeEditModal();
-            await saveToCloudWithQueue({ action: "update_sale", item: sales[idx] });
-        }
+        await db.ref('sales/' + id).update({
+            name, category, unitPrice, qty, totalPrice: unitPrice * qty
+        });
+        closeEditModal();
     }
 
     function getFilteredData() {
-        var now = new Date();
-        var todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-        var todayEnd = todayStart + (24 * 60 * 60 * 1000) - 1;
+        const now = new Date();
+        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+        const todayEnd = todayStart + 86400000 - 1;
 
-        var filterFn = () => true;
-
-        if (currentFilter === 'today') {
-            filterFn = item => {
-                if (!item) return false;
-                var itemTs = Number(item.ts) || 0;
-                return itemTs >= todayStart && itemTs <= todayEnd;
-            };
-        } else if (currentFilter === 'week') {
-            var dayOfWeek = now.getDay() || 7;
-            var mondayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek + 1).getTime();
-            var sundayEnd = mondayStart + (7 * 24 * 60 * 60 * 1000) - 1;
-            filterFn = item => {
-                if (!item) return false;
-                var itemTs = Number(item.ts) || 0;
-                return itemTs >= mondayStart && itemTs <= sundayEnd;
-            };
-        } else if (currentFilter === 'custom') {
-            if (customFilterType === 'date') {
-                var selDate = selectDateInput.value;
-                if (!selDate) return () => true;
-                var p = selDate.split('-').map(Number);
-                var dayStart = new Date(p[0], p[1] - 1, p[2]).getTime();
-                var dayEnd = dayStart + (24 * 60 * 60 * 1000) - 1;
-                filterFn = item => {
-                    if (!item) return false;
-                    var itemTs = Number(item.ts) || 0;
-                    return itemTs >= dayStart && dayEnd >= itemTs;
-                };
-            } else if (customFilterType === 'month') {
-                var selMonth = selectMonthInput.value;
-                if (!selMonth) return () => true;
-                var mp = selMonth.split('-').map(Number);
-                var mStart = new Date(mp[0], mp[1] - 1, 1).getTime();
-                var mEnd = new Date(mp[0], mp[1], 1).getTime() - 1;
-                filterFn = item => {
-                    if (!item) return false;
-                    var itemTs = Number(item.ts) || 0;
-                    return itemTs >= mStart && itemTs <= mEnd;
-                };
-            }
+        let filterFn = () => true;
+        if (currentFilter === 'today') filterFn = it => (it.ts || 0) >= todayStart && (it.ts || 0) <= todayEnd;
+        else if (currentFilter === 'week') {
+            const mon = new Date(now.getFullYear(), now.getMonth(), now.getDate() - (now.getDay() || 7) + 1).getTime();
+            filterFn = it => (it.ts || 0) >= mon && (it.ts || 0) <= mon + (7 * 86400000);
+        } else if (currentFilter === 'custom' && customFilterType === 'date' && selectDateInput.value) {
+            const [y, m, d] = selectDateInput.value.split('-').map(Number);
+            const ds = new Date(y, m - 1, d).getTime();
+            filterFn = it => (it.ts || 0) >= ds && (it.ts || 0) <= ds + 86400000;
         }
-
-        return {
-            sales: sales.filter(item => item && typeof item === 'object' && !deletedSalesIds.has(String(item.id).trim())).filter(filterFn),
-            expenses: expenses.filter(item => item && typeof item === 'object' && !deletedExpensesIds.has(String(item.id).trim())).filter(filterFn)
-        };
+        return { sales: sales.filter(filterFn), expenses: expenses.filter(filterFn) };
     }
 
     function renderUI() {
-        var data = getFilteredData();
-        var displaySales = data.sales;
-        var displayExpenses = data.expenses;
-
-        var totalS = 0;
-        var totalC = 0;
-        var totalCashSum = 0;
-        var totalQrSum = 0;
-        var totalPieces = 0;
+        const { sales: displaySales, expenses: displayExpenses } = getFilteredData();
+        let totalS = 0, totalC = 0, totalCashSum = 0, totalQrSum = 0, totalPieces = 0;
         
-        displayExpenses.forEach(function(e) {
-            totalC += Number(e.cost) || 0;
-        });
+        displayExpenses.forEach(e => totalC += Number(e.cost) || 0);
 
-        var catStats = {
-            'เครื่องดื่ม': { sum: 0, count: 0 },
-            'ของทอด/ทานเล่น': { sum: 0, count: 0 },
-            'ขนมปังปิ้ง': { sum: 0, count: 0 },
-            'อาหาร/กะเพรา': { sum: 0, count: 0 }
-        };
-
-        var menuGrouped = {
-            'เครื่องดื่ม': {},
-            'ของทอด/ทานเล่น': {},
-            'ขนมปังปิ้ง': {},
-            'อาหาร/กะเพรา': {}
-        };
+        const catStats = { 'เครื่องดื่ม': { sum: 0, count: 0 }, 'ของทอด/ทานเล่น': { sum: 0, count: 0 }, 'ขนมปังปิ้ง': { sum: 0, count: 0 }, 'อาหาร/กะเพรา': { sum: 0, count: 0 } };
+        const menuGrouped = { 'เครื่องดื่ม': {}, 'ของทอด/ทานเล่น': {}, 'ขนมปังปิ้ง': {}, 'อาหาร/กะเพรา': {} };
 
         itemList.innerHTML = '';
-
-        if (displaySales.length === 0) {
+        if (!displaySales.length) {
             itemList.innerHTML = '<div class="empty-text">ยังไม่มีรายการขายในช่วงนี้</div>';
         } else {
-            displaySales.forEach(function(item) {
-                var price = Number(item.totalPrice) || 0;
-                var qty = Number(item.qty) || 1;
+            displaySales.forEach(item => {
+                const price = Number(item.totalPrice) || 0;
+                const qty = Number(item.qty) || 1;
                 totalS += price;
                 totalPieces += qty;
+                if (item.paymentMethod === 'promptpay') totalQrSum += price; else totalCashSum += price;
 
-                if (item.paymentMethod === 'promptpay') {
-                    totalQrSum += price;
-                } else {
-                    totalCashSum += price;
-                }
-
-                var cleanName = item.name.replace(/\s*\*\*\s*/g, '').trim();
-                var cat = catStats[item.category] ? item.category : 'อาหาร/กะเพรา';
+                const cat = catStats[item.category] ? item.category : 'อาหาร/กะเพรา';
                 catStats[cat].sum += price;
                 catStats[cat].count += qty;
 
-                if (!menuGrouped[cat][cleanName]) menuGrouped[cat][cleanName] = { qty: 0, sum: 0 };
-                menuGrouped[cat][cleanName].qty += qty;
-                menuGrouped[cat][cleanName].sum += price;
+                if (!menuGrouped[cat][item.name]) menuGrouped[cat][item.name] = { qty: 0, sum: 0 };
+                menuGrouped[cat][item.name].qty += qty;
+                menuGrouped[cat][item.name].sum += price;
             });
 
-            var sortedSales = displaySales.slice().sort((a, b) => (Number(b.ts) || 0) - (Number(a.ts) || 0));
-            var batches = [];
-            var currentBatch = null;
+            const sorted = displaySales.slice().sort((a, b) => (b.ts || 0) - (a.ts || 0));
+            const batches = [];
+            let currBatch = null;
 
-            sortedSales.forEach(function(item) {
-                var itemTs = Number(item.ts) || 0;
-                if (!currentBatch) {
-                    currentBatch = {
-                        timeKey: formatThaiDateTime(item.date, item.time, item.ts),
-                        latestTs: itemTs,
-                        items: [item]
-                    };
-                } else {
-                    var diffMinutes = Math.abs(currentBatch.latestTs - itemTs) / (1000 * 60);
-                    if (diffMinutes <= 1.0) {
-                        currentBatch.items.push(item);
-                    } else {
-                        batches.push(currentBatch);
-                        currentBatch = {
-                            timeKey: formatThaiDateTime(item.date, item.time, item.ts),
-                            latestTs: itemTs,
-                            items: [item]
-                        };
-                    }
-                }
+            sorted.forEach(item => {
+                if (!currBatch || Math.abs(currBatch.latestTs - (item.ts || 0)) > 60000) {
+                    if (currBatch) batches.push(currBatch);
+                    currBatch = { timeKey: formatThaiDateTime(item.date, item.time, item.ts), latestTs: item.ts || 0, items: [item] };
+                } else currBatch.items.push(item);
             });
-            if (currentBatch) batches.push(currentBatch);
+            if (currBatch) batches.push(currBatch);
 
-            batches.forEach(function(batch) {
-                var batchTotal = 0;
-                var batchTotalQty = 0;
-                batch.items.forEach(function(it) {
-                    batchTotal += Number(it.totalPrice) || 0;
-                    batchTotalQty += Number(it.qty) || 1;
-                });
+            batches.forEach(b => {
+                let bTotal = 0, bQty = 0;
+                b.items.forEach(it => { bTotal += Number(it.totalPrice) || 0; bQty += Number(it.qty) || 1; });
 
-                var card = document.createElement('div');
+                const card = document.createElement('div');
                 card.className = 'order-batch-card';
-
-                var itemsHtml = '';
-                batch.items.forEach(function(item) {
-                    var price = Number(item.totalPrice) || 0;
-                    var qty = Number(item.qty) || 1;
-                    var unitPrice = Number(item.unitPrice) || price;
-                    var isQr = (item.paymentMethod === 'promptpay');
-                    var badgeClass = isQr ? 'pay-badge qr' : 'pay-badge cash';
-                    var badgeText = isQr ? '📱 สแกน' : '💵 สด';
-                    
-                    var isDone = (item.status === 'done');
-                    var doneClass = isDone ? 'item-done' : '';
-                    var cleanName = item.name.replace(/\s*\*\*\s*/g, '').trim();
-                    var isDrink = isDrinkCategory(item.category);
-                    var clickableClass = isDrink ? 'item-title-text has-recipe' : 'item-title-text';
-                    var recipeAction = isDrink ? 'onclick="showRecipe(\'' + cleanName + '\', \'' + item.category + '\')" title="แตะเพื่อดูสูตรชง"' : '';
-
-                    itemsHtml += `
-                        <div class="batch-item-row ${doneClass}" id="row-${item.id}">
+                card.innerHTML = `
+                    <div class="batch-header">
+                        <div class="batch-time-tag">🕒 ${b.timeKey} (${bQty} ชิ้น)</div>
+                        <div class="batch-total-price">รวม ฿${bTotal.toLocaleString()}</div>
+                    </div>
+                    <div>${b.items.map(item => `
+                        <div class="batch-item-row ${item.status === 'done' ? 'item-done' : ''}">
                             <div class="batch-item-left">
-                                <div class="item-check-box" 
-                                   ontouchstart="fastToggle(event, '${item.id}', this)" 
-                                   onclick="fastToggle(event, '${item.id}', this)" 
-                                   title="แตะเพื่อติ๊กทำเสร็จแล้ว">${isDone ? '✓' : ''}</div>
+                                <div class="item-check-box" onclick="fastToggle(event, '${item.id}')">${item.status === 'done' ? '✓' : ''}</div>
                                 <div>
-                                    <div class="${clickableClass}" ${recipeAction}>${cleanName} <b style="color:#0284c7;">x${qty}</b> <span class="badge">${item.category || 'น้ำ'}</span></div>
-                                    <div class="item-sub-detail">(@${unitPrice} บ.)${isDrink ? ' • แตะชื่อเพื่อดูสูตร' : ''}</div>
+                                    <div class="item-title-text ${item.category === 'เครื่องดื่ม' ? 'has-recipe' : ''}" onclick="showRecipe('${item.name}', '${item.category}')">${item.name} <b style="color:#0284c7;">x${item.qty}</b></div>
+                                    <div class="item-sub-detail">(@${item.unitPrice} บ.)</div>
                                 </div>
                             </div>
                             <div style="display:flex; align-items:center;">
-                                <span class="item-price-text" style="font-weight:600; font-size:0.92rem; margin-right:6px; color:#0f172a;">฿${price.toLocaleString()}</span>
-                                <button type="button" class="${badgeClass}" onclick="togglePayMethod('${item.id}')" title="แตะสลับวิธีจ่ายเงิน">${badgeText}</button>
-                                <button type="button" class="btn-edit" onclick="openEditModal('${item.id}')" title="แก้ไขรายการ">✏️</button>
-                                <button type="button" class="btn-del" onclick="deleteItem('${item.id}')" title="ลบรายการ">✕</button>
+                                <span class="item-price-text" style="font-weight:600; font-size:0.92rem; margin-right:6px;">฿${(item.totalPrice||0).toLocaleString()}</span>
+                                <button type="button" class="pay-badge ${item.paymentMethod === 'promptpay' ? 'qr' : 'cash'}" onclick="togglePayMethod('${item.id}')">${item.paymentMethod === 'promptpay' ? '📱 สแกน' : '💵 สด'}</button>
+                                <button type="button" class="btn-edit" onclick="openEditModal('${item.id}')">✏️</button>
+                                <button type="button" class="btn-del" onclick="deleteItem('${item.id}')">✕</button>
                             </div>
                         </div>
-                    `;
-                });
-
-                card.innerHTML = `
-                    <div class="batch-header">
-                        <div class="batch-time-tag">🕒 ${batch.timeKey} (${batchTotalQty} ชิ้น)</div>
-                        <div class="batch-total-price">รวม ฿${batchTotal.toLocaleString()}</div>
-                    </div>
-                    <div>${itemsHtml}</div>
+                    `).join('')}</div>
                 `;
                 itemList.appendChild(card);
             });
         }
 
-        expenseList.innerHTML = '';
-        if (displayExpenses.length === 0) {
-            expenseList.innerHTML = '<div class="empty-text">ยังไม่มีรายการต้นทุนในช่วงนี้</div>';
-        } else {
-            displayExpenses.slice().reverse().forEach(function(item) {
-                var cost = Number(item.cost) || 0;
-                var formattedExpTime = formatThaiDateTime(item.date, item.time, item.ts);
-                var row = document.createElement('div');
-                row.className = 'summary-row';
-                row.innerHTML = `
-                    <div>
-                        <div style="color:#ef4444; font-weight:500;">💸 ${item.name}</div>
-                        <div style="font-size:0.75rem; color:#64748b;">${formattedExpTime}</div>
-                    </div>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <span style="color:#ef4444; font-weight:600;">-฿${cost.toLocaleString()}</span>
-                        <button type="button" class="btn-del" onclick="deleteExpense('${item.id}')">ลบ</button>
-                    </div>
-                `;
-                expenseList.appendChild(row);
-            });
-        }
+        expenseList.innerHTML = displayExpenses.map(item => `
+            <div class="summary-row">
+                <div>
+                    <div style="color:#ef4444; font-weight:500;">💸 ${item.name}</div>
+                    <div style="font-size:0.75rem; color:#64748b;">${formatThaiDateTime(item.date, item.time, item.ts)}</div>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="color:#ef4444; font-weight:600;">-฿${(item.cost||0).toLocaleString()}</span>
+                    <button type="button" class="btn-del" onclick="deleteExpense('${item.id}')">ลบ</button>
+                </div>
+            </div>
+        `).join('') || '<div class="empty-text">ไม่มีรายการต้นทุน</div>';
 
-        var profit = totalS - totalC;
         totalSales.innerText = `฿${totalS.toLocaleString()}`;
         totalSalesSub.innerText = `ยอดขายรวม • ${totalPieces} ชิ้น (${displaySales.length} รายการ)`;
-        
-        document.getElementById('totalCash').innerText = `฿${totalCashSum.toLocaleString()}`;
-        document.getElementById('totalQr').innerText = `฿${totalQrSum.toLocaleString()}`;
+        totalCash.innerText = `฿${totalCashSum.toLocaleString()}`;
+        totalQr.innerText = `฿${totalQrSum.toLocaleString()}`;
         totalCost.innerText = `฿${totalC.toLocaleString()}`;
-        totalProfit.innerText = `฿${profit.toLocaleString()}`;
-        totalProfit.style.color = profit >= 0 ? '#4ade80' : '#f87171';
+        totalProfit.innerText = `฿${(totalS - totalC).toLocaleString()}`;
 
         document.getElementById('catDrinkSum').innerText = `฿${catStats['เครื่องดื่ม'].sum.toLocaleString()}`;
         document.getElementById('catDrinkCount').innerText = `${catStats['เครื่องดื่ม'].count} แก้ว`;
-
         document.getElementById('catSnackSum').innerText = `฿${catStats['ของทอด/ทานเล่น'].sum.toLocaleString()}`;
         document.getElementById('catSnackCount').innerText = `${catStats['ของทอด/ทานเล่น'].count} รายการ`;
-
         document.getElementById('catBreadSum').innerText = `฿${catStats['ขนมปังปิ้ง'].sum.toLocaleString()}`;
         document.getElementById('catBreadCount').innerText = `${catStats['ขนมปังปิ้ง'].count} ชิ้น`;
-
         document.getElementById('catFoodSum').innerText = `฿${catStats['อาหาร/กะเพรา'].sum.toLocaleString()}`;
         document.getElementById('catFoodCount').innerText = `${catStats['อาหาร/กะเพรา'].count} จาน/ชุด`;
 
-        menuSummaryList.innerHTML = '';
-        var hasMenu = false;
-        for (var catName in menuGrouped) {
-            var items = menuGrouped[catName];
-            var keys = Object.keys(items);
-            if (keys.length > 0) {
-                hasMenu = true;
-                var groupTitle = document.createElement('div');
-                groupTitle.className = 'summary-group-title';
-                groupTitle.innerText = `${catName} (รวม ฿${catStats[catName].sum.toLocaleString()})`;
-                menuSummaryList.appendChild(groupTitle);
-
-                for (var name in items) {
-                    var mData = items[name];
-                    var sRow = document.createElement('div');
-                    sRow.className = 'summary-row';
-                    sRow.innerHTML = `
-                        <span>${name} (x${mData.qty})</span>
-                        <span><b>฿${mData.sum.toLocaleString()}</b></span>
-                    `;
-                    menuSummaryList.appendChild(sRow);
-                }
-            }
-        }
-        if (!hasMenu) {
-            menuSummaryList.innerHTML = '<div class="empty-text">ยังไม่มีข้อมูลสรุปเมนู</div>';
-        }
-
-        renderPriceSettingList();
+        menuSummaryList.innerHTML = Object.entries(menuGrouped).map(([cat, items]) => {
+            const keys = Object.keys(items);
+            if (!keys.length) return '';
+            return `
+                <div class="summary-group-title">${cat} (รวม ฿${catStats[cat].sum.toLocaleString()})</div>
+                ${keys.map(name => `<div class="summary-row"><span>${name} (x${items[name].qty})</span><span><b>฿${items[name].sum.toLocaleString()}</b></span></div>`).join('')}
+            `;
+        }).join('') || '<div class="empty-text">ไม่มีข้อมูลสรุป</div>';
     }
 
     function renderPriceSettingList() {
-        priceSettingList.innerHTML = '';
-        var searchKeyword = (priceSearchInput ? priceSearchInput.value : '').trim().toLowerCase();
-        
-        var keys = Object.keys(priceBook);
-        if (searchKeyword) {
-            keys = keys.filter(k => k.toLowerCase().includes(searchKeyword));
-        }
-
-        if (keys.length === 0) {
-            priceSettingList.innerHTML = '<div class="empty-text">ไม่พบเมนูที่ค้นหา</div>';
-            return;
-        }
-
-        keys.sort().forEach(function(name) {
-            var hasRecipe = recipeBook[name] ? ' 📖' : '';
-            var row = document.createElement('div');
-            row.className = 'summary-row price-list-row';
-            row.innerHTML = `
-                <span onclick="fillEditPrice('${name}', ${priceBook[name]})" style="flex:1;">📝 ${name}${hasRecipe}</span>
+        const kw = (priceSearchInput.value || '').trim().toLowerCase();
+        const keys = Object.keys(priceBook).filter(k => k.toLowerCase().includes(kw)).sort();
+        priceSettingList.innerHTML = keys.map(name => `
+            <div class="summary-row price-list-row">
+                <span onclick="fillEditPrice('${name}', ${priceBook[name]})" style="flex:1;">📝 ${name}${recipeBook[name] ? ' 📖' : ''}</span>
                 <div style="display:flex; align-items:center; gap:8px;">
                     <b onclick="fillEditPrice('${name}', ${priceBook[name]})" style="color:#0284c7;">฿${priceBook[name]}</b>
                     <button type="button" class="btn-del" onclick="deletePrice('${name}')">✕</button>
                 </div>
-            `;
-            priceSettingList.appendChild(row);
-        });
+            </div>
+        `).join('') || '<div class="empty-text">ไม่พบเมนู</div>';
     }
 
     function fillEditPrice(name, price) {
         document.getElementById('newMenuName').value = name;
         document.getElementById('newMenuPrice').value = price;
         document.getElementById('newMenuRecipe').value = recipeBook[name] || '';
-        document.getElementById('newMenuPrice').focus();
     }
 
     async function addOrUpdatePrice() {
-        var name = document.getElementById('newMenuName').value.trim();
-        var price = parseFloat(document.getElementById('newMenuPrice').value);
-        var recipe = document.getElementById('newMenuRecipe').value.trim();
+        const name = document.getElementById('newMenuName').value.trim();
+        const price = parseFloat(document.getElementById('newMenuPrice').value);
+        const recipe = document.getElementById('newMenuRecipe').value.trim();
 
-        if (name && !isNaN(price) && price > 0) {
-            priceBook[name] = price;
-            localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
+        if (!name || isNaN(price) || price <= 0) return alert('กรอกชื่อและราคาให้ถูกต้อง');
 
-            if (recipe) {
-                recipeBook[name] = recipe;
-            } else {
-                delete recipeBook[name];
-            }
-            localStorage.setItem(RECIPES_KEY, JSON.stringify(recipeBook));
+        await db.ref('prices/' + name).set(price);
+        if (recipe) await db.ref('recipes/' + name).set(recipe);
 
-            document.getElementById('newMenuName').value = '';
-            document.getElementById('newMenuPrice').value = '';
-            document.getElementById('newMenuRecipe').value = '';
-            renderUI();
-            await saveToCloudWithQueue({ action: "update_price", name: name, price: price, recipe: recipe });
-        } else {
-            alert('กรุณากรอกชื่อเมนูและราคาให้ถูกต้อง');
-        }
+        document.getElementById('newMenuName').value = '';
+        document.getElementById('newMenuPrice').value = '';
+        document.getElementById('newMenuRecipe').value = '';
     }
 
     async function deletePrice(name) {
-        if (confirm('ยืนยันการลบเมนู "' + name + '" หรือไม่?')) {
-            delete priceBook[name];
-            delete recipeBook[name];
-            localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
-            localStorage.setItem(RECIPES_KEY, JSON.stringify(recipeBook));
-            renderUI();
-            await saveToCloudWithQueue({ action: "delete_price", name: name });
+        if (confirm(`ยืนยันการลบเมนู "${name}"?`)) {
+            await db.ref('prices/' + name).remove();
+            await db.ref('recipes/' + name).remove();
         }
     }
 
     function switchTab(tab) {
-        document.getElementById('tabHistory').className = `tab-btn ${tab === 'history' ? 'active' : ''}`;
-        document.getElementById('tabSummary').className = `tab-btn ${tab === 'summary' ? 'active' : ''}`;
-        document.getElementById('tabExpenses').className = `tab-btn ${tab === 'expenses' ? 'active' : ''}`;
-        document.getElementById('tabPrices').className = `tab-btn ${tab === 'prices' ? 'active' : ''}`;
-        
-        document.getElementById('historyView').style.display = tab === 'history' ? 'block' : 'none';
-        document.getElementById('summaryView').style.display = tab === 'summary' ? 'block' : 'none';
-        document.getElementById('expensesView').style.display = tab === 'expenses' ? 'block' : 'none';
-        document.getElementById('pricesView').style.display = tab === 'prices' ? 'block' : 'none';
+        ['history', 'summary', 'expenses', 'prices'].forEach(t => {
+            document.getElementById(`tab${t.charAt(0).toUpperCase() + t.slice(1)}`).classList.toggle('active', t === tab);
+            document.getElementById(`${t}View`).style.display = t === tab ? 'block' : 'none';
+        });
     }
 
     function exportSalesToCSV() {
-        if (sales.length === 0) { alert('ไม่มีข้อมูลยอดขายสำหรับดาวน์โหลด'); return; }
-        var csv = '\uFEFFวันที่,เวลา,ชื่อเมนู,หมวดหมู่,ประเภทการชำระ,ราคาต่อหน่วย,จำนวน,ราคารวม\n';
-        sales.forEach(function(s) {
-            var payText = (s.paymentMethod === 'promptpay') ? 'สแกนจ่าย' : 'เงินสด';
-            var cleanName = s.name.replace(/\s*\*\*\s*/g, '').trim();
-            csv += `"${s.date}","${s.time}","${cleanName}","${s.category}","${payText}",${s.unitPrice},${s.qty},${s.totalPrice}\n`;
-        });
+        if (!sales.length) return alert('ไม่มีข้อมูลยอดขาย');
+        let csv = '\uFEFFวันที่,เวลา,ชื่อเมนู,หมวดหมู่,วิธีชำระ,ราคา/หน่วย,จำนวน,ราคารวม\n';
+        sales.forEach(s => csv += `"${s.date}","${s.time}","${s.name}","${s.category}","${s.paymentMethod==='promptpay'?'สแกน':'เงินสด'}",${s.unitPrice},${s.qty},${s.totalPrice}\n`);
         downloadBlob(csv, `FLUKCHAFE_Sales_${formatDateYMD(new Date())}.csv`);
     }
 
     function exportExpensesToCSV() {
-        if (expenses.length === 0) { alert('ไม่มีข้อมูลต้นทุนสำหรับดาวน์โหลด'); return; }
-        var csv = '\uFEFFวันที่,เวลา,รายการซื้อของ,จำนวนเงินต้นทุน\n';
-        expenses.forEach(function(e) {
-            csv += `"${e.date}","${e.time}","${e.name}",${e.cost}\n`;
-        });
+        if (!expenses.length) return alert('ไม่มีข้อมูลต้นทุน');
+        let csv = '\uFEFFวันที่,เวลา,รายการ,จำนวนเงิน\n';
+        expenses.forEach(e => csv += `"${e.date}","${e.time}","${e.name}",${e.cost}\n`);
         downloadBlob(csv, `FLUKCHAFE_Expenses_${formatDateYMD(new Date())}.csv`);
     }
 
     function downloadBlob(content, filename) {
-        var blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
-        var url = URL.createObjectURL(blob);
-        var link = document.createElement('a');
-        link.setAttribute('href', url);
-        link.setAttribute('download', filename);
-        document.body.appendChild(link);
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(new Blob([content], { type: 'text/csv;charset=utf-8;' }));
+        link.download = filename;
         link.click();
-        document.body.removeChild(link);
     }
-
-    renderUI();
-
-    var syncTimer = null;
-    async function syncLoop() {
-        if (!document.hidden && navigator.onLine) {
-            await loadFromCloud();
-        }
-        syncTimer = setTimeout(syncLoop, FAST_POLL_INTERVAL);
-    }
-
-    window.addEventListener('DOMContentLoaded', function() {
-        syncLoop();
-    });
-
-    document.addEventListener('visibilitychange', function() {
-        if (!document.hidden) {
-            clearTimeout(syncTimer);
-            loadFromCloud();
-            syncLoop();
-        }
-    });
-
-    window.addEventListener('focus', function() {
-        clearTimeout(syncTimer);
-        loadFromCloud();
-        syncLoop();
-    });
-
-    window.addEventListener('pageshow', function() {
-        clearTimeout(syncTimer);
-        loadFromCloud();
-        syncLoop();
-    });
-
-    window.addEventListener('online', function() {
-        clearTimeout(syncTimer);
-        flushQueue();
-        loadFromCloud();
-        syncLoop();
-    });
 </script>
 </body>
 </html>
