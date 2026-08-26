@@ -891,16 +891,16 @@
         <div id="expenseList"></div>
     </div>
 
-    <!-- หน้าจัดการราคาเมนู + สูตรชง -->
+    <!-- หน้าจัดการราคาเมนู + สูตรชง (ซิงค์คลาวด์ 100%) -->
     <div class="list-container" id="pricesView" style="display: none;">
         <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:10px; margin-bottom:10px;">
-            <div style="font-size:0.8rem; font-weight:600; color:#0284c7; margin-bottom:6px;">➕ เพิ่ม / แก้ไขราคา & สูตรชง</div>
+            <div style="font-size:0.8rem; font-weight:600; color:#0284c7; margin-bottom:6px;">➕ เพิ่ม / แก้ไขราคา & สูตรชง (แชร์ทุกเครื่อง)</div>
             <div class="price-mgr-form" style="margin-bottom:6px;">
                 <input type="text" id="newMenuName" placeholder="ชื่อเมนู เช่น ชาไทย เย็น" style="flex:2;">
                 <input type="number" id="newMenuPrice" placeholder="ราคา" style="flex:1;">
             </div>
             <div class="price-mgr-form" style="margin-bottom:6px;">
-                <textarea id="newMenuRecipe" placeholder="สูตรชง เช่น ผงชา 2 ช้อน, นมข้น 30ml, นมจืด 30ml" rows="2"></textarea>
+                <textarea id="newMenuRecipe" placeholder="สูตรชง เช่น เบสชาไทย 120ml, นมข้นหวาน 45ml..." rows="3"></textarea>
             </div>
             <button type="button" onclick="addOrUpdatePrice()" style="width:100%; background:#0284c7; color:#fff; border:none; padding:8px; border-radius:8px; font-weight:600; cursor:pointer;">บันทึกเมนูและสูตร</button>
         </div>
@@ -977,15 +977,15 @@
     const API_URL = "https://script.google.com/macros/s/AKfycbwuVtheTjpEPp33z7VswY70n-C22KfgvnmfzD7yUiyDr4VN_1XFT0zKCd4KMj4ctOMiYA/exec";
     const GOOGLE_SHEETS_URL = "https://docs.google.com/spreadsheets/d/1EEU-LsVCzD8jbisYSVmy5jMjdTotGOgIW-4ASJlzqYU/edit";
 
-    const STORAGE_KEY = 'FLUKCHAFE_SHARED_DB_V26';
-    const MENU_PRICES_KEY = 'FLUKCHAFE_SHARED_PRICES_V26';
-    const RECIPES_KEY = 'FLUKCHAFE_SHARED_RECIPES_V26';
-    const EXPENSES_KEY = 'FLUKCHAFE_SHARED_EXP_V26';
-    const DELETED_SALES_KEY = 'FLUKCHAFE_DELETED_SALES_IDS_V26';
-    const DELETED_EXP_KEY = 'FLUKCHAFE_DELETED_EXP_IDS_V26';
-    const OFFLINE_QUEUE_KEY = 'FLUKCHAFE_OFFLINE_QUEUE_V26';
+    const STORAGE_KEY = 'FLUKCHAFE_SHARED_DB_V27';
+    const MENU_PRICES_KEY = 'FLUKCHAFE_SHARED_PRICES_V27';
+    const RECIPES_KEY = 'FLUKCHAFE_SHARED_RECIPES_V27';
+    const EXPENSES_KEY = 'FLUKCHAFE_SHARED_EXP_V27';
+    const DELETED_SALES_KEY = 'FLUKCHAFE_DELETED_SALES_IDS_V27';
+    const DELETED_EXP_KEY = 'FLUKCHAFE_DELETED_EXP_IDS_V27';
+    const OFFLINE_QUEUE_KEY = 'FLUKCHAFE_OFFLINE_QUEUE_V27';
 
-    const FAST_POLL_INTERVAL = 3500; // รอบซิงค์แบบเร็ว 3.5 วินาที
+    const FAST_POLL_INTERVAL = 3500;
 
     const DEFAULT_RECIPES = {
         "เอสเพรสโซ่ เย็น": "📍 เอสเพรสโซ่ • เย็น 20 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 60 ml\n⁃ กาแฟ 3 ช้อนกาแฟ ( 15g )\n⁃ นมจืด 100 ml\n⁃ นมข้นหวาน 20 ml\n⁃ นมข้นจืด 20 ml\n⁃ น้ำเชื่อม 10 ml ( ถ้าหวานน้อยไม่ต้องใส่ )",
@@ -1486,6 +1486,10 @@
                     priceBook = { ...DEFAULT_PRESET_PRICES, ...data.prices };
                     localStorage.setItem(MENU_PRICES_KEY, JSON.stringify(priceBook));
                 }
+                if (data.recipes && typeof data.recipes === 'object') {
+                    recipeBook = { ...DEFAULT_RECIPES, ...data.recipes };
+                    localStorage.setItem(RECIPES_KEY, JSON.stringify(recipeBook));
+                }
                 if (syncStatus) syncStatus.innerText = "เชื่อมต่อข้อมูลสด";
                 if (syncDot) syncDot.className = 'status-dot';
                 renderUI();
@@ -1556,7 +1560,6 @@
         let unitPrice = 0;
         let qty = 1;
 
-        // รูปแบบ เช่น ชาไทย x2, ชาเขียว *3
         const multiMatch = text.match(/^(.+?)\s*[*xX]\s*(\d+)$/);
         if (multiMatch) {
             name = multiMatch[1].trim();
@@ -1567,14 +1570,12 @@
             return { name, unitPrice, qty };
         }
 
-        // ตรงกับชื่อในระบบเป๊ะๆ
         if (priceBook[text]) {
             return { name: text, unitPrice: Number(priceBook[text]), qty: 1 };
         }
 
         var parts = text.split(/\s+/);
 
-        // รูปแบบ 3 ส่วน เช่น ชาดำ 20 2 (ชื่อ ราคา จำนวน)
         if (parts.length >= 3 && !isNaN(parts[parts.length - 1]) && !isNaN(parts[parts.length - 2])) {
             var pQty = Math.min(500, Math.max(1, parseInt(parts[parts.length - 1]) || 1));
             var pPrice = Math.max(0, parseFloat(parts[parts.length - 2]) || 0);
@@ -1582,7 +1583,6 @@
             return { name: pName, unitPrice: pPrice, qty: pQty };
         }
 
-        // รูปแบบ 2 ส่วน เช่น ชาไทย 2 หรือ ไส้กรอก 25
         if (parts.length >= 2 && !isNaN(parts[parts.length - 1])) {
             var lastNum = parseFloat(parts[parts.length - 1]);
             var pName2 = parts.slice(0, parts.length - 1).join(' ').trim();
@@ -2145,7 +2145,7 @@
             document.getElementById('newMenuPrice').value = '';
             document.getElementById('newMenuRecipe').value = '';
             renderUI();
-            await saveToCloudWithQueue({ action: "update_price", name: name, price: price });
+            await saveToCloudWithQueue({ action: "update_price", name: name, price: price, recipe: recipe });
         } else {
             alert('กรุณากรอกชื่อเมนูและราคาให้ถูกต้อง');
         }
