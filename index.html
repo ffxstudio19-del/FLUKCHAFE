@@ -35,15 +35,10 @@
             padding: 16px; 
             box-shadow: 0 10px 35px rgba(0, 0, 0, 0.4); 
             border: 1px solid rgba(255, 255, 255, 0.8);
-            transition: background 0.3s, border-color 0.3s, color 0.3s;
         }
 
         body.dark-mode { color: #f1f5f9; }
-        body.dark-mode .container { 
-            background: rgba(15, 23, 42, 0.94); 
-            border: 1px solid rgba(51, 65, 85, 0.8); 
-            color: #f1f5f9;
-        }
+        body.dark-mode .container { background: rgba(15, 23, 42, 0.94); border: 1px solid rgba(51, 65, 85, 0.8); color: #f1f5f9; }
         body.dark-mode .brand-name-en { color: #f8fafc; }
         body.dark-mode .brand-name-th { color: #94a3b8; }
         body.dark-mode .time-filter { background: #1e293b; }
@@ -61,7 +56,6 @@
         body.dark-mode .best-seller-section { background: #1e293b; border-color: #334155; }
         body.dark-mode .best-seller-title { color: #94a3b8; }
         body.dark-mode .quick-pill { background: #0f172a; color: #38bdf8; border-color: #334155; }
-        body.dark-mode .quick-pill:hover, body.dark-mode .quick-pill:active { background: #334155; border-color: #38bdf8; }
         body.dark-mode .input-btn-group input { background: #0f172a; color: #f1f5f9; border-color: #38bdf8; }
         body.dark-mode .suggest-box { background: #1e293b; border-color: #38bdf8; }
         body.dark-mode .suggest-item { border-bottom-color: #334155; color: #f1f5f9; }
@@ -81,122 +75,33 @@
         body.dark-mode .price-mgr-form input, body.dark-mode .price-mgr-form textarea { background: #0f172a; color: #f1f5f9; border-color: #334155; }
         body.dark-mode .price-search-box input { background: #0f172a; color: #f1f5f9; border-color: #334155; }
         body.dark-mode .price-item-card { background: #1e293b !important; border-color: #334155 !important; color: #f1f5f9; }
-        body.dark-mode .inline-edit-container { background: #0f172a !important; border-top-color: #334155 !important; }
         body.dark-mode .inline-edit-input { background: #1e293b; color: #f1f5f9; border-color: #38bdf8; }
         body.dark-mode .bottom-sync-bar { border-top-color: #334155; }
         body.dark-mode .sync-status-indicator { background: #1e293b; color: #94a3b8; }
-        body.dark-mode .modal-box { background: #1e293b; color: #f1f5f9; }
-        body.dark-mode .recipe-content { background: #0f172a; border-color: #334155; color: #38bdf8; }
 
         .brand-header { text-align: center; margin-bottom: 12px; position: relative; }
-        .btn-dark-toggle {
-            position: absolute;
-            top: 0;
-            right: 0;
-            background: #e2e8f0;
-            border: none;
-            width: 34px;
-            height: 34px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            transition: background 0.2s;
-        }
+        .btn-dark-toggle { position: absolute; top: 0; right: 0; background: #e2e8f0; border: none; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; }
         body.dark-mode .btn-dark-toggle { background: #334155; color: #f8fafc; }
 
         .brand-logo { width: 75px; height: 75px; border-radius: 50%; object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 2.5px solid #0284c7; }
         .brand-name-en { font-size: 1.55rem; font-weight: 700; color: #0f172a; margin-top: 4px; line-height: 1.1; letter-spacing: 0.5px; }
         .brand-name-th { font-size: 0.9rem; font-weight: 400; color: #64748b; margin-top: 2px; }
 
-        .time-filter {
-            display: grid;
-            grid-template-columns: 1fr 1.25fr 1.35fr 1fr;
-            gap: 3px;
-            background: #e2e8f0;
-            padding: 3px;
-            border-radius: 10px;
-            margin-bottom: 8px;
-        }
-        .filter-btn {
-            padding: 6px 2px;
-            border: none;
-            background: transparent;
-            border-radius: 8px;
-            font-size: 0.72rem;
-            font-weight: 500;
-            cursor: pointer;
-            color: #64748b;
-            white-space: nowrap;
-        }
-        .filter-btn.active {
-            background: #ffffff;
-            color: #0284c7;
-            font-weight: 600;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
-        }
+        .time-filter { display: grid; grid-template-columns: 1fr 1.25fr 1.35fr 1fr; gap: 3px; background: #e2e8f0; padding: 3px; border-radius: 10px; margin-bottom: 8px; }
+        .filter-btn { padding: 6px 2px; border: none; background: transparent; border-radius: 8px; font-size: 0.72rem; font-weight: 500; cursor: pointer; color: #64748b; white-space: nowrap; }
+        .filter-btn.active { background: #ffffff; color: #0284c7; font-weight: 600; box-shadow: 0 2px 5px rgba(0,0,0,0.08); }
 
-        .custom-filter-box {
-            display: none;
-            margin-bottom: 10px;
-            background: #f8fafc;
-            border: 1px solid #cbd5e1;
-            border-radius: 10px;
-            padding: 8px 10px;
-        }
+        .custom-filter-box { display: none; margin-bottom: 10px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; padding: 8px 10px; }
         .custom-filter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .filter-input-group label { display: block; font-size: 0.7rem; color: #475569; margin-bottom: 3px; font-weight: 600; }
-        .filter-input-group input {
-            width: 100%;
-            padding: 5px 6px;
-            border-radius: 6px;
-            border: 1.5px solid #0284c7;
-            font-size: 0.75rem;
-            outline: none;
-            background: #ffffff;
-            color: #0f172a;
-        }
+        .filter-input-group input { width: 100%; padding: 5px 6px; border-radius: 6px; border: 1.5px solid #0284c7; font-size: 0.75rem; outline: none; background: #ffffff; color: #0f172a; }
 
-        .total-banner {
-            background: #0f172a;
-            color: #ffffff;
-            border-radius: 14px;
-            padding: 14px 10px 10px 10px;
-            text-align: center;
-            margin-bottom: 12px;
-            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);
-        }
+        .total-banner { background: #0f172a; color: #ffffff; border-radius: 14px; padding: 14px 10px 10px 10px; text-align: center; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25); }
         .total-banner .amount { font-size: 2.3rem; font-weight: 700; color: #38bdf8; line-height: 1.1; }
         .total-banner .sub { font-size: 0.8rem; color: #94a3b8; margin-top: 4px; }
 
-        .btn-toggle-profit {
-            background: rgba(255, 255, 255, 0.12);
-            color: #e2e8f0;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-            padding: 4px 14px;
-            font-size: 0.75rem;
-            margin-top: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .btn-toggle-profit:hover, .btn-toggle-profit:active {
-            background: rgba(56, 189, 248, 0.2);
-            color: #38bdf8;
-            border-color: #38bdf8;
-        }
-
-        .secret-profit-panel {
-            display: none;
-            grid-template-columns: 1fr 1fr;
-            gap: 6px;
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px dashed rgba(255, 255, 255, 0.2);
-        }
+        .btn-toggle-profit { background: rgba(255, 255, 255, 0.12); color: #e2e8f0; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 20px; padding: 4px 14px; font-size: 0.75rem; margin-top: 8px; cursor: pointer; }
+        .secret-profit-panel { display: none; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 1px dashed rgba(255, 255, 255, 0.2); }
         .secret-box { background: rgba(255, 255, 255, 0.06); border-radius: 10px; padding: 8px 4px; }
         .secret-title { font-size: 0.7rem; color: #94a3b8; }
         .secret-val { font-size: 1.1rem; font-weight: 600; margin-top: 2px; }
@@ -210,264 +115,72 @@
         .cat-title { font-size: 0.75rem; color: #64748b; font-weight: 500; }
         .cat-val { font-size: 1.05rem; font-weight: 600; color: #0f172a; margin-top: 2px; }
         .cat-count { font-size: 0.72rem; color: #0284c7; font-weight: 500; }
-        .cat-pay-detail {
-            font-size: 0.65rem;
-            color: #475569;
-            margin-top: 4px;
-            padding-top: 3px;
-            border-top: 1px dashed #cbd5e1;
-            display: flex;
-            justify-content: space-between;
-        }
+        .cat-pay-detail { font-size: 0.65rem; color: #475569; margin-top: 4px; padding-top: 3px; border-top: 1px dashed #cbd5e1; display: flex; justify-content: space-between; }
 
         .cat-selector { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin-bottom: 8px; }
-        .cat-btn {
-            background: #e2e8f0;
-            border: none;
-            padding: 8px 2px;
-            border-radius: 8px;
-            font-size: 0.7rem;
-            cursor: pointer;
-            font-weight: 500;
-            color: #475569;
-        }
+        .cat-btn { background: #e2e8f0; border: none; padding: 8px 2px; border-radius: 8px; font-size: 0.7rem; cursor: pointer; font-weight: 500; color: #475569; }
         .cat-btn.active { background: #0284c7; color: #ffffff; }
 
-        .best-seller-section {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 8px 10px;
-            margin-bottom: 10px;
-        }
-        .best-seller-title {
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: #64748b;
-            margin-bottom: 6px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
+        .best-seller-section { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 8px 10px; margin-bottom: 10px; }
+        .best-seller-title { font-size: 0.75rem; font-weight: 600; color: #64748b; margin-bottom: 6px; display: flex; align-items: center; gap: 4px; }
         .quick-pills { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
         .quick-pills::-webkit-scrollbar { display: none; }
-        .quick-pill {
-            background: #ffffff;
-            color: #0284c7;
-            border: 1.5px solid #bae6fd;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            white-space: nowrap;
-            cursor: pointer;
-            flex-shrink: 0;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .quick-pill:active, .quick-pill:hover { background: #e0f2fe; border-color: #0284c7; }
+        .quick-pill { background: #ffffff; color: #0284c7; border: 1.5px solid #bae6fd; padding: 5px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; cursor: pointer; flex-shrink: 0; }
 
         .quick-input-box { margin-bottom: 14px; position: relative; }
         .input-btn-group { display: flex; gap: 6px; }
-        .input-btn-group input {
-            flex: 1;
-            padding: 12px 14px;
-            font-size: 1.02rem;
-            border: 2px solid #0284c7;
-            border-radius: 12px;
-            outline: none;
-            background: #ffffff;
-            color: #0f172a;
-        }
-        .input-btn-group input:focus { border-color: #0369a1; box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.2); }
-        .btn-order-submit {
-            background: #0284c7;
-            color: #fff;
-            border: none;
-            padding: 0 16px;
-            font-size: 0.95rem;
-            font-weight: 600;
-            border-radius: 12px;
-            cursor: pointer;
-            white-space: nowrap;
-            box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);
-        }
+        .input-btn-group input { flex: 1; padding: 12px 14px; font-size: 1.02rem; border: 2px solid #0284c7; border-radius: 12px; outline: none; background: #ffffff; color: #0f172a; }
+        .btn-order-submit { background: #0284c7; color: #fff; border: none; padding: 0 16px; font-size: 0.95rem; font-weight: 600; border-radius: 12px; cursor: pointer; white-space: nowrap; }
 
         .backdate-control { display: flex; align-items: center; justify-content: space-between; margin-top: 6px; padding: 0 2px; }
-        .btn-toggle-backdate {
-            background: transparent;
-            border: 1px solid #cbd5e1;
-            color: #64748b;
-            padding: 3px 8px;
-            border-radius: 8px;
-            font-size: 0.72rem;
-            cursor: pointer;
-        }
+        .btn-toggle-backdate { background: transparent; border: 1px solid #cbd5e1; color: #64748b; padding: 3px 8px; border-radius: 8px; font-size: 0.72rem; cursor: pointer; }
         .btn-toggle-backdate.active { background: #fef3c7; color: #b45309; border-color: #f59e0b; font-weight: 600; }
-
         .backdate-box { display: none; background: #fffbeb; border: 1.5px dashed #f59e0b; border-radius: 10px; padding: 8px; margin-top: 6px; }
-        .backdate-box-title { font-size: 0.72rem; color: #b45309; font-weight: 600; margin-bottom: 4px; }
         .backdate-inputs { display: flex; gap: 6px; }
-        .backdate-inputs input {
-            flex: 1;
-            padding: 6px 8px;
-            border: 1px solid #fcd34d;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            outline: none;
-            background: #ffffff;
-        }
+        .backdate-inputs input { flex: 1; padding: 6px 8px; border: 1px solid #fcd34d; border-radius: 6px; font-size: 0.8rem; outline: none; }
 
-        .suggest-box {
-            position: absolute;
-            top: 50px;
-            left: 0;
-            right: 110px;
-            background: #ffffff;
-            border: 1.5px solid #0284c7;
-            border-radius: 12px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-            max-height: 220px;
-            overflow-y: auto;
-            z-index: 1000;
-            display: none;
-        }
-        .suggest-item {
-            padding: 10px 14px;
-            border-bottom: 1px solid #f1f5f9;
-            font-size: 0.95rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-        }
-        .suggest-item:hover, .suggest-item:active { background: #e0f2fe; color: #0369a1; }
-        .suggest-price { font-weight: 600; color: #0284c7; font-size: 0.85rem; }
+        .suggest-box { position: absolute; top: 50px; left: 0; right: 110px; background: #ffffff; border: 1.5px solid #0284c7; border-radius: 12px; max-height: 220px; overflow-y: auto; z-index: 1000; display: none; }
+        .suggest-item { padding: 10px 14px; border-bottom: 1px solid #f1f5f9; font-size: 0.95rem; display: flex; justify-content: space-between; cursor: pointer; }
 
         .tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 12px; }
-        .tab-btn {
-            padding: 8px 2px;
-            border: none;
-            background: #e2e8f0;
-            border-radius: 8px;
-            font-size: 0.72rem;
-            font-weight: 500;
-            cursor: pointer;
-            color: #475569;
-        }
+        .tab-btn { padding: 8px 2px; border: none; background: #e2e8f0; border-radius: 8px; font-size: 0.72rem; font-weight: 500; cursor: pointer; color: #475569; }
         .tab-btn.active { background: #0f172a; color: #ffffff; }
 
         .list-container { max-height: 420px; overflow-y: auto; }
-
-        .order-batch-card {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 14px;
-            padding: 12px;
-            margin-bottom: 12px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
-        }
-        .batch-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 8px;
-            border-bottom: 1px dashed #cbd5e1;
-            margin-bottom: 8px;
-        }
-        .batch-time-tag {
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: #0369a1;
-            background: #e0f2fe;
-            padding: 3px 8px;
-            border-radius: 6px;
-        }
+        .order-batch-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 12px; margin-bottom: 12px; }
+        .batch-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; border-bottom: 1px dashed #cbd5e1; margin-bottom: 8px; }
+        .batch-time-tag { font-size: 0.75rem; font-weight: 600; color: #0369a1; background: #e0f2fe; padding: 3px 8px; border-radius: 6px; }
         .batch-total-price { font-size: 0.95rem; font-weight: 700; color: #0f172a; }
 
         .batch-item-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid #f8fafc; }
         .batch-item-row:last-child { border-bottom: none; }
         .batch-item-left { display: flex; align-items: center; gap: 10px; flex: 1; }
-        
-        .item-check-box {
-            width: 24px;
-            height: 24px;
-            border-radius: 6px;
-            border: 2px solid #cbd5e1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: transparent;
-            flex-shrink: 0;
-            background: #ffffff;
-            cursor: pointer;
-        }
-        
+        .item-check-box { width: 24px; height: 24px; border-radius: 6px; border: 2px solid #cbd5e1; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 700; color: transparent; flex-shrink: 0; background: #ffffff; cursor: pointer; }
         .item-done .item-check-box { background: #10b981 !important; border-color: #10b981 !important; color: #ffffff !important; }
         .item-done .item-title-text { text-decoration: line-through; color: #94a3b8 !important; }
-        .item-done .item-sub-detail { text-decoration: line-through; color: #cbd5e1 !important; }
-        .item-done .item-price-text { color: #94a3b8 !important; }
 
-        .item-title-text { font-size: 0.9rem; font-weight: 500; color: #1e293b; }
-        .item-title-text.has-recipe { cursor: pointer; }
-        .item-title-text.has-recipe:hover { color: #0284c7; text-decoration: underline; }
-        .item-sub-detail { font-size: 0.72rem; color: #64748b; }
-
-        .pay-badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 3px 6px;
-            border-radius: 6px;
-            font-size: 0.65rem;
-            font-weight: 500;
-            cursor: pointer;
-            margin-right: 4px;
-        }
+        .item-title-text { font-size: 0.9rem; font-weight: 500; }
+        .pay-badge { display: inline-flex; align-items: center; padding: 3px 6px; border-radius: 6px; font-size: 0.65rem; font-weight: 500; cursor: pointer; margin-right: 4px; }
         .pay-badge.qr { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
         .pay-badge.cash { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
-
         .btn-edit { background: #f8fafc; color: #0284c7; border: 1px solid #cbd5e1; border-radius: 6px; padding: 3px 6px; font-size: 0.65rem; font-weight: 600; cursor: pointer; margin-right: 3px; }
         .btn-del { background: #fee2e2; color: #ef4444; border: none; border-radius: 6px; padding: 3px 6px; font-size: 0.65rem; font-weight: 600; cursor: pointer; }
 
         .summary-group-title { background: #f1f5f9; padding: 5px 8px; font-size: 0.8rem; font-weight: 600; color: #475569; border-radius: 6px; margin: 8px 0 4px 0; }
-        .summary-row { display: flex; justify-content: space-between; padding: 6px 8px; border-bottom: 1px solid #f1f5f9; font-size: 0.85rem; align-items: center; background: #ffffff; }
+        .summary-row { display: flex; justify-content: space-between; padding: 6px 8px; border-bottom: 1px solid #f1f5f9; font-size: 0.85rem; align-items: center; }
         .empty-text { text-align: center; color: #94a3b8; padding: 24px 0; font-size: 0.85rem; }
 
         .price-mgr-form { display: flex; gap: 6px; margin-bottom: 8px; }
-        .price-mgr-form input, .price-mgr-form textarea {
-            padding: 8px;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            outline: none;
-            background: #ffffff;
-            width: 100%;
-        }
-        .price-mgr-form button {
-            background: #0284c7;
-            color: #fff;
-            border: none;
-            padding: 8px 14px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            font-weight: 500;
-            white-space: nowrap;
-        }
-        .btn-exp-add { background: #ef4444 !important; }
+        .price-mgr-form input, .price-mgr-form textarea { padding: 8px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.85rem; outline: none; width: 100%; background: #fff; }
+        .price-mgr-form button { background: #0284c7; color: #fff; border: none; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 500; white-space: nowrap; }
         .price-search-box { margin-bottom: 8px; }
         .price-search-box input { width: 100%; padding: 7px 10px; border: 1.5px solid #94a3b8; border-radius: 8px; font-size: 0.8rem; outline: none; background: #f8fafc; }
 
-        .price-item-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; font-size: 0.85rem; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+        .price-item-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; font-size: 0.85rem; }
         .price-item-header { display: flex; justify-content: space-between; align-items: center; }
-        .inline-edit-container { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #cbd5e1; background: transparent; border-radius: 6px; }
+        .inline-edit-container { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #cbd5e1; }
         .inline-edit-inputs { display: flex; gap: 6px; margin-bottom: 8px; }
-        .inline-edit-input { padding: 8px 10px; border: 1.5px solid #0284c7; border-radius: 8px; font-size: 0.9rem; outline: none; background: #ffffff; color: #0f172a; width: 100%; }
+        .inline-edit-input { padding: 8px 10px; border: 1.5px solid #0284c7; border-radius: 8px; font-size: 0.9rem; outline: none; width: 100%; }
         .inline-edit-btns { display: flex; gap: 6px; }
         .btn-inline-save { flex: 1; background: #10b981; color: #fff; border: none; padding: 8px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
         .btn-inline-cancel { flex: 1; background: #e2e8f0; color: #475569; border: none; padding: 8px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
@@ -477,7 +190,7 @@
 
         .bottom-sync-bar { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; padding-top: 8px; border-top: 1px solid #f1f5f9; }
         .sync-status-indicator { display: inline-flex; align-items: center; gap: 5px; font-size: 0.68rem; color: #64748b; padding: 3px 8px; border-radius: 12px; background: #f8fafc; }
-        .status-dot { width: 6px; height: 6px; border-radius: 50%; background: #10b981; display: inline-block; box-shadow: 0 0 6px #10b981; }
+        .status-dot { width: 6px; height: 6px; border-radius: 50%; background: #10b981; display: inline-block; }
         .btn-manual-sync { background: #0284c7; color: #fff; border: none; padding: 4px 10px; border-radius: 8px; font-size: 0.72rem; font-weight: 600; cursor: pointer; }
 
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 16px; }
@@ -491,13 +204,12 @@
 
 <div class="container">
     <div class="brand-header">
-        <button type="button" class="btn-dark-toggle" id="darkModeBtn" onclick="toggleDarkMode()" title="สลับโหมดกลางคืน">🌙</button>
+        <button type="button" class="btn-dark-toggle" id="darkModeBtn" onclick="toggleDarkMode()">🌙</button>
         <img src="logo.png" alt="FLUKCHAFE" class="brand-logo" onerror="this.style.display='none'">
         <div class="brand-name-en">FLUKCHAFE</div>
         <div class="brand-name-th">ฟลุ๊ค ชาเฟ่</div>
     </div>
 
-    <!-- แถบเลือกช่วงเวลา -->
     <div class="time-filter">
         <button type="button" class="filter-btn active" onclick="setTimeFilter('today', this)">☀️ วันนี้</button>
         <button type="button" class="filter-btn" onclick="setTimeFilter('week', this)">📅 อาทิตย์นี้</button>
@@ -518,7 +230,6 @@
         </div>
     </div>
 
-    <!-- กล่องยอดขายรวม -->
     <div class="total-banner">
         <div class="amount" id="totalSales">฿0</div>
         <div class="sub" id="totalSalesSub">ยอดขายรวม</div>
@@ -546,7 +257,6 @@
         </div>
     </div>
 
-    <!-- สรุป 4 หมวดหมู่ พร้อมแจกแจงสด/สแกน -->
     <div class="category-summary-grid">
         <div class="cat-box">
             <div class="cat-title">🧋 เครื่องดื่ม</div>
@@ -582,7 +292,6 @@
         <button type="button" class="cat-btn" onclick="setCategory('อาหาร/กะเพรา', this)">🍳 อาหาร</button>
     </div>
 
-    <!-- กล่องแยกเมนูขายดี -->
     <div class="best-seller-section">
         <div class="best-seller-title">🔥 เมนูขายดี (คลิกเพื่อรับออเดอร์ทันที)</div>
         <div class="quick-pills">
@@ -609,7 +318,6 @@
         </div>
 
         <div class="backdate-box" id="backdateBox">
-            <div class="backdate-box-title">⚠️ โหมดลงออเดอร์ย้อนหลัง (ระบุวันและเวลา)</div>
             <div class="backdate-inputs">
                 <input type="date" id="backdateDateInput">
                 <input type="time" id="backdateTimeInput">
@@ -624,26 +332,21 @@
         <button type="button" class="tab-btn" id="tabPrices" onclick="switchTab('prices')">⚙️ ตั้งราคา</button>
     </div>
 
-    <div class="list-container" id="historyView">
-        <div id="itemList"></div>
-    </div>
-
-    <div class="list-container" id="summaryView" style="display: none;">
-        <div id="menuSummaryList"></div>
-    </div>
+    <div class="list-container" id="historyView"><div id="itemList"></div></div>
+    <div class="list-container" id="summaryView" style="display: none;"><div id="menuSummaryList"></div></div>
 
     <div class="list-container" id="expensesView" style="display: none;">
         <div class="price-mgr-form">
             <input type="text" id="newExpenseName" placeholder="รายการซื้อของ เช่น ชา/นม/ของทอด" style="flex:2;">
             <input type="number" id="newExpenseCost" placeholder="จำนวนเงิน" style="flex:1;">
-            <button type="button" class="btn-exp-add" onclick="addExpense()">บันทึกทุน</button>
+            <button type="button" style="background:#ef4444;" onclick="addExpense()">บันทึกทุน</button>
         </div>
         <div id="expenseList"></div>
     </div>
 
     <div class="list-container" id="pricesView" style="display: none;">
         <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:10px; margin-bottom:10px;">
-            <div style="font-size:0.8rem; font-weight:600; color:#0284c7; margin-bottom:6px;">➕ เพิ่มเมนูใหม่ด่วน (ซิงค์ทุกเครื่องทันที)</div>
+            <div style="font-size:0.8rem; font-weight:600; color:#0284c7; margin-bottom:6px;">➕ เพิ่มเมนูใหม่</div>
             <div class="price-mgr-form" style="margin-bottom:6px;">
                 <input type="text" id="newMenuName" placeholder="ชื่อเมนู เช่น ชาไทย เย็น" style="flex:2;">
                 <input type="number" id="newMenuPrice" placeholder="ราคา" style="flex:1;">
@@ -660,7 +363,6 @@
         <div id="priceSettingList"></div>
 
         <div class="export-section">
-            <div style="font-size: 0.75rem; color: #64748b; font-weight: 600; margin-bottom: 6px;">📊 จัดการข้อมูล & รายงาน (Excel)</div>
             <button type="button" class="btn-export" onclick="exportSalesToCSV()">📥 ดาวน์โหลดรายงานยอดขาย (CSV/Excel)</button>
             <button type="button" class="btn-export" style="background:#6366f1;" onclick="exportExpensesToCSV()">📥 ดาวน์โหลดรายงานต้นทุน (CSV/Excel)</button>
             <button type="button" class="btn-export" style="background:#ef4444;" onclick="clearOldDataCache()">🧹 ล้างแคชข้อมูลค้างในเครื่อง</button>
@@ -672,7 +374,7 @@
             <span class="status-dot"></span>
             <span id="syncStatus">พร้อมใช้งาน</span>
         </div>
-        <button type="button" class="btn-manual-sync" onclick="syncData()">🔄 ซิงค์ด่วน</button>
+        <button type="button" class="btn-manual-sync" onclick="syncData(true)">🔄 ซิงค์ด่วน</button>
     </div>
 </div>
 
@@ -688,11 +390,11 @@
     <div class="modal-box">
         <div class="modal-title">✏️ แก้ไขข้อมูลออเดอร์</div>
         <input type="hidden" id="editItemId">
-        <div class="modal-group" style="margin-bottom:8px;">
+        <div style="margin-bottom:8px;">
             <label style="font-size:0.75rem; color:#64748b;">ชื่อเมนู:</label>
             <input type="text" id="editItemName" style="width:100%; padding:6px; border:1px solid #cbd5e1; border-radius:6px;">
         </div>
-        <div class="modal-group" style="margin-bottom:8px;">
+        <div style="margin-bottom:8px;">
             <label style="font-size:0.75rem; color:#64748b;">หมวดหมู่:</label>
             <select id="editItemCategory" style="width:100%; padding:6px; border:1px solid #cbd5e1; border-radius:6px;">
                 <option value="เครื่องดื่ม">🧋 เครื่องดื่ม</option>
@@ -733,132 +435,17 @@
         "คาราเมล มัคคิอาโต เย็น": "📍 คาราเมล มัคคิอาโต • เย็น 20 ออนซ์\n( แยกชั้น ใส่ฟองนม ใส่ซอสคาราเมล )\n⁃ น้ำร้อน 60 ml\n⁃ กาแฟ 3 ช้อนกาแฟ ( 15g )\n⁃ นมจืด 100 ml\n⁃ นมข้นจืด 30 ml\n⁃ นมข้นหวาน 20 ml\n⁃ ตีฟองนม 30 ml\n⁃ ราดซอสคาราเมลบนฟองนมและรอบแก้ว",
         "คาราเมล มัคคิอาโต ปั่น": "📍 คาราเมล มัคคิอาโต • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 30 ml\n⁃ กาแฟ 5 ช้อนกาแฟ ( 25g )\n⁃ ครีมเทียม(ฟ้า) 1 ช้อนโต๊ะ\n⁃ นมจืด 20 ml\n⁃ นมข้นจืด 30 ml\n⁃ นมข้นหวาน 30 ml\n⁃ ซอสคาราเมล 60 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วพูนนิดๆ )\n⁃ ฟองนมบนแก้ว ราดซอสคาราเมลท็อป",
         "อเมริกาโน่ เย็น": "📍 อเมริกาโน่ • เย็น 20 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 60 ml\n⁃ กาแฟ 3 ช้อนกาแฟ ( 15g )\n⁃ น้ำเปล่า 130 ml\n⁃ น้ำเชื่อม 20 ml ( ถ้าหวานน้อยก็ไม่ต้องใส่ )",
-        "อเมริกาโน่ ปั่น": "📍 อเมริกาโน่ • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 30 ml\n⁃ กาแฟ 4 ช้อนกาแฟ ( 20g )\n⁃ น้ำเปล่า 60 ml\n⁃ น้ำเชื่อม 60 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วพูนนิดๆ )",
-        "อเมริกาโน่ น้ำส้ม เย็น": "📍 อเมริกาโน่ น้ำส้ม • เย็น 20 ออนซ์\n( แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 60 ml\n⁃ กาแฟ 3 ช้อนกาแฟ ( 15g )\n⁃ น้ำเปล่า 100 ml\n⁃ น้ำส้ม 40 ml\n⁃ น้ำเชื่อม 15 ml ( ถ้าหวานน้อยก็ไม่ต้องใส่ )",
-        "อเมริกาโน่ น้ำส้ม ปั่น": "📍 อเมริกาโน่ น้ำส้ม • ปั่น 22 ออนซ์\n( แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 20 ml\n⁃ กาแฟ 2 ช้อนกาแฟ ( 10g )\n——————————————\n⁃ น้ำส้ม 90 ml\n⁃ น้ำเปล่า 40 ml\n⁃ น้ำเชื่อม 40 ml\n⁃ เกลือ 1/32 ช้อนชา\n⁃ น้ำแข็ง 440 g. ( 1 แก้วพูนนิดๆ )\n⁃ ส้มซันคิสตกแต่งบนแก้ว",
-        "อเมริกาโน่ น้ำผึ้ง เย็น": "📍 อเมริกาโน่ น้ำผึ้ง • เย็น 20 ออนซ์\n( แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 60 ml\n⁃ กาแฟ 3 ช้อนกาแฟ ( 15g )\n⁃ น้ำเปล่า 100 ml\n⁃ น้ำผึ้ง 30 ml\n⁃ น้ำเชื่อม 10 ml ( ถ้าหวานน้อยก็ไม่ต้องใส่ )",
-        "อเมริกาโน่ น้ำผึ้ง ปั่น": "📍 อเมริกาโน่ น้ำผึ้ง • ปั่น 22 ออนซ์\n( แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 20 ml\n⁃ กาแฟ 2 ช้อนกาแฟ ( 10g )\n——————————————\n⁃ น้ำผึ้ง 80 ml\n⁃ น้ำเปล่า 60 ml\n⁃ น้ำเชื่อม 30 ml\n⁃ เกลือ 1/32 ช้อนชา\n⁃ น้ำแข็ง 440 g. ( 1 แก้วพูนนิดๆ )",
-        "อเมริกาโน่ น้ำผึ้งมะนาว เย็น": "📍 อเมริกาโน่ น้ำผึ้งมะนาว • เย็น 20 ออนซ์\n( แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 60 ml\n⁃ กาแฟ 3 ช้อนกาแฟ ( 15g )\n⁃ น้ำเปล่า 100 ml\n⁃ น้ำผึ้ง 30 ml\n⁃ น้ำเชื่อม 10 ml\n⁃ น้ำมะนาวแป้น 10 ml",
-        "อเมริกาโน่ น้ำผึ้งมะนาว ปั่น": "📍 อเมริกาโน่ น้ำผึ้งมะนาว • ปั่น 22 ออนซ์\n( แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 20 ml\n⁃ กาแฟ 2 ช้อนกาแฟ ( 10g )\n——————————————\n⁃ น้ำผึ้ง 80 ml\n⁃ น้ำมะนาว 20 ml\n⁃ น้ำเปล่า 40 ml\n⁃ น้ำเชื่อม 30 ml\n⁃ เกลือ 1/32 ช้อนชา\n⁃ น้ำแข็ง 440 g. ( 1 แก้วพูนนิดๆ )",
-        "อเมริกาโน่ ลิ้นจี่ เย็น": "📍 อเมริกาโน่ ลิ้นจี่ • เย็น 20 ออนซ์\n( แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 60 ml\n⁃ กาแฟ 3 ช้อนกาแฟ ( 15g )\n⁃ น้ำเปล่า 100 ml\n⁃ ไซรัปลิ้นจี่ 30 ml\n⁃ น้ำเชื่อม 10 ml",
-        "อเมริกาโน่ ลิ้นจี่ ปั่น": "📍 อเมริกาโน่ ลิ้นจี่ • ปั่น 22 ออนซ์\n( แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 20 ml\n⁃ กาแฟ 2 ช้อนกาแฟ ( 10g )\n——————————————\n⁃ ไซรัปลิ้นจี่ 80 ml\n⁃ น้ำเปล่า 60 ml\n⁃ น้ำเชื่อม 30 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วพูนนิดๆ )",
-        "ชามะนาว เย็น": "📍 ชามะนาว • เย็น 20 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 180 ml\n⁃ ผงชา 5 ช้อนชา ( 25g )\n⁃ น้ำมะนาว 10 ml",
-        "ชามะนาว ปั่น": "📍 ชามะนาว • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 170 ml\n⁃ ผงชา 4 ช้อนชา ( 20g )\n⁃ เกลือปลายช้อน\n⁃ น้ำเชื่อม 60 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วพูนนิดๆ )",
-        "ชามะนาวน้ำผึ้ง เย็น": "📍 ชามะนาวน้ำผึ้ง • เย็น 20 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 170 ml\n⁃ ผงชา 4 ช้อนชา ( 20g )\n⁃ น้ำผึ้ง 30 ml",
-        "ชามะนาวน้ำผึ้ง ปั่น": "📍 ชามะนาวน้ำผึ้ง • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 170 ml\n⁃ ผงชา 4 ช้อนชา ( 20g )\n⁃ เกลือปลายช้อน\n⁃ น้ำผึ้ง 60 ml\n⁃ น้ำเชื่อม 10 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วพูนนิดๆ )",
-        "ชาดำ เย็น": "📍 ชาดำ • เย็น 20 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ เบสชาไทย 150 ml\n⁃ น้ำเชื่อม 40 ml ( ถ้าหวานน้อยก็ลดลง )\n⁃ น้ำเปล่า 40 ml",
-        "ชาดำ ปั่น": "📍 ชาดำ • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ เบสชา 150 ml\n⁃ น้ำเชื่อม 40 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )",
-        "ชาดำมะนาว เย็น": "📍 ชาดำมะนาว • เย็น 20 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ เบสชาไทย 120 ml\n⁃ น้ำเชื่อม 40 ml ( ถ้าหวานน้อยก็ลดลง )\n⁃ น้ำเปล่า 40 ml\n⁃ น้ำมะนาว 30 ml",
-        "ชาดำมะนาว ปั่น": "📍 ชาดำมะนาว • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ เบสชา 150 ml\n⁃ น้ำเชื่อม 40 ml\n⁃ น้ำมะนาว 30 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )",
-        "ชาดำน้ำผึ้ง เย็น": "📍 ชาดำน้ำผึ้ง • เย็น 20 ออนซ์\n( แยกชั้น ไม่ใส่ฟองนม )\n⁃ เบสชาไทย 70 ml\n——————————————\n⁃ น้ำเปล่า 100 ml\n⁃ น้ำผึ้ง 30 ml\n⁃ น้ำร้อน 15 ml",
-        "ชาดำน้ำผึ้ง ปั่น": "📍 ชาดำน้ำผึ้ง • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ เบสชา 150 ml\n⁃ น้ำเปล่า 20 ml\n⁃ น้ำผึ้ง 50 ml\n⁃ น้ำมะนาว 15 ml ( หรือผงชามะนาว 1-2 ชช. )\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )",
-        "ชาดำมะนาว น้ำผึ้ง เย็น": "📍 ชาดำมะนาว น้ำผึ้ง • เย็น 20 ออนซ์\n( แยกชั้น ไม่ใส่ฟองนม )\n⁃ เบสชาไทย 100 ml\n——————————————\n⁃ น้ำร้อน 75 ml\n⁃ น้ำผึ้ง 45 ml\n⁃ น้ำมะนาว 15 ml ( หรือผงชามะนาว 1-2 ชช. )",
-        "ชาดำมะนาว น้ำผึ้ง ปั่น": "📍 ชาดำมะนาว น้ำผึ้ง • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ เบสชา 150 ml\n⁃ น้ำเปล่า 20 ml\n⁃ น้ำผึ้ง 50 ml\n⁃ น้ำมะนาว 15 ml ( หรือผงชามะนาว 1-2 ชช. )\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )",
-        "ชาไทย เย็น": "📍 ชาไทย • เย็น 20 ออนซ์ ( ชาใต้ )\n( ไม่แยกชั้น ใส่ฟองนม )\n⁃ เบสชาไทย 120 ml\n⁃ ครีมเทียม(แดง) 1 ช้อนโต๊ะ ( 15g )\n⁃ น้ำตาลทรายขาว 1 ช้อนขาว ( 5g )\n⁃ นมข้นหวาน 45 ml\n⁃ นมจืด 15 ml\n\n• ผงอเคดี้ 20 ออนซ์:\n⁃ ผง 3 ช้อนโต๊ะ, น้ำร้อน 120 ml, นมข้นจืด 40 ml, นมข้นหวาน 15 ml\n• ผงอเคดี้ 12 ออนซ์:\n⁃ ผง 1.5-2 ช้อนโต๊ะ, น้ำร้อน 75 ml, นมข้นจืด 25 ml, นมข้นหวาน 10 ml",
-        "ชาไทย ปั่น": "📍 ชาไทย • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ เบสชาไทย 150 ml\n⁃ ครีมเทียม(แดง) 1 ช้อนโต๊ะ\n⁃ นมข้นหวาน 60 ml\n⁃ น้ำเชื่อม 35 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )",
-        "ชาเขียว เย็น": "📍 ชาเขียว • เย็น 20 ออนซ์ ( ชาใต้ )\n( ไม่แยกชั้น ใส่ฟองนม )\n⁃ เบสชาเขียว 120 ml\n⁃ ครีมเทียม(แดง) 1 ช้อนโต๊ะ ( 15g )\n⁃ น้ำตาลทรายขาว 1 ช้อนขาว ( 5g )\n⁃ นมข้นหวาน 45 ml\n⁃ นมจืด 15 ml\n\n• ผงอเคดี้ 20 ออนซ์:\n⁃ ผง 3 ช้อนโต๊ะ, น้ำร้อน 120 ml, นมข้นจืด 40 ml, นมข้นหวาน 15 ml\n• ผงอเคดี้ 12 ออนซ์:\n⁃ ผง 1.5-2 ช้อนโต๊ะ, น้ำร้อน 75 ml, นมข้นจืด 25 ml, นมข้นหวาน 10 ml",
-        "ชาเขียว ปั่น": "📍 ชาเขียว • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ เบสชาเขียว 150 ml\n⁃ ครีมเทียม(แดง) 1 ช้อนโต๊ะ\n⁃ นมข้นหวาน 60 ml\n⁃ น้ำเชื่อม 35 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )",
-        "ชานม เย็น": "📍 ชานม • เย็น 20 ออนซ์ ( อเคดี้ )\n( ไม่แยกชั้น ใส่ฟองนม )\n⁃ น้ำร้อน 120 ml\n⁃ ผง 3 ช้อนโต๊ะ\n⁃ นมข้นจืด 40 ml\n⁃ นมข้นหวาน 15 ml\n⁃ นมสด 15 ml",
-        "ชานม ปั่น": "📍 ชานม • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 70 ml\n⁃ ผง 3.5 - 4 ช้อนโต๊ะ\n⁃ นมข้นจืด 50 ml\n⁃ นมข้นหวาน 30 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วพูนนิดๆ )",
-        "โกโก้ เย็น": "📍 โกโก้ • เย็น 20 ออนซ์ ( ดัทช์ช้อย )\n( ไม่แยกชั้น ใส่ฟองนม )\n⁃ น้ำร้อน 100 ml\n⁃ ผง 2 ช้อนโต๊ะ\n⁃ ครีมเทียม(แดง) 1 ช้อนกลาง ( 10g )\n⁃ น้ำตาลทรายขาว 1 ช้อนกลาง ( 10g )\n⁃ นมข้นจืด 20 ml\n⁃ นมข้นหวาน 50 ml\n⁃ นมสด 15 ml",
-        "โกโก้ ปั่น": "📍 โกโก้ • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 90 ml\n⁃ ผง 2 ช้อนโต๊ะ\n⁃ ครีมเทียม(แดง) 1 ช้อนกลาง ( 10g )\n⁃ น้ำตาลทรายขาว 1 ช้อนกลาง ( 10g )\n⁃ นมข้นจืด 30 ml\n⁃ นมข้นหวาน 45 ml\n⁃ น้ำเชื่อม 35 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วพูนนิดๆ )",
-        "นมชมพู เย็น": "📍 นมชมพู • เย็น 20 ออนซ์ ( อเคดี้ )\n( ไม่แยกชั้น ใส่ฟองนม )\n⁃ น้ำร้อน 120 ml\n⁃ ผง 3 ช้อนโต๊ะ\n⁃ นมข้นจืด 40 ml\n⁃ นมข้นหวาน 20 ml\n⁃ นมสด 15 ml",
-        "นมชมพู ปั่น": "📍 นมชมพู • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 70 ml\n⁃ ผง 3.5 - 4 ช้อนโต๊ะ\n⁃ นมข้นจืด 50 ml\n⁃ นมข้นหวาน 30 ml\n⁃ น้ำเชื่อม 20 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วพูนนิดๆ )",
-        "โอวัลติน เย็น": "📍 โอวัลติน • เย็น 20 ออนซ์ ( อเคดี้ )\n( ไม่แยกชั้น ใส่ฟองนม )\n⁃ น้ำร้อน 120 ml\n⁃ ผง 3.5 ช้อนโต๊ะ\n⁃ นมข้นจืด 20 ml\n⁃ นมข้นหวาน 30 ml\n⁃ นมสด 30 ml",
-        "โอวัลติน ปั่น": "📍 โอวัลติน • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 100 ml\n⁃ ผง 3.5 - 4 ช้อนโต๊ะ\n⁃ นมข้นจืด 40 ml\n⁃ นมข้นหวาน 40 ml\n⁃ น้ำเชื่อม 25 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วพูนนิดๆ )",
-        "เผือก เย็น": "📍 เผือก • เย็น 20 ออนซ์ ( อเคดี้ )\n( ไม่แยกชั้น ใส่ฟองนม )\n⁃ น้ำร้อน 120 ml\n⁃ ผง 3 ช้อนโต๊ะ\n⁃ นมข้นจืด 20 ml\n⁃ นมข้นหวาน 30 ml\n⁃ นมสด 30 ml",
-        "เผือก ปั่น": "📍 เผือก • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 60 ml\n⁃ ผง 3.5 - 4 ช้อนโต๊ะ\n⁃ นมข้นจืด 50 ml\n⁃ นมข้นหวาน 40 ml\n⁃ น้ำเชื่อม 30 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วพูนนิดๆ )",
-        "นมเผือก เย็น": "📍 เผือก • เย็น 20 ออนซ์ ( อเคดี้ )\n( ไม่แยกชั้น ใส่ฟองนม )\n⁃ น้ำร้อน 120 ml\n⁃ ผง 3 ช้อนโต๊ะ\n⁃ นมข้นจืด 20 ml\n⁃ นมข้นหวาน 30 ml\n⁃ นมสด 30 ml",
-        "นมเผือก ปั่น": "📍 เผือก • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 60 ml\n⁃ ผง 3.5 - 4 ช้อนโต๊ะ\n⁃ นมข้นจืด 50 ml\n⁃ นมข้นหวาน 40 ml\n⁃ น้ำเชื่อม 30 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วพูนนิดๆ )",
-        "แคนตาลูป เย็น": "📍 แคนตาลูป • เย็น 20 ออนซ์ ( อเคดี้ )\n( ไม่แยกชั้น ใส่ฟองนม )\n⁃ น้ำร้อน 100 ml\n⁃ ผง 3 ช้อนโต๊ะ\n⁃ นมข้นจืด 30 ml\n⁃ นมข้นหวาน 30 ml\n⁃ นมสด 30 ml",
-        "แคนตาลูป ปั่น": "📍 แคนตาลูป • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 60 ml\n⁃ ผง 3.5 - 4 ช้อนโต๊ะ\n⁃ นมข้นจืด 50 ml\n⁃ นมข้นหวาน 40 ml\n⁃ น้ำเชื่อม 30 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วพูนนิดๆ )",
-        "ชาเขียวมัทฉะลาเต้ เย็น": "📍 ชาเขียวมัทฉะลาเต้ • เย็น 20 ออนซ์ ( อเคดี้ )\n( ไม่แยกชั้น ใส่ฟองนม )\n⁃ น้ำร้อน 120 ml\n⁃ ผง 3 ช้อนโต๊ะ\n⁃ นมข้นจืด 40 ml\n⁃ นมข้นหวาน 20 ml\n⁃ นมสด 15 ml",
-        "ชาเขียวมัทฉะลาเต้ ปั่น": "📍 ชาเขียวมัทฉะลาเต้ • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ใส่ฟองนม )\n⁃ น้ำร้อน 70 ml\n⁃ ผง 3.5 - 4 ช้อนโต๊ะ\n⁃ นมข้นจืด 40 ml\n⁃ นมข้นหวาน 30 ml\n⁃ น้ำเชื่อม 30 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วพูนนิดๆ )",
-        "นมสด เย็น": "📍 นมสด • เย็น 20 ออนซ์ ( ผงอเคดี้ )\n( ไม่แยกชั้น ใส่ฟองนม )\n⁃ น้ำร้อน 120 ml\n⁃ ผง 3 ช้อนโต๊ะ\n⁃ นมข้นจืด 40 ml\n⁃ นมข้นหวาน 20 ml\n⁃ นมสด 15 ml",
-        "นมสด ปั่น": "📍 นมสด • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ไม่ใส่ฟองนม )\n⁃ น้ำร้อน 70 ml\n⁃ ผง 3.5 - 4 ช้อนโต๊ะ\n⁃ นมข้นจืด 50 ml\n⁃ นมข้นหวาน 30 ml\n⁃ น้ำเชื่อม 20 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วพูนนิดๆ )",
-        "นมสดคาราเมล เย็น": "📍 นมสดคาราเมล • เย็น 20 ออนซ์ ( ผงอเคดี้ )\n( ไม่แยกชั้น ราดซอสคาราเมล )\n⁃ น้ำร้อน 140 ml\n⁃ ผงนมสด 3.5 ช้อนโต๊ะ\n⁃ นมข้นจืด 40 ml\n⁃ ไซรัปคาราเมล 40 ml\n⁃ นมข้นหวาน 20 ml\n⁃ ราดซอสคาราเมลรอบแก้ว",
-        "นมสดคาราเมล ปั่น": "📍 นมสดคาราเมล • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ราดซอสคาราเมล )\n⁃ น้ำร้อน 100 ml\n⁃ ผงนมสด 3.5 ช้อนโต๊ะ\n⁃ นมข้นจืด 40 ml\n⁃ ไซรัปคาราเมล 60 ml\n⁃ นมข้นหวาน 20 ml\n⁃ น้ำเชื่อม 20 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วพูนนิดๆ )\n⁃ ราดซอสคาราเมลรอบแก้ว",
-        "นมสดบราวน์ชูการ์ เย็น": "📍 นมสดบราวน์ชูการ์ • เย็น 20 ออนซ์ ( ผงอเคดี้ )\n( ไม่แยกชั้น ราดซอสบราวน์ชูการ์ )\n⁃ น้ำร้อน 120 ml\n⁃ ผงนมสด 3.5 ช้อนโต๊ะ\n⁃ นมข้นจืด 30 ml\n⁃ นมข้นหวาน 40 ml\n⁃ บราวน์ชูการ์ราดรอบแก้ว",
-        "นมสดบราวน์ชูการ์ ปั่น": "📍 นมสดบราวน์ชูการ์ • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ราดซอสคาราเมล )\n⁃ น้ำร้อน 60 ml\n⁃ ผงนมสด 2 ช้อนโต๊ะ\n⁃ นมข้นจืด 40 ml\n⁃ บราวน์ชูการ์ 40 ml\n⁃ นมข้นหวาน 30 ml\n⁃ น้ำเชื่อม 10 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ ราดบราวน์ชูการ์รอบแก้ว",
-        "นมสดสตอเบอร์รี่ เย็น": "📍 นมสดสตอเบอร์รี่ • เย็น 20 ออนซ์\n( แยกชั้น ใส่ซอสสตอเบอร์รี่ )\n⁃ ไซรัปสตอ 40 ml\n⁃ ซอสสตอ 2 ช้อนโต๊ะ\n——————————————\n⁃ นมสดเมจิ 140 ml\n⁃ นมข้นหวาน 30 ml\n⁃ นมข้นจืด 30 ml",
-        "นมสดสตอเบอร์รี่ ปั่น": "📍 นมสดสตอเบอร์รี่ • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ราดไซรัปสตอรอบแก้ว )\n⁃ ไซรัปสตอ 50 ml\n⁃ นมข้นหวาน 50 ml\n⁃ นมสดเมจิ 50 ml\n⁃ น้ำเชื่อม 10 ml\n⁃ ซอสสตอ 2 ช้อนโต๊ะ\n⁃ สตอเบอร์รี่ 3-4 ชิ้น\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ ราดไซรัปสตอรอบแก้ว",
-        "สตอเบอร์รี่โยเกิร์ต ปั่น": "📍 สตอเบอร์รี่ปั่น โยเกิร์ต • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ราดซอสสตอ,โยเกิร์ตรอบแก้ว )\n⁃ น้ำร้อน 40 ml\n⁃ ไซรัปสตอ 50 ml\n⁃ น้ำเชื่อม 50 ml\n⁃ ซอสสตอ 2 ช้อนโต๊ะ\n⁃ สตอเบอร์รี่ 3-4 ชิ้น\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ ราดไซรัปสตอ,โยเกิร์ต รอบแก้ว",
-        "สตอเบอร์รี่ปั่น โยเกิร์ต": "📍 สตอเบอร์รี่ปั่น โยเกิร์ต • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ราดซอสสตอ,โยเกิร์ตรอบแก้ว )\n⁃ น้ำร้อน 40 ml\n⁃ ไซรัปสตอ 50 ml\n⁃ น้ำเชื่อม 50 ml\n⁃ ซอสสตอ 2 ช้อนโต๊ะ\n⁃ สตอเบอร์รี่ 3-4 ชิ้น\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ ราดไซรัปสตอ,โยเกิร์ต รอบแก้ว",
-        "สตอเบอร์รี่ เย็น": "📍 สตอเบอร์รี่ • เย็น 20 ออนซ์\n( ไม่แยกชั้น ใส่สตอเบอร์รี่ )\n⁃ ไซรัปสตอ 60 ml\n⁃ น้ำเปล่า 140 ml\n⁃ ใส่สตอท็อปปิ้งบน 1 ชิ้น",
-        "สตอเบอร์รี่ ปั่น": "📍 สตอเบอร์รี่ • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ราดซอสสตอรอบแก้ว )\n⁃ น้ำร้อน 40 ml\n⁃ ไซรัปสตอ 50 ml\n⁃ น้ำเชื่อม 50 ml\n⁃ ซอสสตอ 2 ช้อนโต๊ะ\n⁃ สตอเบอร์รี่ 3-4 ชิ้น\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ ราดไซรัปสตอรอบแก้ว",
-        "ชาไทยนมสดสตอเบอร์รี่ เย็น": "📍 ชาไทยนมสดสตอเบอร์รี่ • เย็น 20 ออนซ์\n( แยก 3 ชั้น )\n⁃ ไซรัปสตอ 40 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n——————————————\n⁃ นมสด 100 ml\n⁃ นมข้นจืด 40 ml\n⁃ นมข้นหวาน 30 ml\n——————————————\n⁃ ราดเบสชาไทย 60 ml",
-        "ชาไทยโกโก้ เย็น": "📍 ชาไทยโกโก้ • เย็น 20 ออนซ์\n( แยกชั้น )\n⁃ เบสชาไทย 90 ml\n⁃ นมข้นจืด 40 ml\n⁃ นมข้นหวาน 40 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n——————————————\n⁃ ผงโกโก้ 1 ช้อนกลาง ( 10g )\n⁃ น้ำร้อน 50 ml\n⁃ ราดบนสุด",
-        "ชาเขียวนมสดสตอเบอร์รี่ เย็น": "📍 ชาเขียวนมสดสตอเบอร์รี่ • เย็น 20 ออนซ์\n( แยก 3 ชั้น )\n⁃ ไซรัปสตอ 40 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n——————————————\n⁃ นมสด 100 ml\n⁃ นมข้นจืด 40 ml\n⁃ นมข้นหวาน 30 ml\n——————————————\n⁃ ราดเบสชาเขียว 60 ml",
-        "ชาเขียวโกโก้ เย็น": "📍 ชาเขียวโกโก้ • เย็น 20 ออนซ์\n( แยกชั้น )\n⁃ เบสชาเขียว 90 ml\n⁃ นมข้นจืด 40 ml\n⁃ นมข้นหวาน 40 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n——————————————\n⁃ ผงโกโก้ 1 ช้อนกลาง ( 10g )\n⁃ น้ำร้อน 50 ml\n⁃ ราดบนสุด",
-        "นมสดโอริโอ้ ปั่น": "📍 นมสดโอริโอ้ปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น เสียบโอริโอ้ 1 ชิ้น )\n⁃ นมสด 100 ml\n⁃ นมข้นหวาน 60 ml\n⁃ นมข้นจืด 30 ml\n⁃ น้ำเชื่อม 20 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ โอริโอ้ปั่น 2 ชิ้น ( เสียบบน 1 ชิ้น )",
-        "นมสดโอริโอ้ปั่น": "📍 นมสดโอริโอ้ปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น เสียบโอริโอ้ 1 ชิ้น )\n⁃ นมสด 100 ml\n⁃ นมข้นหวาน 60 ml\n⁃ นมข้นจืด 30 ml\n⁃ น้ำเชื่อม 20 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ โอริโอ้ปั่น 2 ชิ้น ( เสียบบน 1 ชิ้น )",
-        "นมสดโอริโอ้ คาราเมล ปั่น": "📍 นมสดโอริโอ้ คาราเมล • ปั่น 22 ออนซ์\n( ไม่แยกชั้น เสียบโอริโอ้ 1 ชิ้น )\n⁃ นมสด 100 ml\n⁃ ไซรัปคาราเมล 45 ml\n⁃ นมข้นหวาน 60 ml\n⁃ นมข้นจืด 30 ml\n⁃ น้ำเชื่อม 30 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ โอริโอ้ปั่น 2 ชิ้น ( เสียบบน 1 ชิ้น )",
-        "ชาไทยโอริโอ้ ปั่น": "📍 ชาไทยโอริโอ้ปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น เสียบโอริโอ้ 1 ชิ้น )\n⁃ เบสชา 120 ml\n⁃ ครีมเทียม 1 ช้อนโต๊ะ\n⁃ นมข้นหวาน 60 ml\n⁃ นมข้นจืด 30 ml\n⁃ น้ำเชื่อม 30 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ โอริโอ้ปั่น 2 ชิ้น ( เสียบบน 1 ชิ้น )",
-        "ชาไทยโอริโอ้ปั่น": "📍 ชาไทยโอริโอ้ปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น เสียบโอริโอ้ 1 ชิ้น )\n⁃ เบสชา 120 ml\n⁃ ครีมเทียม 1 ช้อนโต๊ะ\n⁃ นมข้นหวาน 60 ml\n⁃ นมข้นจืด 30 ml\n⁃ น้ำเชื่อม 30 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ โอริโอ้ปั่น 2 ชิ้น ( เสียบบน 1 ชิ้น )",
-        "ชาเขียวโอริโอ้ ปั่น": "📍 ชาเขียวโอริโอ้ปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น เสียบโอริโอ้ 1 ชิ้น )\n⁃ เบสชา 120 ml\n⁃ ครีมเทียม 1 ช้อนโต๊ะ\n⁃ นมข้นหวาน 60 ml\n⁃ นมข้นจืด 30 ml\n⁃ น้ำเชื่อม 30 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ โอริโอ้ปั่น 2 ชิ้น ( เสียบบน 1 ชิ้น )",
-        "ชาเขียวโอริโอ้ปั่น": "📍 ชาเขียวโอริโอ้ปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น เสียบโอริโอ้ 1 ชิ้น )\n⁃ เบสชา 120 ml\n⁃ ครีมเทียม 1 ช้อนโต๊ะ\n⁃ นมข้นหวาน 60 ml\n⁃ นมข้นจืด 30 ml\n⁃ น้ำเชื่อม 30 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ โอริโอ้ปั่น 2 ชิ้น ( เสียบบน 1 ชิ้น )",
-        "โกโก้โอริโอ้ ปั่น": "📍 โกโก้โอริโอ้ปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น เสียบโอริโอ้ 1 ชิ้น )\n⁃ น้ำร้อน 100 ml\n⁃ ผงโกโก้ 2 ช้อนโต๊ะ\n⁃ ครีมเทียม 1 ช้อนกลาง ( 10g )\n⁃ นมข้นหวาน 50 ml\n⁃ นมข้นจืด 30 ml\n⁃ น้ำเชื่อม 30 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ โอริโอ้ปั่น 2 ชิ้น ( เสียบบน 1 ชิ้น )",
-        "โกโก้โอริโอ้ปั่น": "📍 โกโก้โอริโอ้ปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น เสียบโอริโอ้ 1 ชิ้น )\n⁃ น้ำร้อน 100 ml\n⁃ ผงโกโก้ 2 ช้อนโต๊ะ\n⁃ ครีมเทียม 1 ช้อนกลาง ( 10g )\n⁃ นมข้นหวาน 50 ml\n⁃ นมข้นจืด 30 ml\n⁃ น้ำเชื่อม 30 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ โอริโอ้ปั่น 2 ชิ้น ( เสียบบน 1 ชิ้น )",
-        "นมชมพูโอริโอ้ ปั่น": "📍 นมชมพูโอริโอ้ปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น เสียบโอริโอ้ 1 ชิ้น )\n⁃ น้ำร้อน 70 ml\n⁃ ผง 3.5 - 4 ช้อนโต๊ะ\n⁃ นมข้นจืด 50 ml\n⁃ นมข้นหวาน 30 ml\n⁃ น้ำเชื่อม 20 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ โอริโอ้ปั่น 2 ชิ้น ( เสียบบน 1 ชิ้น )",
-        "นมชมพูโอริโอ้ปั่น": "📍 นมชมพูโอริโอ้ปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น เสียบโอริโอ้ 1 ชิ้น )\n⁃ น้ำร้อน 70 ml\n⁃ ผง 3.5 - 4 ช้อนโต๊ะ\n⁃ นมข้นจืด 50 ml\n⁃ นมข้นหวาน 30 ml\n⁃ น้ำเชื่อม 20 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ โอริโอ้ปั่น 2 ชิ้น ( เสียบบน 1 ชิ้น )",
-        "โอวัลตินโอริโอ้ ปั่น": "📍 โอวัลตินโอริโอ้ปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น เสียบโอริโอ้ 1 ชิ้น )\n⁃ น้ำร้อน 100 ml\n⁃ ผง 3.5 - 4 ช้อนโต๊ะ\n⁃ นมข้นจืด 40 ml\n⁃ นมข้นหวาน 40 ml\n⁃ น้ำเชื่อม 25 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ โอริโอ้ปั่น 2 ชิ้น ( เสียบบน 1 ชิ้น )",
-        "โอวัลตินโอริโอ้ปั่น": "📍 โอวัลตินโอริโอ้ปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น เสียบโอริโอ้ 1 ชิ้น )\n⁃ น้ำร้อน 100 ml\n⁃ ผง 3.5 - 4 ช้อนโต๊ะ\n⁃ นมข้นจืด 40 ml\n⁃ นมข้นหวาน 40 ml\n⁃ น้ำเชื่อม 25 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ โอริโอ้ปั่น 2 ชิ้น ( เสียบบน 1 ชิ้น )",
-        "กาแฟโอริโอ้ ปั่น": "📍 กาแฟโอริโอ้ปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น เสียบโอริโอ้ 1 ชิ้น )\n⁃ น้ำร้อน 30 ml\n⁃ กาแฟ 4 ช้อนกาแฟ ( 20g )\n⁃ ครีมเทียม(ฟ้า) 1 ช้อนโต๊ะ\n⁃ นมจืด 20 ml\n⁃ น้ำเชื่อม 50 ml\n⁃ นมข้นจืด 40 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ โอริโอ้ปั่น 2 ชิ้น ( เสียบบน 1 ชิ้น )",
-        "กาแฟโอริโอ้ปั่น": "📍 กาแฟโอริโอ้ปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น เสียบโอริโอ้ 1 ชิ้น )\n⁃ น้ำร้อน 30 ml\n⁃ กาแฟ 4 ช้อนกาแฟ ( 20g )\n⁃ ครีมเทียม(ฟ้า) 1 ช้อนโต๊ะ\n⁃ นมจืด 20 ml\n⁃ น้ำเชื่อม 50 ml\n⁃ นมข้นจืด 40 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ โอริโอ้ปั่น 2 ชิ้น ( เสียบบน 1 ชิ้น )",
-        "นมเผือกโอริโอ้ ปั่น": "📍 นมเผือกโอริโอ้ปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น เสียบโอริโอ้ 1 ชิ้น )\n⁃ น้ำร้อน 60 ml\n⁃ ผง 3.5 - 4 ช้อนโต๊ะ\n⁃ นมข้นจืด 50 ml\n⁃ นมข้นหวาน 40 ml\n⁃ น้ำเชื่อม 30 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ โอริโอ้ปั่น 2 ชิ้น ( เสียบบน 1 ชิ้น )",
-        "มะพร้าวปั่นนมสด": "📍 มะพร้าวปั่นนมสด • ปั่น 22 ออนซ์\n( ไม่แยกชั้น )\n⁃ ไซรัปมะพร้าว 50 ml\n⁃ นมข้นหวาน 10 ml\n⁃ น้ำร้อน 20 ml\n⁃ นมสด 100 ml\n⁃ น้ำเชื่อม 10 ml",
-        "มะพร้าวนมสด ปั่น": "📍 มะพร้าวปั่นนมสด • ปั่น 22 ออนซ์\n( ไม่แยกชั้น )\n⁃ ไซรัปมะพร้าว 50 ml\n⁃ นมข้นหวาน 10 ml\n⁃ น้ำร้อน 20 ml\n⁃ นมสด 100 ml\n⁃ น้ำเชื่อม 10 ml",
-        "แอปเปิ้ล ปั่น": "📍 แอปเปิ้ลปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ราดไซรัปรอบแก้ว )\n⁃ ไซรัปแอปเปิ้ล 60 ml\n⁃ น้ำเชื่อม 20 ml\n⁃ น้ำโซดา 150 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ ราดไซรัปแอปเปิ้ลรอบแก้ว",
-        "บลูฮาวาย ปั่น": "📍 บลูฮาวายปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น )\n⁃ ไซรัปบลูฮาวาย 100 ml\n⁃ น้ำเชื่อม 30 ml\n⁃ น้ำร้อน 30 ml\n⁃ น้ำแข็ง 400 g. ( 1 แก้ว )",
-        "ลิ้นจี่ ปั่น": "📍 ลิ้นจี่ปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ราดไซรัปรอบแก้ว )\n⁃ ไซรัปลิ้นจี่ 50 ml\n⁃ น้ำเชื่อม 40 ml\n⁃ น้ำเปล่า 80 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ ราดไซรัปรอบแก้ว",
-        "กีวี่ ปั่น": "📍 กีวี่ปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ราดไซรัปรอบแก้ว )\n⁃ ไซรัปกีวี่ 45 ml\n⁃ น้ำเชื่อม 40 ml\n⁃ น้ำเปล่า 120 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ ราดไซรัปแอปเปิ้ลรอบแก้ว",
-        "ส้ม ปั่น": "📍 ส้มปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ราดไซรัปรอบแก้ว )\n⁃ ไซรัปส้ม 70 ml\n⁃ น้ำเชื่อม 30 ml\n⁃ น้ำเปล่า 50 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ ราดไซรัปแอปเปิ้ลรอบแก้ว",
-        "องุ่น ปั่น": "📍 องุ่นปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ราดไซรัปรอบแก้ว )\n⁃ ไซรัปองุ่น 70 ml\n⁃ น้ำเชื่อม 30 ml\n⁃ น้ำโซดา 100 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ ราดไซรัปแอปเปิ้ลรอบแก้ว",
-        "บลูเบอร์รี่ ปั่น": "📍 บลูเบอร์รี่ปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ราดไซรัปรอบแก้ว )\n⁃ ไซรัป 70 ml\n⁃ น้ำเชื่อม 30 ml\n⁃ น้ำโซดา 100 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ ราดไซรัปแอปเปิ้ลรอบแก้ว",
-        "แดงโซดา": "📍 แดงโซดา • เย็น 20 ออนซ์\n( แยกชั้น )\n⁃ แดงเฮลูบอย 45 ml\n⁃ น้ำโซดา 45 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n⁃ เทโซดาให้เต็มแก้ว",
-        "แดงโซดา เย็น": "📍 แดงโซดา • เย็น 20 ออนซ์\n( แยกชั้น )\n⁃ แดงเฮลูบอย 45 ml\n⁃ น้ำโซดา 45 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n⁃ เทโซดาให้เต็มแก้ว",
-        "แดงมะนาวโซดา เย็น": "📍 แดงมะนาวโซดา • เย็น 20 ออนซ์\n( แยกชั้น )\n⁃ แดงเฮลูบอย 45 ml\n⁃ น้ำมะนาว 20 ml\n⁃ น้ำโซดา 100 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n⁃ เทโซดาให้เต็มแก้ว",
-        "เขียวโซดา": "📍 เขียวโซดา • เย็น 20 ออนซ์\n( แยกชั้น )\n⁃ เขียวเฮลูบอย 45 ml\n⁃ น้ำโซดา 45 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n⁃ เทโซดาให้เต็มแก้ว",
-        "เขียวโซดา เย็น": "📍 เขียวโซดา • เย็น 20 ออนซ์\n( แยกชั้น )\n⁃ เขียวเฮลูบอย 45 ml\n⁃ น้ำโซดา 45 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n⁃ เทโซดาให้เต็มแก้ว",
-        "เขียวมะนาวโซดา เย็น": "📍 เขียวมะนาวโซดา • เย็น 20 ออนซ์\n( แยกชั้น )\n⁃ เขียวเฮลูบอย 45 ml\n⁃ น้ำมะนาว 20 ml\n⁃ น้ำโซดา 100 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n⁃ เทโซดาให้เต็มแก้ว",
-        "ชามะนาวโซดา เย็น": "📍 ชามะนาวโซดา • เย็น 20 ออนซ์\n( แยกชั้น )\n⁃ น้ำร้อน 80 ml\n⁃ ผงชามะนาว 2 ช้อนชา ( 10g )\n⁃ น้ำมะนาว 10 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n⁃ เทโซดาให้เต็มแก้ว",
-        "บลูฮาวายโซดา เย็น": "📍 บลูฮาวายโซดา • เย็น 20 ออนซ์\n( แยกชั้น )\n⁃ ไซรัป 45 ml\n⁃ น้ำโซดา 100 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n⁃ เทโซดาให้เต็มแก้ว",
-        "สตอเบอร์รี่โซดา เย็น": "📍 สตอเบอร์รี่โซดา • เย็น 20 ออนซ์\n( แยกชั้น )\n⁃ ไซรัป 45 ml\n⁃ น้ำโซดา 100 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n⁃ เทโซดาให้เต็มแก้ว",
-        "ลิ้นจี่โซดา เย็น": "📍 ลิ้นจี่โซดา • เย็น 20 ออนซ์\n( แยกชั้น )\n⁃ ไซรัป 45 ml\n⁃ น้ำโซดา 100 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n⁃ เทโซดาให้เต็มแก้ว",
-        "กีวี่โซดา เย็น": "📍 กีวี่โซดา • เย็น 20 ออนซ์\n( แยกชั้น )\n⁃ ไซรัป 45 ml\n⁃ น้ำโซดา 100 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n⁃ เทโซดาให้เต็มแก้ว",
-        "ส้มโซดา เย็น": "📍 ส้มโซดา • เย็น 20 ออนซ์\n( แยกชั้น )\n⁃ ไซรัป 45 ml\n⁃ น้ำโซดา 100 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n⁃ เทโซดาให้เต็มแก้ว",
-        "แอปเปิ้ลโซดา เย็น": "📍 แอปเปิ้ลโซดา • เย็น 20 ออนซ์\n( แยกชั้น )\n⁃ ไซรัป 45 ml\n⁃ น้ำโซดา 100 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n⁃ เทโซดาให้เต็มแก้ว",
-        "องุ่นโซดา เย็น": "📍 องุ่นโซดา • เย็น 20 ออนซ์\n( แยกชั้น )\n⁃ ไซรัป 45 ml\n⁃ น้ำโซดา 100 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n⁃ เทโซดาให้เต็มแก้ว",
-        "บลูเบอร์รี่โซดา เย็น": "📍 บลูเบอร์รี่โซดา • เย็น 20 ออนซ์\n( แยกชั้น )\n⁃ ไซรัป 45 ml\n⁃ น้ำโซดา 100 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n⁃ เทโซดาให้เต็มแก้ว",
-        "น้ำผึ้งมะนาวโซดา เย็น": "📍 น้ำผึ้งมะนาวโซดา • เย็น 20 ออนซ์\n( แยกชั้น )\n⁃ น้ำร้อน 20 ml\n⁃ น้ำผึ้ง 30 ml\n⁃ น้ำมะนาว 25 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n⁃ เทโซดาให้เต็มแก้ว"
+        "ชาไทย เย็น": "📍 ชาไทย • เย็น 20 ออนซ์ ( ชาใต้ )\n( ไม่แยกชั้น ใส่ฟองนม )\n⁃ เบสชาไทย 120 ml\n⁃ ครีมเทียม(แดง) 1 ช้อนโต๊ะ ( 15g )\n⁃ น้ำตาลทรายขาว 1 ช้อนขาว ( 5g )\n⁃ นมข้นหวาน 45 ml\n⁃ นมจืด 15 ml",
+        "ชาเขียว เย็น": "📍 ชาเขียว • เย็น 20 ออนซ์ ( ชาใต้ )\n( ไม่แยกชั้น ใส่ฟองนม )\n⁃ เบสชาเขียว 120 ml\n⁃ ครีมเทียม(แดง) 1 ช้อนโต๊ะ ( 15g )\n⁃ น้ำตาลทรายขาว 1 ช้อนขาว ( 5g )\n⁃ นมข้นหวาน 45 ml\n⁃ นมจืด 15 ml",
+        "โกโก้ เย็น": "📍 โกโก้ • เย็น 20 ออนซ์ ( ดัทช์ช้อย )\n( ไม่แยกชั้น ใส่ฟองนม )\n⁃ น้ำร้อน 100 ml\n⁃ ผง 2 ช้อนโต๊ะ\n⁃ ครีมเทียม(แดง) 1 ช้อนกลาง ( 10g )\n⁃ น้ำตาลทรายขาว 1 ช้อนกลาง ( 10g )\n⁃ นมข้นจืด 20 ml\n⁃ นมข้นหวาน 50 ml\n⁃ นมสด 15 ml"
     };
 
     const MASTER_PRICES = {
         "ชาไทย เย็น": 25, "ชาไทย ปั่น": 30, "ชาเขียว เย็น": 25, "ชาเขียว ปั่น": 30,
         "โกโก้ เย็น": 25, "โกโก้ ปั่น": 30, "ชานม เย็น": 25, "ชานม ปั่น": 30,
-        "นมชมพู เย็น": 25, "นมชมพู ปั่น": 30, "โอวัลติน เย็น": 25, "โอวัลติน ปั่น": 30,
-        "เผือก เย็น": 25, "เผือก ปั่น": 30, "นมเผือก เย็น": 25, "นมเผือก ปั่น": 30,
-        "แคนตาลูป เย็น": 25, "แคนตาลูป ปั่น": 30, "ชาเขียวมัทฉะลาเต้ เย็น": 35, "ชาเขียวมัทฉะลาเต้ ปั่น": 40,
-        "นมสด เย็น": 25, "นมสด ปั่น": 30, "นมสดคาราเมล เย็น": 35, "นมสดคาราเมล ปั่น": 40,
-        "นมสดบราวน์ชูการ์ เย็น": 35, "นมสดบราวน์ชูการ์ ปั่น": 40, "นมสดสตอเบอร์รี่ เย็น": 35, "นมสดสตอเบอร์รี่ ปั่น": 40,
-        "ชาไทยนมสดสตอเบอร์รี่ เย็น": 35, "ชาไทยโกโก้ เย็น": 35, "ชาเขียวนมสดสตอเบอร์รี่ เย็น": 35, "ชาเขียวโกโก้ เย็น": 35,
-        "สตอเบอร์รี่โยเกิร์ต ปั่น": 40, "สตอเบอร์รี่ เย็น": 25, "สตอเบอร์รี่ ปั่น": 30,
-        "นมสดโอริโอ้ ปั่น": 35, "นมสดโอริโอ้ คาราเมล ปั่น": 40, "ชาไทยโอริโอ้ ปั่น": 35, "ชาเขียวโอริโอ้ ปั่น": 35,
-        "โกโก้โอริโอ้ ปั่น": 35, "นมชมพูโอริโอ้ ปั่น": 35, "โอวัลตินโอริโอ้ ปั่น": 35, "กาแฟโอริโอ้ ปั่น": 40, "นมเผือกโอริโอ้ ปั่น": 35,
         "อเมริกาโน่ เย็น": 30, "อเมริกาโน่ ปั่น": 35, "เอสเพรสโซ่ เย็น": 30, "เอสเพรสโซ่ ปั่น": 35,
         "ลาเต้ เย็น": 30, "ลาเต้ ปั่น": 35, "คาปูชิโน่ เย็น": 30, "คาปูชิโน่ ปั่น": 35,
         "มอคค่า เย็น": 30, "มอคค่า ปั่น": 35, "คาราเมล มัคคิอาโต เย็น": 35, "คาราเมล มัคคิอาโต ปั่น": 40,
-        "อเมริกาโน่ น้ำส้ม เย็น": 35, "อเมริกาโน่ น้ำส้ม ปั่น": 40, "อเมริกาโน่ น้ำผึ้ง เย็น": 35, "อเมริกาโน่ น้ำผึ้ง ปั่น": 40,
-        "อเมริกาโน่ น้ำผึ้งมะนาว เย็น": 35, "อเมริกาโน่ น้ำผึ้งมะนาว ปั่น": 40, "อเมริกาโน่ ลิ้นจี่ เย็น": 35, "อเมริกาโน่ ลิ้นจี่ ปั่น": 40,
-        "ชามะนาว เย็น": 25, "ชามะนาว ปั่น": 30, "ชามะนาวน้ำผึ้ง เย็น": 30, "ชามะนาวน้ำผึ้ง ปั่น": 35,
-        "ชาดำ เย็น": 20, "ชาดำ ปั่น": 25, "ชาดำมะนาว เย็น": 25, "ชาดำมะนาว ปั่น": 30,
-        "ชาดำน้ำผึ้ง เย็น": 30, "ชาดำน้ำผึ้ง ปั่น": 35, "ชาดำมะนาว น้ำผึ้ง เย็น": 35, "ชาดำมะนาว น้ำผึ้ง ปั่น": 40,
-        "มะพร้าวปั่นนมสด": 35, "แอปเปิ้ล ปั่น": 30, "บลูฮาวาย ปั่น": 30, "ลิ้นจี่ ปั่น": 30,
-        "กีวี่ ปั่น": 30, "ส้ม ปั่น": 30, "องุ่น ปั่น": 30, "บลูเบอร์รี่ ปั่น": 30,
-        "แดงโซดา เย็น": 25, "แดงมะนาวโซดา เย็น": 25, "เขียวโซดา เย็น": 25, "เขียวมะนาวโซดา เย็น": 25,
-        "ชามะนาวโซดา เย็น": 25, "บลูฮาวายโซดา เย็น": 25, "สตอเบอร์รี่โซดา เย็น": 25, "ลิ้นจี่โซดา เย็น": 25,
-        "กีวี่โซดา เย็น": 25, "ส้มโซดา เย็น": 25, "แอปเปิ้ลโซดา เย็น": 25, "องุ่นโซดา เย็น": 25,
-        "บลูเบอร์รี่โซดา เย็น": 25, "น้ำผึ้งมะนาวโซดา เย็น": 30,
         "ข้าวกะเพรา ธรรมดา": 40, "ข้าวกะเพรา พิเศษ": 45, "ไก่ป๊อบ": 39, "ชีสบอล พิเศษ": 100,
         "ไส้กรอกแดง ชุดเล็ก": 20, "ไส้กรอกแดง ชุดใหญ่": 40, "ปังเนยน้ำตาล": 20, "ปังเนยนม": 20, "ปังโอริโอ้": 30, "ปังโอวัลติน": 25, "เฟรนช์ฟรายส์": 35
     };
@@ -876,6 +463,7 @@
         if (cachedExp) expenses = JSON.parse(cachedExp);
     } catch(e) {}
 
+    let activeTab = 'history';
     let selectedCategory = 'auto';
     let currentFilter = 'today';
     let customFilterType = 'date';
@@ -883,6 +471,7 @@
     let isBackdateActive = false;
     let isProcessingAdd = false;
     let isSyncing = false;
+    let editingRowId = null;
 
     if (localStorage.getItem('flukchafe_dark_mode') === 'true') {
         document.body.classList.add('dark-mode');
@@ -941,12 +530,10 @@
         } catch(e) {}
     }
 
-    // ฟังก์ชันจัดการสตริงวันที่ให้ตรงตามมาตรฐาน YYYY-MM-DD แบบไม่เพี้ยน TimeZone
     function normalizeDateStr(raw) {
         if (!raw) return "";
         let str = String(raw).trim();
         if (str.includes('T')) str = str.split('T')[0];
-
         if (str.includes('/')) {
             const parts = str.split('/');
             if (parts.length === 3) {
@@ -956,7 +543,6 @@
                 return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
             }
         }
-
         if (str.includes('-')) {
             const parts = str.split('-');
             if (parts.length === 3) {
@@ -969,35 +555,25 @@
         return str;
     }
 
-    // ฟังก์ชันจัดสตริงเวลา HH:mm:ss โดยตรง
     function normalizeTimeStr(raw) {
         if (!raw) return "00:00:00";
         let str = String(raw).trim();
         if (str.includes('T')) str = str.split('T')[1].split('.')[0];
         let parts = str.split(':');
         if (parts.length >= 2) {
-            let hh = parts[0].padStart(2, '0');
-            let mm = parts[1].padStart(2, '0');
-            let ss = (parts[2] || '00').padStart(2, '0');
-            return `${hh}:${mm}:${ss}`;
+            return `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}:${(parts[2] || '00').padStart(2, '0')}`;
         }
         return str;
     }
 
     function getBangkokDateStr() {
         const d = new Date();
-        const y = d.getFullYear();
-        const m = String(d.getMonth() + 1).padStart(2, '0');
-        const day = String(d.getDate()).padStart(2, '0');
-        return `${y}-${m}-${day}`;
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     }
 
     function getBangkokTimeStr() {
         const d = new Date();
-        const hh = String(d.getHours()).padStart(2, '0');
-        const mm = String(d.getMinutes()).padStart(2, '0');
-        const ss = String(d.getSeconds()).padStart(2, '0');
-        return `${hh}:${mm}:${ss}`;
+        return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`;
     }
 
     function getWeekRangeBKK() {
@@ -1008,23 +584,23 @@
         monday.setDate(curDate.getDate() - dayOfWeek + 1);
         const sunday = new Date(monday);
         sunday.setDate(monday.getDate() + 6);
-        
         const fmt = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
         return { start: fmt(monday), end: fmt(sunday) };
     }
 
     function formatThaiDateTime(rawDate, rawTime) {
-        let cleanTime = normalizeTimeStr(rawTime).substring(0, 5);
+        let cleanTime = "00:00";
+        if (rawTime) {
+            let parts = String(rawTime).trim().split(':');
+            if (parts.length >= 2) cleanTime = `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}`;
+        }
         let normD = normalizeDateStr(rawDate);
         let todayStr = getBangkokDateStr();
-
         if (normD === todayStr) return `วันนี้ • ${cleanTime} น.`;
         
         let parts = normD.split('-');
         if (parts.length === 3) {
-            let y = parseInt(parts[0], 10);
-            let m = parseInt(parts[1], 10) - 1;
-            let d = parseInt(parts[2], 10);
+            let y = parseInt(parts[0], 10), m = parseInt(parts[1], 10) - 1, d = parseInt(parts[2], 10);
             return `${d} ${THAI_MONTHS_SHORT[m]} ${String(y + 543).slice(-2)} • ${cleanTime} น.`;
         }
         return `${normD} • ${cleanTime} น.`;
@@ -1043,10 +619,6 @@
         for (let k in recipeBook) {
             if (k.replace(/\s+/g, '').toLowerCase() === clean) return recipeBook[k];
         }
-        for (let k in recipeBook) {
-            const cleanK = k.replace(/\s+/g, '').toLowerCase();
-            if (clean.includes(cleanK) || cleanK.includes(clean)) return recipeBook[k];
-        }
         return "";
     }
 
@@ -1060,7 +632,8 @@
         return 0;
     }
 
-    async function syncData() {
+    // ระบบ Smart Sync: ดึงข้อมูลและป้องกันเรนเดอร์ทับตอนกำลังแก้ไขราคา
+    async function syncData(manual = false) {
         if (isSyncing) return;
         isSyncing = true;
         try {
@@ -1070,7 +643,7 @@
                 const serverSales = data.sales || [];
                 const serverIds = new Set(serverSales.map(s => String(s.id)));
                 
-                for (let [id, pendingItem] of localPendingSales.entries()) {
+                for (let [id] of localPendingSales.entries()) {
                     if (serverIds.has(String(id))) localPendingSales.delete(id);
                 }
 
@@ -1089,8 +662,12 @@
                 priceBook = Object.assign({}, MASTER_PRICES, data.prices || {});
                 recipeBook = Object.assign({}, MASTER_RECIPES, data.recipes || {});
                 saveLocalBackup();
+                
                 renderUI();
-                renderPriceSettingList();
+                // ถ้าไม่ได้กำลังเปิดแก้ไขราคาอยู่ ถึงจะอนุญาตให้อัปเดตรายการราคา
+                if (!editingRowId && activeTab === 'prices') {
+                    renderPriceSettingList();
+                }
                 document.getElementById('syncStatus').innerText = 'ซิงค์ข้อมูลสำเร็จ';
             }
         } catch (e) {
@@ -1100,8 +677,9 @@
         }
     }
 
-    setInterval(syncData, 15000);
-    syncData();
+    // ซิงค์อัตโนมัติทุก 20 วินาที เพื่อไม่ให้เซิร์ฟเวอร์ติด Lock
+    setInterval(() => syncData(false), 20000);
+    syncData(true);
     renderUI();
 
     function clearOldDataCache() {
@@ -1110,7 +688,7 @@
             sales = [];
             localPendingSales.clear();
             renderUI();
-            syncData();
+            syncData(true);
             alert('ล้างแคชเรียบร้อยแล้ว');
         }
     }
@@ -1118,7 +696,7 @@
     function showRecipe(menuName, category) {
         if (category !== 'เครื่องดื่ม') return;
         recipeModalTitle.innerText = `📖 สูตรชง: ${menuName}`;
-        recipeModalBody.innerText = findRecipeText(menuName) || "ยังไม่มีการบันทึกสูตรชงสำหรับเมนูนี้\n(เพิ่มได้ที่แท็บตั้งราคา)";
+        recipeModalBody.innerText = findRecipeText(menuName) || "ยังไม่มีการบันทึกสูตรชงสำหรับเมนูนี้";
         recipeModal.style.display = 'flex';
     }
 
@@ -1175,7 +753,7 @@
         suggestBox.innerHTML = matched.slice(0, 8).map(([name, price]) => `
             <div class="suggest-item" onclick="quickInput.value='${name}'; suggestBox.style.display='none'; quickInput.focus();">
                 <span>${name}</span>
-                <span class="suggest-price">฿${price}</span>
+                <span style="font-weight:600; color:#0284c7;">฿${price}</span>
             </div>
         `).join('');
         suggestBox.style.display = 'block';
@@ -1206,8 +784,8 @@
         if (selectedCategory !== 'auto') return selectedCategory;
         const n = String(name).toLowerCase();
         if (n.includes('ปัง') || n.includes('โทสต์') || n.includes('เนยนม') || n.includes('เนยน้ำตาล') || n.includes('แยม') || n.includes('ปิ้ง')) return 'ขนมปังปิ้ง';
-        if (n.includes('เฟรน') || n.includes('ฟราย') || n.includes('ชีส') || n.includes('ทอด') || n.includes('ไส้กรอก') || n.includes('ป๊อบ') || n.includes('นักเก็ต') || n.includes('ลูกชิ้น') || n.includes('เกี๊ยว')) return 'ของทอด/ทานเล่น';
-        if (n.includes('กะเพรา') || n.includes('กระเพรา') || n.includes('ข้าว') || n.includes('หมูปิ้ง') || n.includes('ไข่ดาว') || n.includes('ไข่เจียว') || n.includes('มาม่า') || n.includes('ยำ')) return 'อาหาร/กะเพรา';
+        if (n.includes('เฟรน') || n.includes('ฟราย') || n.includes('ชีส') || n.includes('ทอด') || n.includes('ไส้กรอก') || n.includes('ป๊อบ') || n.includes('นักเก็ต') || n.includes('ลูกชิ้น')) return 'ของทอด/ทานเล่น';
+        if (n.includes('กะเพรา') || n.includes('กระเพรา') || n.includes('ข้าว') || n.includes('หมูปิ้ง') || n.includes('ไข่ดาว') || n.includes('ไข่เจียว') || n.includes('มาม่า')) return 'อาหาร/กะเพรา';
         return 'เครื่องดื่ม';
     }
 
@@ -1235,7 +813,6 @@
         if (parts.length >= 2) {
             const lastPart = parts[parts.length - 1];
             const qtyNum = parseInt(lastPart, 10);
-
             if (!isNaN(qtyNum) && qtyNum > 0 && qtyNum <= 100) {
                 const possibleName = parts.slice(0, parts.length - 1).join(' ').trim();
                 const price = findPrice(possibleName);
@@ -1248,7 +825,6 @@
 
         let workingParts = [...parts];
         let calculatedQty = 1;
-        
         const lastWord = workingParts[workingParts.length - 1];
         const maybeQty = parseInt(lastWord, 10);
         if (!isNaN(maybeQty) && maybeQty > 0 && maybeQty <= 100 && workingParts.length > 1) {
@@ -1262,7 +838,6 @@
             if (p > 0) return { name: text, unitPrice: p, qty: calculatedQty };
             workingParts.pop();
         }
-
         return { name: text, unitPrice: 0, qty: qty };
     }
 
@@ -1280,13 +855,10 @@
         for (let seg of segments) {
             const parsed = parseSingleOrder(seg);
             if (!parsed || !parsed.name) continue;
-
             let { name, unitPrice, qty } = parsed;
-            if ((!unitPrice || unitPrice <= 0)) unitPrice = findPrice(name);
-
+            if (!unitPrice || unitPrice <= 0) unitPrice = findPrice(name);
             parsedItems.push({ name, unitPrice, qty });
         }
-
         if (!parsedItems.length) return false;
 
         isProcessingAdd = true;
@@ -1500,7 +1072,6 @@
                 menuGrouped[cat][item.name].sum += price;
             });
 
-            // จัดเรียงแบบ String เปรียบเทียบตรงตัว Date -> Time -> ID
             const sorted = displaySales.slice().sort((a, b) => {
                 const dateA = normalizeDateStr(a.date);
                 const dateB = normalizeDateStr(b.date);
@@ -1532,8 +1103,7 @@
                 b.items.forEach(it => { 
                     const uP = Number(it.unitPrice) || 0;
                     const q = Number(it.qty) || 1;
-                    const p = Number(it.totalPrice) > 0 ? Number(it.totalPrice) : (uP * q);
-                    bTotal += p; 
+                    bTotal += Number(it.totalPrice) > 0 ? Number(it.totalPrice) : (uP * q);
                     bQty += q; 
                 });
 
@@ -1556,7 +1126,7 @@
                                 </div>
                             </div>
                             <div style="display:flex; align-items:center;">
-                                <span class="item-price-text" style="font-weight:600; font-size:0.92rem; margin-right:6px;">฿${itPrice.toLocaleString()}</span>
+                                <span style="font-weight:600; font-size:0.92rem; margin-right:6px;">฿${itPrice.toLocaleString()}</span>
                                 <button type="button" class="pay-badge ${item.paymentMethod === 'promptpay' ? 'qr' : 'cash'}" onclick="togglePayMethod('${item.id}')">${item.paymentMethod === 'promptpay' ? '📱 สแกน' : '💵 สด'}</button>
                                 <button type="button" class="btn-edit" onclick="openEditModal('${item.id}')">✏️</button>
                                 <button type="button" class="btn-del" onclick="deleteItem('${item.id}')">✕</button>
@@ -1614,6 +1184,7 @@
         }).join('') || '<div class="empty-text">ไม่มีข้อมูลสรุป</div>';
     }
 
+    // ฟังก์ชันจัดการรายการราคาแบบแยกส่วน (กดติดง่ายขึ้น 100%)
     function renderPriceSettingList() {
         const kw = (priceSearchInput.value || '').trim().toLowerCase().replace(/\s+/g, '');
         const keys = Object.keys(priceBook).filter(k => k.toLowerCase().replace(/\s+/g, '').includes(kw)).sort();
@@ -1621,7 +1192,8 @@
         priceSettingList.innerHTML = keys.map(name => {
             const price = priceBook[name];
             const safeName = name.replace(/'/g, "\\'");
-            const rowId = 'row-' + btoa(encodeURIComponent(name));
+            const rowId = 'row-' + btoa(encodeURIComponent(name)).replace(/=/g, '');
+            const isEditing = editingRowId === rowId;
             return `
             <div class="price-item-card" id="${rowId}">
                 <div class="price-item-header">
@@ -1632,7 +1204,7 @@
                         <button type="button" class="btn-del" onclick="deletePrice('${safeName}')">✕</button>
                     </div>
                 </div>
-                <div class="inline-edit-container" id="edit-box-${rowId}">
+                <div class="inline-edit-container" id="edit-box-${rowId}" style="display: ${isEditing ? 'block' : 'none'};">
                     <div class="inline-edit-inputs">
                         <input type="text" id="edit-name-${rowId}" value="${name}" class="inline-edit-input" style="flex:2;">
                         <input type="number" id="edit-price-${rowId}" value="${price}" class="inline-edit-input" style="flex:1;">
@@ -1647,12 +1219,14 @@
     }
 
     function enableInlineEdit(name, currentPrice, rowId) {
+        editingRowId = rowId;
         document.querySelectorAll('.inline-edit-container').forEach(el => el.style.display = 'none');
         const editBox = document.getElementById(`edit-box-${rowId}`);
         if (editBox) editBox.style.display = 'block';
     }
 
     function cancelInlineEdit(rowId) {
+        editingRowId = null;
         const editBox = document.getElementById(`edit-box-${rowId}`);
         if (editBox) editBox.style.display = 'none';
     }
@@ -1661,10 +1235,7 @@
         const newNameInput = document.getElementById(`edit-name-${rowId}`).value.trim();
         const newPriceInput = parseFloat(document.getElementById(`edit-price-${rowId}`).value);
 
-        if (!newNameInput || isNaN(newPriceInput) || newPriceInput <= 0) {
-            alert('กรุณากรอกชื่อและราคาให้ถูกต้อง');
-            return;
-        }
+        if (!newNameInput || isNaN(newPriceInput) || newPriceInput <= 0) return alert('กรุณากรอกชื่อและราคาให้ถูกต้อง');
 
         if (oldName !== newNameInput) {
             delete priceBook[oldName];
@@ -1675,6 +1246,7 @@
         }
 
         priceBook[newNameInput] = newPriceInput;
+        editingRowId = null;
         renderPriceSettingList();
 
         fetch(SCRIPT_URL, {
@@ -1728,10 +1300,12 @@
     }
 
     function switchTab(tab) {
+        activeTab = tab;
         ['history', 'summary', 'expenses', 'prices'].forEach(t => {
             document.getElementById(`tab${t.charAt(0).toUpperCase() + t.slice(1)}`).classList.toggle('active', t === tab);
             document.getElementById(`${t}View`).style.display = t === tab ? 'block' : 'none';
         });
+        if (tab === 'prices') renderPriceSettingList();
     }
 
     function exportSalesToCSV() {
