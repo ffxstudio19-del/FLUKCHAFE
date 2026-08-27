@@ -1089,7 +1089,6 @@
                     if (seen.has(itId)) return false;
                     seen.add(itId);
                     
-                    // ป้องกัน timestamp หายและจัดลำดับข้อมูลเก่าจาก Server ให้ถูกต้องตามเวลาจริง
                     if (!item.timestamp) {
                         const parsedDt = new Date(`${normalizeDateStr(item.date)}T${item.time || '00:00:00'}`);
                         item.timestamp = isNaN(parsedDt.getTime()) ? Date.now() : parsedDt.getTime();
@@ -1519,7 +1518,7 @@
                 menuGrouped[cat][item.name].sum += price;
             });
 
-            // 🔒 ล็อคการเรียงลำดับด้วย Timestamp เป็นหลัก ป้องกันออเดอร์เด้งมั่วเวลาซิงค์ข้อมูล
+            // 🔒 เรียงลำดับจากใหม่ไปเก่าตาม Timestamp เสมอ ห้ามเปลี่ยน
             const sorted = displaySales.slice().sort((a, b) => {
                 if (a.timestamp && b.timestamp) {
                     return b.timestamp - a.timestamp;
