@@ -38,7 +38,6 @@
             transition: background 0.3s, border-color 0.3s, color 0.3s;
         }
 
-        /* 🌙 ธีมโหมดกลางคืน (Dark Mode Styles) */
         body.dark-mode { color: #f1f5f9; }
         body.dark-mode .container { 
             background: rgba(15, 23, 42, 0.94); 
@@ -439,7 +438,6 @@
 
         .summary-group-title { background: #f1f5f9; padding: 5px 8px; font-size: 0.8rem; font-weight: 600; color: #475569; border-radius: 6px; margin: 8px 0 4px 0; }
         .summary-row { display: flex; justify-content: space-between; padding: 6px 8px; border-bottom: 1px solid #f1f5f9; font-size: 0.85rem; align-items: center; background: #ffffff; }
-        .price-list-row { cursor: default; }
         .empty-text { text-align: center; color: #94a3b8; padding: 24px 0; font-size: 0.85rem; }
 
         .price-mgr-form { display: flex; gap: 6px; margin-bottom: 8px; }
@@ -722,7 +720,7 @@
 </div>
 
 <script>
-    const SCRIPT_URL = "YOUR_GOOGLE_SCRIPT_URL_HERE"; // แทนที่ด้วย URL ของคุณ
+    const SCRIPT_URL = "YOUR_GOOGLE_SCRIPT_URL_HERE";
 
     const MASTER_RECIPES = {};
     const MASTER_PRICES = {};
@@ -791,10 +789,6 @@
     const editItemCategory = document.getElementById('editItemCategory');
     const editItemUnitPrice = document.getElementById('editItemUnitPrice');
     const editItemQty = document.getElementById('editItemQty');
-
-    const recipeModal = document.getElementById('recipeModal');
-    const recipeModalTitle = document.getElementById('recipeModalTitle');
-    const recipeModalBody = document.getElementById('recipeModalBody');
 
     const THAI_MONTHS_SHORT = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
 
@@ -869,20 +863,6 @@
     backdateDateInput.value = initialBkkDate;
     backdateTimeInput.value = getBangkokTimeStr(new Date()).substring(0, 5);
 
-    function findRecipeText(name) {
-        if (!name) return "";
-        if (recipeBook[name]) return recipeBook[name];
-        const clean = name.replace(/\s+/g, '').toLowerCase();
-        for (let k in recipeBook) {
-            if (k.replace(/\s+/g, '').toLowerCase() === clean) return recipeBook[k];
-        }
-        for (let k in recipeBook) {
-            const cleanK = k.replace(/\s+/g, '').toLowerCase();
-            if (clean.includes(cleanK) || cleanK.includes(clean)) return recipeBook[k];
-        }
-        return "";
-    }
-
     function findPrice(name) {
         if (!name) return 0;
         if (priceBook[name] !== undefined) return priceBook[name];
@@ -915,11 +895,6 @@
                     const itId = String(item.id);
                     if (seen.has(itId)) return false;
                     seen.add(itId);
-                    
-                    if (!item.timestamp) {
-                        const parsedDt = new Date(`${normalizeDateStr(item.date)}T${item.time || '00:00:00'}`);
-                        item.timestamp = isNaN(parsedDt.getTime()) ? Date.now() : parsedDt.getTime();
-                    }
                     return true;
                 });
 
@@ -953,45 +928,6 @@
         }
     }
 
-    function showRecipe(menuName, category) {
-        if (category !== 'เครื่องดื่ม') return;
-        recipeModalTitle.innerText = `📖 สูตรชง: ${menuName}`;
-        const found = findRecipeText(menuName);
-        recipeModalBody.innerText = found || "ยังไม่มีการบันทึกสูตรชงสำหรับเมนูนี้\n(เพิ่มได้ที่แท็บตั้งราคา)";
-        recipeModal.style.display = 'flex';
-    }
-
-    function closeRecipeModal() { recipeModal.style.display = 'none'; }
-
-    async function fastToggle(event, id) {
-        if (event) event.stopPropagation();
-        const item = sales.find(s => String(s.id) === String(id));
-        if (item) {
-            item.status = item.status === 'done' ? 'pending' : 'done';
-            saveLocalBackup();
-            renderUI();
-            fetch(SCRIPT_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain' },
-                body: JSON.stringify({ action: 'update_status', id: id, status: item.status })
-            }).catch(e => {});
-        }
-    }
-
-    async function togglePayMethod(id) {
-        const item = sales.find(s => String(s.id) === String(id));
-        if (item) {
-            item.paymentMethod = item.paymentMethod === 'cash' ? 'promptpay' : 'cash';
-            saveLocalBackup();
-            renderUI();
-            fetch(SCRIPT_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain' },
-                body: JSON.stringify({ action: 'update_payment', id: id, paymentMethod: item.paymentMethod })
-            }).catch(e => {});
-        }
-    }
-
     function toggleProfitPanel() {
         isProfitShown = !isProfitShown;
         secretProfitPanel.style.display = isProfitShown ? 'grid' : 'none';
@@ -1003,26 +939,6 @@
         backdateBox.style.display = isBackdateActive ? 'block' : 'none';
         btnToggleBackdate.classList.toggle('active', isBackdateActive);
     }
-
-    function handleSearchSuggest(val) {
-        const query = val.trim().toLowerCase().replace(/\s+/g, '');
-        if (!query) { suggestBox.style.display = 'none'; return; }
-
-        const matched = Object.entries(priceBook).filter(([name]) => name.toLowerCase().replace(/\s+/g, '').includes(query));
-        if (!matched.length) { suggestBox.style.display = 'none'; return; }
-
-        suggestBox.innerHTML = matched.slice(0, 8).map(([name, price]) => `
-            <div class="suggest-item" onclick="quickInput.value='${name}'; suggestBox.style.display='none'; quickInput.focus();">
-                <span>${name}</span>
-                <span class="suggest-price">฿${price}</span>
-            </div>
-        `).join('');
-        suggestBox.style.display = 'block';
-    }
-
-    document.addEventListener('click', e => {
-        if (!quickInput.contains(e.target) && !suggestBox.contains(e.target)) suggestBox.style.display = 'none';
-    });
 
     function setTimeFilter(filter, btn) {
         currentFilter = filter;
@@ -1044,18 +960,9 @@
     function detectCategory(name) {
         if (selectedCategory !== 'auto') return selectedCategory;
         const n = String(name).toLowerCase();
-        
-        if (n.includes('ปัง') || n.includes('โทสต์') || n.includes('เนยนม') || n.includes('เนยน้ำตาล') || n.includes('แยม') || n.includes('ปิ้ง')) {
-            return 'ขนมปังปิ้ง';
-        }
-        if (n.includes('เฟรน') || n.includes('ฟราย') || n.includes('ชีส') || n.includes('ทอด') || 
-            n.includes('ไส้กรอก') || n.includes('ป๊อบ') || n.includes('นักเก็ต') || n.includes('ลูกชิ้น') || n.includes('เกี๊ยว')) {
-            return 'ของทอด/ทานเล่น';
-        }
-        if (n.includes('กะเพรา') || n.includes('กระเพรา') || n.includes('ข้าว') || n.includes('หมูปิ้ง') || 
-            n.includes('ไข่ดาว') || n.includes('ไข่เจียว') || n.includes('มาม่า') || n.includes('ยำ')) {
-            return 'อาหาร/กะเพรา';
-        }
+        if (n.includes('ปัง') || n.includes('โทสต์') || n.includes('เนยนม') || n.includes('เนยน้ำตาล') || n.includes('แยม') || n.includes('ปิ้ง')) return 'ขนมปังปิ้ง';
+        if (n.includes('เฟรน') || n.includes('ฟราย') || n.includes('ชีส') || n.includes('ทอด') || n.includes('ไส้กรอก') || n.includes('ป๊อบ') || n.includes('นักเก็ต')) return 'ของทอด/ทานเล่น';
+        if (n.includes('กะเพรา') || n.includes('กระเพรา') || n.includes('ข้าว') || n.includes('หมูปิ้ง') || n.includes('ไข่ดาว')) return 'อาหาร/กะเพรา';
         return 'เครื่องดื่ม';
     }
 
@@ -1067,7 +974,6 @@
     function parseSingleOrder(rawText) {
         let text = String(rawText).trim().replace(/\s+/g, ' ');
         if (!text) return null;
-
         let name = text;
         let qty = 1;
 
@@ -1083,24 +989,18 @@
         if (parts.length >= 2) {
             const lastPart = parts[parts.length - 1];
             const qtyNum = parseInt(lastPart, 10);
-
             if (!isNaN(qtyNum) && qtyNum > 0 && qtyNum <= 100) {
                 const possibleName = parts.slice(0, parts.length - 1).join(' ').trim();
                 const price = findPrice(possibleName);
-                if (price > 0) {
-                    return { name: possibleName, unitPrice: price, qty: qtyNum };
-                }
+                if (price > 0) return { name: possibleName, unitPrice: price, qty: qtyNum };
             }
         }
 
         let exactPrice = findPrice(text);
-        if (exactPrice > 0) {
-            return { name: text, unitPrice: exactPrice, qty: 1 };
-        }
+        if (exactPrice > 0) return { name: text, unitPrice: exactPrice, qty: 1 };
 
         let workingParts = [...parts];
         let calculatedQty = 1;
-        
         const lastWord = workingParts[workingParts.length - 1];
         const maybeQty = parseInt(lastWord, 10);
         if (!isNaN(maybeQty) && maybeQty > 0 && maybeQty <= 100 && workingParts.length > 1) {
@@ -1111,9 +1011,7 @@
         while (workingParts.length > 0) {
             let partialName = workingParts.join(' ');
             let p = findPrice(partialName);
-            if (p > 0) {
-                return { name: text, unitPrice: p, qty: calculatedQty };
-            }
+            if (p > 0) return { name: text, unitPrice: p, qty: calculatedQty };
             workingParts.pop();
         }
 
@@ -1134,10 +1032,8 @@
         for (let seg of segments) {
             const parsed = parseSingleOrder(seg);
             if (!parsed || !parsed.name) continue;
-
             let { name, unitPrice, qty } = parsed;
             if ((!unitPrice || unitPrice <= 0)) unitPrice = findPrice(name);
-
             parsedItems.push({ name, unitPrice, qty });
         }
 
@@ -1396,7 +1292,7 @@
                             <div class="batch-item-left">
                                 <div class="item-check-box" onclick="fastToggle(event, '${item.id}')">${item.status === 'done' ? '✓' : ''}</div>
                                 <div>
-                                    <div class="item-title-text ${item.category === 'เครื่องดื่ม' ? 'has-recipe' : ''}" onclick="showRecipe('${item.name}', '${item.category}')">${item.name} <b style="color:#0284c7;">x${item.qty}</b></div>
+                                    <div class="item-title-text">${item.name} <b style="color:#0284c7;">x${item.qty}</b></div>
                                     <div class="item-sub-detail">(@${item.unitPrice} บ.)</div>
                                 </div>
                             </div>
