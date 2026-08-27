@@ -1,1505 +1,310 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FLUKCHAFE ฟลุ๊ค ชาเฟ่</title>
+function doGet(e) {
+  return handleRequest(e);
+}
+
+function doPost(e) {
+  return handleRequest(e);
+}
+
+function handleRequest(e) {
+  var lock = LockService.getScriptLock();
+  lock.tryLock(10000);
+  
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var salesSheet = getSalesSheet(ss);
+    var expSheet = getOrCreateSheet(ss, "Expenses", ["Date", "Time", "Expense Name", "Cost", "Expense ID"]);
+    var priceSheet = getOrCreateSheet(ss, "Prices", ["Menu Name", "Price", "Recipe"]);
+
+    var action = (e && e.parameter && e.parameter.action) || (e && e.postData && JSON.parse(e.postData.contents).action) || "get_all";
+    var payload = (e && e.postData && e.postData.contents) ? JSON.parse(e.postData.contents) : (e ? e.parameter : {});
+
+    if (action === "get_all") {
+      var salesData = readSalesSheetData(salesSheet);
+      var expData = readExpSheetData(expSheet);
+      var priceData = readPricesData(priceSheet);
+
+      return jsonResponse({
+        status: "success",
+        sales: salesData,
+        expenses: expData,
+        prices: priceData.prices,
+        recipes: priceData.recipes
+      });
+    }
+
+    if (action === "add_sale") {
+      var items = payload.items || [payload];
+      var existingIds = getExistingIds(salesSheet);
+
+      items.forEach(function(it) {
+        var itId = String(it.id || ("ORD-" + Date.now()));
+        if (existingIds.indexOf(itId) !== -1) return;
+
+        var dateStr = String(it.date || Utilities.formatDate(new Date(), "GMT+7", "yyyy-MM-dd"));
+        var timeStr = String(it.time || Utilities.formatDate(new Date(), "GMT+7", "HH:mm:ss"));
+        var unitPrice = Number(it.unitPrice) || 0;
+        var qty = Number(it.qty) || 1;
+        var totalPrice = Number(it.totalPrice) || (unitPrice * qty);
+        var status = it.status || "pending";
+        var statusText = totalPrice + " " + status;
+
+        var nextRow = salesSheet.getLastRow() + 1;
+        
+        // บันทึกลงล็อกแต่ละคอลัมน์ให้ตรงเป๊ะ (Col A ถึง K)
+        salesSheet.getRange(nextRow, 1, 1, 11).setValues([[
+          itId,                          // Col A: ID
+          itId,                          // Col B: Order ID
+          dateStr,                       // Col C: Date
+          timeStr,                       // Col D: Time
+          it.name,                       // Col E: Menu Name
+          it.category || "เครื่องดื่ม",   // Col F: Category
+          it.paymentMethod || "cash",    // Col G: Payment
+          unitPrice,                     // Col H: Price
+          qty,                           // Col I: Qty
+          it.timestamp || Date.now(),    // Col J: Timestamp
+          statusText                     // Col K: Total + Status
+        ]]);
+        
+        // บังคับเซ็ตคอลัมน์ Date และ Time เป็น Text ธรรมดา
+        salesSheet.getRange(nextRow, 3).setNumberFormat("@");
+        salesSheet.getRange(nextRow, 4).setNumberFormat("@");
+      });
+
+      return jsonResponse({ status: "success" });
+    }
+
+    if (action === "update_status") {
+      var r = findRowById(salesSheet, String(payload.id));
+      if (r > 0) {
+        var curK = String(salesSheet.getRange(r, 11).getValue() || "");
+        var numMatch = curK.match(/^([\d.]+)/);
+        var pricePart = numMatch ? numMatch[1] : "";
+        salesSheet.getRange(r, 11).setValue((pricePart + " " + payload.status).trim());
+      }
+      return jsonResponse({ status: "success" });
+    }
+
+    if (action === "update_payment") {
+      var r = findRowById(salesSheet, String(payload.id));
+      if (r > 0) {
+        salesSheet.getRange(r, 7).setValue(payload.paymentMethod);
+      }
+      return jsonResponse({ status: "success" });
+    }
+
+    if (action === "delete_sale") {
+      var r = findRowById(salesSheet, String(payload.id));
+      if (r > 0) salesSheet.deleteRow(r);
+      return jsonResponse({ status: "success" });
+    }
+
+    if (action === "edit_sale") {
+      var r = findRowById(salesSheet, String(payload.id));
+      if (r > 0) {
+        salesSheet.getRange(r, 5).setValue(payload.name);
+        salesSheet.getRange(r, 6).setValue(payload.category);
+        salesSheet.getRange(r, 8).setValue(payload.unitPrice);
+        salesSheet.getRange(r, 9).setValue(payload.qty);
+        salesSheet.getRange(r, 11).setValue(payload.totalPrice + " done");
+      }
+      return jsonResponse({ status: "success" });
+    }
+
+    if (action === "add_expense") {
+      expSheet.appendRow([
+        payload.date || Utilities.formatDate(new Date(), "GMT+7", "yyyy-MM-dd"),
+        payload.time || Utilities.formatDate(new Date(), "GMT+7", "HH:mm:ss"),
+        payload.name,
+        payload.cost || 0,
+        payload.id || ("EXP-" + Date.now())
+      ]);
+      return jsonResponse({ status: "success" });
+    }
+
+    if (action === "delete_expense") {
+      var data = expSheet.getDataRange().getValues();
+      for (var i = 1; i < data.length; i++) {
+        if (String(data[i][4]) === String(payload.id)) {
+          expSheet.deleteRow(i + 1);
+          break;
+        }
+      }
+      return jsonResponse({ status: "success" });
+    }
+
+    if (action === "update_price") {
+      var pData = priceSheet.getDataRange().getValues();
+      var found = -1;
+      for (var i = 1; i < pData.length; i++) {
+        if (String(pData[i][0]).trim() === String(payload.name).trim()) { found = i + 1; break; }
+      }
+      if (found > 0) {
+        priceSheet.getRange(found, 2).setValue(payload.price);
+        if (payload.recipe !== undefined) priceSheet.getRange(found, 3).setValue(payload.recipe);
+      } else {
+        priceSheet.appendRow([payload.name.trim(), payload.price, payload.recipe || ""]);
+      }
+      return jsonResponse({ status: "success" });
+    }
+
+    if (action === "delete_price") {
+      var pData = priceSheet.getDataRange().getValues();
+      for (var i = 1; i < pData.length; i++) {
+        if (String(pData[i][0]).trim() === String(payload.name).trim()) {
+          priceSheet.deleteRow(i + 1);
+          break;
+        }
+      }
+      return jsonResponse({ status: "success" });
+    }
+
+    return jsonResponse({ status: "error", message: "Unknown action" });
+
+  } catch (err) {
+    return jsonResponse({ status: "error", message: err.toString() });
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function getSalesSheet(ss) {
+  var s = ss.getSheetByName("Sales");
+  if (s && s.getLastRow() > 1) return s;
+  return ss.getSheets()[0];
+}
+
+function getOrCreateSheet(ss, name, headers) {
+  var sheet = ss.getSheetByName(name);
+  if (!sheet) {
+    sheet = ss.insertSheet(name);
+    sheet.appendRow(headers);
+    sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold").setBackground("#f1f5f9");
+  }
+  return sheet;
+}
+
+function readSalesSheetData(sheet) {
+  var data = sheet.getDataRange().getValues();
+  if (data.length <= 1) return [];
+  var rows = [];
+
+  for (var i = 1; i < data.length; i++) {
+    var row = data[i];
+    if (!row[4] && !row[2]) continue;
+
+    var id = String(row[0] || ("old-" + i));
+    var dateRaw = row[2]; 
+    var timeRaw = row[3]; 
+    var name = String(row[4] || "").trim(); 
+    if (!name) continue;
+
+    var category = String(row[5] || "เครื่องดื่ม").trim();
+    var payMethod = String(row[6] || "cash").trim();
+    var unitPrice = Number(row[7]) || 0;
+    var qty = Number(row[8]) || 1;
+    var timestampCol = Number(row[9]) || 0; 
+    var colK = String(row[10] || "").trim();
+
+    var dateStr = "";
+    if (dateRaw instanceof Date) {
+      dateStr = Utilities.formatDate(dateRaw, "GMT+7", "yyyy-MM-dd");
+    } else {
+      dateStr = String(dateRaw || "").trim().replace(/^['"]/, '');
+    }
+
+    var timeStr = "";
+    if (timeRaw instanceof Date) {
+      timeStr = Utilities.formatDate(timeRaw, "GMT+7", "HH:mm:ss");
+    } else {
+      timeStr = String(timeRaw || "12:00:00").trim().replace(/^['"]/, '');
+      if (timeStr.length === 5) timeStr += ":00";
+    }
+
+    var timestamp = timestampCol > 0 ? timestampCol : new Date(dateStr + "T" + timeStr + "+07:00").getTime();
+    if (isNaN(timestamp)) timestamp = Date.now();
+
+    var status = colK.toLowerCase().indexOf("pending") !== -1 ? "pending" : "done";
     
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0f172a">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="FLUKCHAFE">
-
-    <link rel="icon" type="image/png" href="logo.png">
-    <link rel="apple-touch-icon" href="logo.png">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-    <style>
-        * { box-sizing: border-box; font-family: 'Kanit', sans-serif; margin: 0; padding: 0; }
-        body { 
-            background: #0f172a url('bg.jpg') no-repeat center center fixed;
-            background-size: cover;
-            min-height: 100vh;
-            padding: 12px; 
-            color: #1e293b; 
-            transition: background 0.3s, color 0.3s;
-        }
-        .container { 
-            max-width: 480px; 
-            margin: 0 auto; 
-            background: rgba(255, 255, 255, 0.96); 
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-radius: 20px; 
-            padding: 16px; 
-            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.4); 
-            border: 1px solid rgba(255, 255, 255, 0.8);
-            transition: background 0.3s, border-color 0.3s, color 0.3s;
-        }
-
-        body.dark-mode { color: #f1f5f9; }
-        body.dark-mode .container { 
-            background: rgba(15, 23, 42, 0.94); 
-            border: 1px solid rgba(51, 65, 85, 0.8); 
-            color: #f1f5f9;
-        }
-        body.dark-mode .brand-name-en { color: #f8fafc; }
-        body.dark-mode .brand-name-th { color: #94a3b8; }
-        body.dark-mode .time-filter { background: #1e293b; }
-        body.dark-mode .filter-btn { color: #94a3b8; }
-        body.dark-mode .filter-btn.active { background: #334155; color: #38bdf8; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
-        body.dark-mode .custom-filter-box { background: #1e293b; border-color: #334155; }
-        body.dark-mode .filter-input-group label { color: #94a3b8; }
-        body.dark-mode .filter-input-group input { background: #0f172a; color: #f1f5f9; border-color: #38bdf8; }
-        body.dark-mode .cat-box { background: #1e293b; border-color: #334155; }
-        body.dark-mode .cat-title { color: #94a3b8; }
-        body.dark-mode .cat-val { color: #f8fafc; }
-        body.dark-mode .cat-pay-detail { border-top-color: #334155; color: #cbd5e1; }
-        body.dark-mode .cat-btn { background: #1e293b; color: #94a3b8; }
-        body.dark-mode .cat-btn.active { background: #0284c7; color: #ffffff; }
-        body.dark-mode .best-seller-section { background: #1e293b; border-color: #334155; }
-        body.dark-mode .best-seller-title { color: #94a3b8; }
-        body.dark-mode .quick-pill { background: #0f172a; color: #38bdf8; border-color: #334155; }
-        body.dark-mode .quick-pill:hover, body.dark-mode .quick-pill:active { background: #334155; border-color: #38bdf8; }
-        body.dark-mode .input-btn-group input { background: #0f172a; color: #f1f5f9; border-color: #38bdf8; }
-        body.dark-mode .suggest-box { background: #1e293b; border-color: #38bdf8; }
-        body.dark-mode .suggest-item { border-bottom-color: #334155; color: #f1f5f9; }
-        body.dark-mode .suggest-item:hover { background: #334155; }
-        body.dark-mode .tab-btn { background: #1e293b; color: #94a3b8; }
-        body.dark-mode .tab-btn.active { background: #38bdf8; color: #0f172a; font-weight: 600; }
-        body.dark-mode .order-batch-card { background: #1e293b; border-color: #334155; }
-        body.dark-mode .batch-header { border-bottom-color: #334155; }
-        body.dark-mode .batch-time-tag { background: #0f172a; color: #38bdf8; }
-        body.dark-mode .batch-total-price { color: #f8fafc; }
-        body.dark-mode .batch-item-row { border-bottom-color: #334155; }
-        body.dark-mode .item-check-box { background: #0f172a; border-color: #475569; }
-        body.dark-mode .item-title-text { color: #f1f5f9; }
-        body.dark-mode .item-sub-detail { color: #94a3b8; }
-        body.dark-mode .summary-group-title { background: #1e293b; color: #cbd5e1; }
-        body.dark-mode .summary-row { background: #1e293b; border-bottom-color: #334155; color: #f1f5f9; }
-        body.dark-mode .price-mgr-form input, body.dark-mode .price-mgr-form textarea { background: #0f172a; color: #f1f5f9; border-color: #334155; }
-        body.dark-mode .price-search-box input { background: #0f172a; color: #f1f5f9; border-color: #334155; }
-        
-        body.dark-mode .price-item-card { background: #1e293b !important; border-color: #334155 !important; color: #f1f5f9; }
-        body.dark-mode .inline-edit-container { background: #0f172a !important; border-top-color: #334155 !important; }
-        body.dark-mode .inline-edit-input { background: #1e293b; color: #f1f5f9; border-color: #38bdf8; }
-
-        body.dark-mode .bottom-sync-bar { border-top-color: #334155; }
-        body.dark-mode .sync-status-indicator { background: #1e293b; color: #94a3b8; }
-        body.dark-mode .modal-box { background: #1e293b; color: #f1f5f9; }
-        body.dark-mode .recipe-content { background: #0f172a; border-color: #334155; color: #38bdf8; }
-
-        .brand-header { text-align: center; margin-bottom: 12px; position: relative; }
-        .btn-dark-toggle {
-            position: absolute;
-            top: 0;
-            right: 0;
-            background: #e2e8f0;
-            border: none;
-            width: 34px;
-            height: 34px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            transition: background 0.2s;
-        }
-        body.dark-mode .btn-dark-toggle { background: #334155; color: #f8fafc; }
-
-        .brand-logo { width: 75px; height: 75px; border-radius: 50%; object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 2.5px solid #0284c7; }
-        .brand-name-en { font-size: 1.55rem; font-weight: 700; color: #0f172a; margin-top: 4px; line-height: 1.1; letter-spacing: 0.5px; }
-        .brand-name-th { font-size: 0.9rem; font-weight: 400; color: #64748b; margin-top: 2px; }
-
-        .time-filter {
-            display: grid;
-            grid-template-columns: 1fr 1.25fr 1.35fr 1fr;
-            gap: 3px;
-            background: #e2e8f0;
-            padding: 3px;
-            border-radius: 10px;
-            margin-bottom: 8px;
-        }
-        .filter-btn {
-            padding: 6px 2px;
-            border: none;
-            background: transparent;
-            border-radius: 8px;
-            font-size: 0.72rem;
-            font-weight: 500;
-            cursor: pointer;
-            color: #64748b;
-            white-space: nowrap;
-        }
-        .filter-btn.active {
-            background: #ffffff;
-            color: #0284c7;
-            font-weight: 600;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
-        }
-
-        .custom-filter-box {
-            display: none;
-            margin-bottom: 10px;
-            background: #f8fafc;
-            border: 1px solid #cbd5e1;
-            border-radius: 10px;
-            padding: 8px 10px;
-        }
-        .custom-filter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .filter-input-group label { display: block; font-size: 0.7rem; color: #475569; margin-bottom: 3px; font-weight: 600; }
-        .filter-input-group input {
-            width: 100%;
-            padding: 5px 6px;
-            border-radius: 6px;
-            border: 1.5px solid #0284c7;
-            font-size: 0.75rem;
-            outline: none;
-            background: #ffffff;
-            color: #0f172a;
-        }
-
-        .total-banner {
-            background: #0f172a;
-            color: #ffffff;
-            border-radius: 14px;
-            padding: 14px 10px 10px 10px;
-            text-align: center;
-            margin-bottom: 12px;
-            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);
-        }
-        .total-banner .amount { font-size: 2.3rem; font-weight: 700; color: #38bdf8; line-height: 1.1; }
-        .total-banner .sub { font-size: 0.8rem; color: #94a3b8; margin-top: 4px; }
-
-        .btn-toggle-profit {
-            background: rgba(255, 255, 255, 0.12);
-            color: #e2e8f0;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-            padding: 4px 14px;
-            font-size: 0.75rem;
-            margin-top: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .btn-toggle-profit:hover, .btn-toggle-profit:active {
-            background: rgba(56, 189, 248, 0.2);
-            color: #38bdf8;
-            border-color: #38bdf8;
-        }
-
-        .secret-profit-panel {
-            display: none;
-            grid-template-columns: 1fr 1fr;
-            gap: 6px;
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px dashed rgba(255, 255, 255, 0.2);
-        }
-        .secret-box { background: rgba(255, 255, 255, 0.06); border-radius: 10px; padding: 8px 4px; }
-        .secret-title { font-size: 0.7rem; color: #94a3b8; }
-        .secret-val { font-size: 1.1rem; font-weight: 600; margin-top: 2px; }
-        .secret-val.cost { color: #f87171; }
-        .secret-val.profit { color: #4ade80; }
-        .secret-val.cash { color: #34d399; }
-        .secret-val.qr { color: #38bdf8; }
-
-        .category-summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
-        .cat-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 8px 10px; }
-        .cat-title { font-size: 0.75rem; color: #64748b; font-weight: 500; }
-        .cat-val { font-size: 1.05rem; font-weight: 600; color: #0f172a; margin-top: 2px; }
-        .cat-count { font-size: 0.72rem; color: #0284c7; font-weight: 500; }
-        .cat-pay-detail {
-            font-size: 0.65rem;
-            color: #475569;
-            margin-top: 4px;
-            padding-top: 3px;
-            border-top: 1px dashed #cbd5e1;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .cat-selector { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 8px; }
-        .cat-btn {
-            background: #e2e8f0;
-            border: none;
-            padding: 8px 2px;
-            border-radius: 8px;
-            font-size: 0.75rem;
-            cursor: pointer;
-            font-weight: 500;
-            color: #475569;
-        }
-        .cat-btn.active { background: #0284c7; color: #ffffff; }
-
-        .best-seller-section {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 8px 10px;
-            margin-bottom: 10px;
-        }
-        .best-seller-title {
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: #64748b;
-            margin-bottom: 6px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .quick-pills { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
-        .quick-pills::-webkit-scrollbar { display: none; }
-        .quick-pill {
-            background: #ffffff;
-            color: #0284c7;
-            border: 1.5px solid #bae6fd;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            white-space: nowrap;
-            cursor: pointer;
-            flex-shrink: 0;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .quick-pill:active, .quick-pill:hover { background: #e0f2fe; border-color: #0284c7; }
-
-        .quick-input-box { margin-bottom: 14px; position: relative; }
-        .input-btn-group { display: flex; gap: 6px; }
-        .input-btn-group input {
-            flex: 1;
-            padding: 12px 14px;
-            font-size: 1.02rem;
-            border: 2px solid #0284c7;
-            border-radius: 12px;
-            outline: none;
-            background: #ffffff;
-            color: #0f172a;
-        }
-        .input-btn-group input:focus { border-color: #0369a1; box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.2); }
-        .btn-order-submit {
-            background: #0284c7;
-            color: #fff;
-            border: none;
-            padding: 0 16px;
-            font-size: 0.95rem;
-            font-weight: 600;
-            border-radius: 12px;
-            cursor: pointer;
-            white-space: nowrap;
-            box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);
-        }
-
-        .backdate-control { display: flex; align-items: center; justify-content: space-between; margin-top: 6px; padding: 0 2px; }
-        .btn-toggle-backdate {
-            background: transparent;
-            border: 1px solid #cbd5e1;
-            color: #64748b;
-            padding: 3px 8px;
-            border-radius: 8px;
-            font-size: 0.72rem;
-            cursor: pointer;
-        }
-        .btn-toggle-backdate.active { background: #fef3c7; color: #b45309; border-color: #f59e0b; font-weight: 600; }
-
-        .backdate-box { display: none; background: #fffbeb; border: 1.5px dashed #f59e0b; border-radius: 10px; padding: 8px; margin-top: 6px; }
-        .backdate-box-title { font-size: 0.72rem; color: #b45309; font-weight: 600; margin-bottom: 4px; }
-        .backdate-inputs { display: flex; gap: 6px; }
-        .backdate-inputs input {
-            flex: 1;
-            padding: 6px 8px;
-            border: 1px solid #fcd34d;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            outline: none;
-            background: #ffffff;
-        }
-
-        .suggest-box {
-            position: absolute;
-            top: 50px;
-            left: 0;
-            right: 110px;
-            background: #ffffff;
-            border: 1.5px solid #0284c7;
-            border-radius: 12px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-            max-height: 220px;
-            overflow-y: auto;
-            z-index: 1000;
-            display: none;
-        }
-        .suggest-item {
-            padding: 10px 14px;
-            border-bottom: 1px solid #f1f5f9;
-            font-size: 0.95rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-        }
-        .suggest-item:hover, .suggest-item:active { background: #e0f2fe; color: #0369a1; }
-        .suggest-price { font-weight: 600; color: #0284c7; font-size: 0.85rem; }
-
-        .tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 12px; }
-        .tab-btn {
-            padding: 8px 2px;
-            border: none;
-            background: #e2e8f0;
-            border-radius: 8px;
-            font-size: 0.72rem;
-            font-weight: 500;
-            cursor: pointer;
-            color: #475569;
-        }
-        .tab-btn.active { background: #0f172a; color: #ffffff; }
-
-        .list-container { max-height: 420px; overflow-y: auto; }
-
-        .order-batch-card {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 14px;
-            padding: 12px;
-            margin-bottom: 12px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
-        }
-        .batch-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 8px;
-            border-bottom: 1px dashed #cbd5e1;
-            margin-bottom: 8px;
-        }
-        .batch-time-tag {
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: #0369a1;
-            background: #e0f2fe;
-            padding: 3px 8px;
-            border-radius: 6px;
-        }
-        .batch-total-price { font-size: 0.95rem; font-weight: 700; color: #0f172a; }
-
-        .batch-item-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid #f8fafc; }
-        .batch-item-row:last-child { border-bottom: none; }
-        .batch-item-left { display: flex; align-items: center; gap: 10px; flex: 1; }
-        
-        .item-check-box {
-            width: 24px;
-            height: 24px;
-            border-radius: 6px;
-            border: 2px solid #cbd5e1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: transparent;
-            flex-shrink: 0;
-            background: #ffffff;
-            cursor: pointer;
-        }
-        
-        .item-done .item-check-box { background: #10b981 !important; border-color: #10b981 !important; color: #ffffff !important; }
-        .item-done .item-title-text { text-decoration: line-through; color: #94a3b8 !important; }
-        .item-done .item-sub-detail { text-decoration: line-through; color: #cbd5e1 !important; }
-        .item-done .item-price-text { color: #94a3b8 !important; }
-
-        .item-title-text { font-size: 0.9rem; font-weight: 500; color: #1e293b; }
-        .item-title-text.has-recipe { cursor: pointer; }
-        .item-title-text.has-recipe:hover { color: #0284c7; text-decoration: underline; }
-        .item-sub-detail { font-size: 0.72rem; color: #64748b; }
-
-        .pay-badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 3px 6px;
-            border-radius: 6px;
-            font-size: 0.65rem;
-            font-weight: 500;
-            cursor: pointer;
-            margin-right: 4px;
-        }
-        .pay-badge.qr { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
-        .pay-badge.cash { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
-
-        .btn-edit { background: #f8fafc; color: #0284c7; border: 1px solid #cbd5e1; border-radius: 6px; padding: 3px 6px; font-size: 0.65rem; font-weight: 600; cursor: pointer; margin-right: 3px; }
-        .btn-del { background: #fee2e2; color: #ef4444; border: none; border-radius: 6px; padding: 3px 6px; font-size: 0.65rem; font-weight: 600; cursor: pointer; }
-
-        .summary-group-title { background: #f1f5f9; padding: 5px 8px; font-size: 0.8rem; font-weight: 600; color: #475569; border-radius: 6px; margin: 8px 0 4px 0; }
-        .summary-row { display: flex; justify-content: space-between; padding: 6px 8px; border-bottom: 1px solid #f1f5f9; font-size: 0.85rem; align-items: center; background: #ffffff; }
-        .empty-text { text-align: center; color: #94a3b8; padding: 24px 0; font-size: 0.85rem; }
-
-        .price-mgr-form { display: flex; gap: 6px; margin-bottom: 8px; }
-        .price-mgr-form input, .price-mgr-form textarea {
-            padding: 8px;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            outline: none;
-            background: #ffffff;
-            width: 100%;
-        }
-        .price-mgr-form button {
-            background: #0284c7;
-            color: #fff;
-            border: none;
-            padding: 8px 14px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            font-weight: 500;
-            white-space: nowrap;
-        }
-        .btn-exp-add { background: #ef4444 !important; }
-        .price-search-box { margin-bottom: 8px; }
-        .price-search-box input { width: 100%; padding: 7px 10px; border: 1.5px solid #94a3b8; border-radius: 8px; font-size: 0.8rem; outline: none; background: #f8fafc; }
-
-        .price-item-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; font-size: 0.85rem; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
-        .price-item-header { display: flex; justify-content: space-between; align-items: center; }
-        .inline-edit-container { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #cbd5e1; background: transparent; border-radius: 6px; }
-        .inline-edit-inputs { display: flex; gap: 6px; margin-bottom: 8px; }
-        .inline-edit-input { padding: 8px 10px; border: 1.5px solid #0284c7; border-radius: 8px; font-size: 0.9rem; outline: none; background: #ffffff; color: #0f172a; width: 100%; }
-        .inline-edit-btns { display: flex; gap: 6px; }
-        .btn-inline-save { flex: 1; background: #10b981; color: #fff; border: none; padding: 8px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
-        .btn-inline-cancel { flex: 1; background: #e2e8f0; color: #475569; border: none; padding: 8px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
-
-        .export-section { margin-top: 16px; padding-top: 12px; border-top: 1.5px dashed #cbd5e1; }
-        .btn-export { width: 100%; background: #10b981; color: #fff; border: none; padding: 8px; border-radius: 8px; font-size: 0.8rem; font-weight: 500; margin-bottom: 6px; cursor: pointer; }
-
-        .bottom-sync-bar { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; padding-top: 8px; border-top: 1px solid #f1f5f9; }
-        .sync-status-indicator { display: inline-flex; align-items: center; gap: 5px; font-size: 0.68rem; color: #64748b; padding: 3px 8px; border-radius: 12px; background: #f8fafc; }
-        .status-dot { width: 6px; height: 6px; border-radius: 50%; background: #10b981; display: inline-block; box-shadow: 0 0 6px #10b981; }
-        .btn-manual-sync { background: #0284c7; color: #fff; border: none; padding: 4px 10px; border-radius: 8px; font-size: 0.72rem; font-weight: 600; cursor: pointer; }
-
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 16px; }
-        .modal-box { background: #ffffff; border-radius: 16px; padding: 18px; width: 100%; max-width: 380px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); max-height: 90vh; display: flex; flex-direction: column; }
-        .modal-title { font-size: 1.15rem; font-weight: 600; color: #0284c7; margin-bottom: 8px; }
-        .recipe-content { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 10px; padding: 12px; font-size: 0.95rem; color: #0369a1; white-space: pre-line; line-height: 1.5; margin-bottom: 14px; overflow-y: auto; }
-        .btn-modal-close-large { width: 100%; background: #0284c7; color: #fff; border: none; padding: 12px; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <div class="brand-header">
-        <button type="button" class="btn-dark-toggle" id="darkModeBtn" onclick="toggleDarkMode()" title="สลับโหมดกลางคืน">🌙</button>
-        <img src="logo.png" alt="FLUKCHAFE" class="brand-logo" onerror="this.style.display='none'">
-        <div class="brand-name-en">FLUKCHAFE</div>
-        <div class="brand-name-th">ฟลุ๊ค ชาเฟ่</div>
-    </div>
-
-    <!-- แถบเลือกช่วงเวลา -->
-    <div class="time-filter">
-        <button type="button" class="filter-btn active" onclick="setTimeFilter('today', this)">☀️ วันนี้</button>
-        <button type="button" class="filter-btn" onclick="setTimeFilter('week', this)">📅 อาทิตย์นี้</button>
-        <button type="button" class="filter-btn" onclick="setTimeFilter('custom', this)">📆 กำหนดวัน</button>
-        <button type="button" class="filter-btn" onclick="setTimeFilter('all', this)">📋 ทั้งหมด</button>
-    </div>
-
-    <div class="custom-filter-box" id="customFilterBox">
-        <div class="custom-filter-grid">
-            <div class="filter-input-group">
-                <label>📆 ระบุวันที่:</label>
-                <input type="date" id="selectDateInput" onchange="applyCustomFilter('date')">
-            </div>
-            <div class="filter-input-group">
-                <label>🗓️ ระบุประจำเดือน:</label>
-                <input type="month" id="selectMonthInput" onchange="applyCustomFilter('month')">
-            </div>
-        </div>
-    </div>
-
-    <!-- กล่องยอดขายรวม -->
-    <div class="total-banner">
-        <div class="amount" id="totalSales">฿0</div>
-        <div class="sub" id="totalSalesSub">ยอดขายรวม</div>
-        <div>
-            <button type="button" class="btn-toggle-profit" id="btnToggleProfit" onclick="toggleProfitPanel()">📊 สรุปผลประกอบการ</button>
-        </div>
-
-        <div class="secret-profit-panel" id="secretProfitPanel">
-            <div class="secret-box">
-                <div class="secret-title">💵 รับเงินสด</div>
-                <div class="secret-val cash" id="totalCash">฿0</div>
-            </div>
-            <div class="secret-box">
-                <div class="secret-title">📱 สแกนจ่าย</div>
-                <div class="secret-val qr" id="totalQr">฿0</div>
-            </div>
-            <div class="secret-box">
-                <div class="secret-title">💸 ต้นทุนซื้อของ</div>
-                <div class="secret-val cost" id="totalCost">฿0</div>
-            </div>
-            <div class="secret-box">
-                <div class="secret-title">📈 กำไรสุทธิ</div>
-                <div class="secret-val profit" id="totalProfit">฿0</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- สรุป 4 หมวดหมู่ พร้อมแจกแจงสด/สแกน -->
-    <div class="category-summary-grid">
-        <div class="cat-box">
-            <div class="cat-title">🧋 เครื่องดื่ม</div>
-            <div class="cat-val" id="catDrinkSum">฿0</div>
-            <div class="cat-count" id="catDrinkCount">0 แก้ว</div>
-            <div class="cat-pay-detail" id="catDrinkPay"><span>💵 ฿0</span><span>📱 ฿0</span></div>
-        </div>
-        <div class="cat-box">
-            <div class="cat-title">🍟 ของทอด/ทานเล่น</div>
-            <div class="cat-val" id="catSnackSum">฿0</div>
-            <div class="cat-count" id="catSnackCount">0 รายการ</div>
-            <div class="cat-pay-detail" id="catSnackPay"><span>💵 ฿0</span><span>📱 ฿0</span></div>
-        </div>
-        <div class="cat-box">
-            <div class="cat-title">🍞 ขนมปังปิ้ง</div>
-            <div class="cat-val" id="catBreadSum">฿0</div>
-            <div class="cat-count" id="catBreadCount">0 ชิ้น</div>
-            <div class="cat-pay-detail" id="catBreadPay"><span>💵 ฿0</span><span>📱 ฿0</span></div>
-        </div>
-        <div class="cat-box">
-            <div class="cat-title">🍳 กะเพรา/อาหาร/หมูปิ้ง</div>
-            <div class="cat-val" id="catFoodSum">฿0</div>
-            <div class="cat-count" id="catFoodCount">0 จาน/ชุด</div>
-            <div class="cat-pay-detail" id="catFoodPay"><span>💵 ฿0</span><span>📱 ฿0</span></div>
-        </div>
-    </div>
-
-    <div class="cat-selector">
-        <button type="button" class="cat-btn active" onclick="setCategory('auto', this)">🤖 ออโต้</button>
-        <button type="button" class="cat-btn" onclick="setCategory('เครื่องดื่ม', this)">🧋 น้ำ</button>
-        <button type="button" class="cat-btn" onclick="setCategory('ของทอด/ทานเล่น', this)">🍟 ของทอด</button>
-        <button type="button" class="cat-btn" onclick="setCategory('ขนมปังปิ้ง', this)">🍞 ปังปิ้ง</button>
-    </div>
-
-    <!-- กล่องแยกเมนูขายดี -->
-    <div class="best-seller-section">
-        <div class="best-seller-title">🔥 เมนูขายดี (คลิกเพื่อรับออเดอร์ทันที)</div>
-        <div class="quick-pills">
-            <button type="button" class="quick-pill" onclick="quickOrderPreset('ชาไทย เย็น')">🧋 ชาไทย เย็น</button>
-            <button type="button" class="quick-pill" onclick="quickOrderPreset('ชาเขียว เย็น')">🍵 ชาเขียว เย็น</button>
-            <button type="button" class="quick-pill" onclick="quickOrderPreset('โกโก้ เย็น')">🍫 โกโก้ เย็น</button>
-            <button type="button" class="quick-pill" onclick="quickOrderPreset('อเมริกาโน่ เย็น')">☕ อเมริกาโน่</button>
-            <button type="button" class="quick-pill" onclick="quickOrderPreset('เฟรนช์ฟรายส์')">🍟 เฟรนช์ฟรายส์</button>
-            <button type="button" class="quick-pill" onclick="quickOrderPreset('ปังเนยนม')">🍞 ปังเนยนม</button>
-            <button type="button" class="quick-pill" onclick="quickOrderPreset('ข้าวกะเพรา ธรรมดา')">🍳 กะเพรา</button>
-        </div>
-    </div>
-
-    <form id="quickForm" class="quick-input-box" onsubmit="return handleAdd(event)">
-        <div class="input-btn-group">
-            <input type="text" id="quickInput" placeholder="เช่น ชาไทย เย็น 2, โกโก้ เย็น, ชีสบอล 2" autocomplete="off" autofocus oninput="handleSearchSuggest(this.value)">
-            <button type="submit" class="btn-order-submit" id="btnSubmitOrder">รับออเดอร์</button>
-        </div>
-        <div id="suggestBox" class="suggest-box"></div>
-
-        <div class="backdate-control">
-            <span style="font-size:0.72rem; color:#64748b;">💡 จิ้มเมนูขายดีด้านบน หรือพิมพ์ชื่อตามด้วยจำนวน</span>
-            <button type="button" class="btn-toggle-backdate" id="btnToggleBackdate" onclick="toggleBackdateMode()">🕒 บันทึกย้อนหลัง</button>
-        </div>
-
-        <div class="backdate-box" id="backdateBox">
-            <div class="backdate-box-title">⚠️ โหมดลงออเดอร์ย้อนหลัง (ระบุวันและเวลา)</div>
-            <div class="backdate-inputs">
-                <input type="date" id="backdateDateInput">
-                <input type="time" id="backdateTimeInput">
-            </div>
-        </div>
-    </form>
-
-    <div class="tabs">
-        <button type="button" class="tab-btn active" id="tabHistory" onclick="switchTab('history')">ประวัติการขาย</button>
-        <button type="button" class="tab-btn" id="tabSummary" onclick="switchTab('summary')">สรุปรายเมนู</button>
-        <button type="button" class="tab-btn" id="tabExpenses" onclick="switchTab('expenses')">💸 ต้นทุน</button>
-        <button type="button" class="tab-btn" id="tabPrices" onclick="switchTab('prices')">⚙️ ตั้งราคา</button>
-    </div>
-
-    <div class="list-container" id="historyView">
-        <div id="itemList"></div>
-    </div>
-
-    <div class="list-container" id="summaryView" style="display: none;">
-        <div id="menuSummaryList"></div>
-    </div>
-
-    <div class="list-container" id="expensesView" style="display: none;">
-        <div class="price-mgr-form">
-            <input type="text" id="newExpenseName" placeholder="รายการซื้อของ เช่น ชา/นม/ของทอด" style="flex:2;">
-            <input type="number" id="newExpenseCost" placeholder="จำนวนเงิน" style="flex:1;">
-            <button type="button" class="btn-exp-add" onclick="addExpense()">บันทึกทุน</button>
-        </div>
-        <div id="expenseList"></div>
-    </div>
-
-    <div class="list-container" id="pricesView" style="display: none;">
-        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:10px; margin-bottom:10px;">
-            <div style="font-size:0.8rem; font-weight:600; color:#0284c7; margin-bottom:6px;">➕ เพิ่มเมนูใหม่ด่วน (ซิงค์ทุกเครื่องทันที)</div>
-            <div class="price-mgr-form" style="margin-bottom:6px;">
-                <input type="text" id="newMenuName" placeholder="ชื่อเมนู เช่น ชาไทย เย็น" style="flex:2;">
-                <input type="number" id="newMenuPrice" placeholder="ราคา" style="flex:1;">
-            </div>
-            <div class="price-mgr-form" style="margin-bottom:6px;">
-                <textarea id="newMenuRecipe" placeholder="สูตรชง เช่น เบสชาไทย 120ml..." rows="2"></textarea>
-            </div>
-            <button type="button" onclick="addOrUpdatePrice(event)" style="width:100%; background:#0284c7; color:#fff; border:none; padding:8px; border-radius:8px; font-weight:600; cursor:pointer;">เพิ่มเมนูใหม่</button>
-        </div>
-
-        <div class="price-search-box">
-            <input type="text" id="priceSearchInput" placeholder="🔍 ค้นหาเมนูเพื่อแก้ไขราคาตรงนี้..." oninput="renderPriceSettingList()">
-        </div>
-        <div id="priceSettingList"></div>
-
-        <div class="export-section">
-            <div style="font-size: 0.75rem; color: #64748b; font-weight: 600; margin-bottom: 6px;">📊 จัดการข้อมูล & รายงาน (Excel)</div>
-            <button type="button" class="btn-export" onclick="exportSalesToCSV()">📥 ดาวน์โหลดรายงานยอดขาย (CSV/Excel)</button>
-            <button type="button" class="btn-export" style="background:#6366f1;" onclick="exportExpensesToCSV()">📥 ดาวน์โหลดรายงานต้นทุน (CSV/Excel)</button>
-            <button type="button" class="btn-export" style="background:#ef4444;" onclick="clearOldDataCache()">🧹 ล้างแคชข้อมูลค้างในเครื่อง</button>
-        </div>
-    </div>
-
-    <div class="bottom-sync-bar">
-        <div class="sync-status-indicator">
-            <span class="status-dot"></span>
-            <span id="syncStatus">พร้อมใช้งาน</span>
-        </div>
-        <button type="button" class="btn-manual-sync" onclick="syncData()">🔄 ซิงค์ด่วน</button>
-    </div>
-</div>
-
-<div class="modal-overlay" id="recipeModal" onclick="closeRecipeModal(event)">
-    <div class="modal-box" onclick="event.stopPropagation()">
-        <div class="modal-title" id="recipeModalTitle">📖 สูตรชงเมนู</div>
-        <div class="recipe-content" id="recipeModalBody">-</div>
-        <button type="button" class="btn-modal-close-large" onclick="closeRecipeModal()">ปิดหน้าต่าง</button>
-    </div>
-</div>
-
-<div class="modal-overlay" id="editModal">
-    <div class="modal-box">
-        <div class="modal-title">✏️ แก้ไขข้อมูลออเดอร์</div>
-        <input type="hidden" id="editItemId">
-        <div class="modal-group" style="margin-bottom:8px;">
-            <label style="font-size:0.75rem; color:#64748b;">ชื่อเมนู:</label>
-            <input type="text" id="editItemName" style="width:100%; padding:6px; border:1px solid #cbd5e1; border-radius:6px;">
-        </div>
-        <div class="modal-group" style="margin-bottom:8px;">
-            <label style="font-size:0.75rem; color:#64748b;">หมวดหมู่:</label>
-            <select id="editItemCategory" style="width:100%; padding:6px; border:1px solid #cbd5e1; border-radius:6px;">
-                <option value="เครื่องดื่ม">🧋 เครื่องดื่ม</option>
-                <option value="ของทอด/ทานเล่น">🍟 ของทอด/ทานเล่น</option>
-                <option value="ขนมปังปิ้ง">🍞 ขนมปังปิ้ง</option>
-                <option value="อาหาร/กะเพรา">🍳 อาหาร/กะเพรา</option>
-            </select>
-        </div>
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:12px;">
-            <div>
-                <label style="font-size:0.75rem; color:#64748b;">ราคา/หน่วย:</label>
-                <input type="number" id="editItemUnitPrice" style="width:100%; padding:6px; border:1px solid #cbd5e1; border-radius:6px;">
-            </div>
-            <div>
-                <label style="font-size:0.75rem; color:#64748b;">จำนวน:</label>
-                <input type="number" id="editItemQty" min="1" style="width:100%; padding:6px; border:1px solid #cbd5e1; border-radius:6px;">
-            </div>
-        </div>
-        <div style="display: flex; gap: 8px;">
-            <button type="button" style="flex:1; padding: 8px; border-radius: 8px; background: #e2e8f0; border: none; font-weight: 600;" onclick="closeEditModal()">ยกเลิก</button>
-            <button type="button" style="flex:1; padding: 8px; border-radius: 8px; background: #0284c7; border: none; font-weight: 600; color: #fff;" onclick="saveEditedItem()">บันทึก</button>
-        </div>
-    </div>
-</div>
-
-<script>
-    const SCRIPT_URL = "YOUR_GOOGLE_SCRIPT_URL_HERE";
-
-    const MASTER_RECIPES = {};
-    const MASTER_PRICES = {};
-
-    let sales = [];
-    let expenses = [];
-    let localPendingSales = new Map();
-    let priceBook = Object.assign({}, MASTER_PRICES);
-    let recipeBook = Object.assign({}, MASTER_RECIPES);
-
-    try {
-        const cachedSales = localStorage.getItem('flukchafe_sales_cache');
-        if (cachedSales) sales = JSON.parse(cachedSales);
-        const cachedExp = localStorage.getItem('flukchafe_exp_cache');
-        if (cachedExp) expenses = JSON.parse(cachedExp);
-    } catch(e) {}
-
-    let selectedCategory = 'auto';
-    let currentFilter = 'today';
-    let customFilterType = 'date';
-    let isProfitShown = false;
-    let isBackdateActive = false;
-    let isProcessingAdd = false;
-    let isSyncing = false;
-
-    if (localStorage.getItem('flukchafe_dark_mode') === 'true') {
-        document.body.classList.add('dark-mode');
-        document.getElementById('darkModeBtn').innerText = '☀️';
+    // ตรวจสอบราคารวมใน Col K ถ้าว่างหรือคำนวณไม่ได้ ให้ใช้ unitPrice * qty แทนเพื่อแก้ปัญหายอดรวมขึ้น 0 บาท
+    var numMatch = colK.match(/^([\d.]+)/);
+    var totalPrice = numMatch ? Number(numMatch[1]) : 0;
+    if (!totalPrice || totalPrice <= 0) {
+      totalPrice = unitPrice * qty;
     }
 
-    function toggleDarkMode() {
-        document.body.classList.toggle('dark-mode');
-        const isDark = document.body.classList.contains('dark-mode');
-        document.getElementById('darkModeBtn').innerText = isDark ? '☀️' : '🌙';
-        localStorage.setItem('flukchafe_dark_mode', isDark);
+    rows.push({
+      id: id,
+      timestamp: timestamp,
+      date: dateStr,
+      time: timeStr,
+      name: name,
+      category: category,
+      paymentMethod: payMethod,
+      unitPrice: unitPrice,
+      qty: qty,
+      totalPrice: totalPrice,
+      status: status
+    });
+  }
+  return rows;
+}
+
+function readExpSheetData(sheet) {
+  var data = sheet.getDataRange().getValues();
+  if (data.length <= 1) return [];
+  var rows = [];
+  for (var i = 1; i < data.length; i++) {
+    var row = data[i];
+    if (!row[0] && !row[2]) continue;
+    var dateStr = row[0] instanceof Date ? Utilities.formatDate(row[0], "GMT+7", "yyyy-MM-dd") : String(row[0]||"").replace(/^['"]/, '');
+    var timeStr = row[1] instanceof Date ? Utilities.formatDate(row[1], "GMT+7", "HH:mm:ss") : String(row[1]||"").replace(/^['"]/, '');
+    var parsedDt = new Date(dateStr + "T" + (timeStr.length === 5 ? timeStr + ":00" : (timeStr || "12:00:00")));
+    rows.push({
+      timestamp: isNaN(parsedDt.getTime()) ? Date.now() : parsedDt.getTime(),
+      date: dateStr,
+      time: timeStr,
+      name: String(row[2]||""),
+      cost: Number(row[3])||0,
+      id: String(row[4]||"")
+    });
+  }
+  return rows;
+}
+
+function readPricesData(sheet) {
+  var data = sheet.getDataRange().getValues();
+  var prices = {}, recipes = {};
+  for (var i = 1; i < data.length; i++) {
+    var name = String(data[i][0]).trim();
+    if (name) {
+      prices[name] = Number(data[i][1]) || 0;
+      recipes[name] = String(data[i][2] || "");
     }
+  }
+  return { prices: prices, recipes: recipes };
+}
 
-    const quickInput = document.getElementById('quickInput');
-    const suggestBox = document.getElementById('suggestBox');
-    const totalSales = document.getElementById('totalSales');
-    const totalSalesSub = document.getElementById('totalSalesSub');
-    const totalCash = document.getElementById('totalCash');
-    const totalQr = document.getElementById('totalQr');
-    const totalCost = document.getElementById('totalCost');
-    const totalProfit = document.getElementById('totalProfit');
-    const secretProfitPanel = document.getElementById('secretProfitPanel');
-    const btnToggleProfit = document.getElementById('btnToggleProfit');
-    const itemList = document.getElementById('itemList');
-    const menuSummaryList = document.getElementById('menuSummaryList');
-    const expenseList = document.getElementById('expenseList');
-    const priceSettingList = document.getElementById('priceSettingList');
-    const customFilterBox = document.getElementById('customFilterBox');
-    const selectDateInput = document.getElementById('selectDateInput');
-    const selectMonthInput = document.getElementById('selectMonthInput');
-    const priceSearchInput = document.getElementById('priceSearchInput');
-    const btnSubmitOrder = document.getElementById('btnSubmitOrder');
+function getExistingIds(sheet) {
+  var data = sheet.getDataRange().getValues();
+  var ids = [];
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][0]) ids.push(String(data[i][0]));
+  }
+  return ids;
+}
 
-    const btnToggleBackdate = document.getElementById('btnToggleBackdate');
-    const backdateBox = document.getElementById('backdateBox');
-    const backdateDateInput = document.getElementById('backdateDateInput');
-    const backdateTimeInput = document.getElementById('backdateTimeInput');
-
-    const editModal = document.getElementById('editModal');
-    const editItemId = document.getElementById('editItemId');
-    const editItemName = document.getElementById('editItemName');
-    const editItemCategory = document.getElementById('editItemCategory');
-    const editItemUnitPrice = document.getElementById('editItemUnitPrice');
-    const editItemQty = document.getElementById('editItemQty');
-
-    const THAI_MONTHS_SHORT = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
-
-    function saveLocalBackup() {
-        try {
-            localStorage.setItem('flukchafe_sales_cache', JSON.stringify(sales));
-            localStorage.setItem('flukchafe_exp_cache', JSON.stringify(expenses));
-        } catch(e) {}
+function findRowById(sheet, id) {
+  var data = sheet.getDataRange().getValues();
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][0]) === String(id) || String(data[i][1]) === String(id)) {
+      return i + 1;
     }
-
-    function normalizeDateStr(raw) {
-        if (!raw) return "";
-        let str = String(raw).trim();
-        if (str.includes('T')) str = str.split('T')[0];
-        if (str.startsWith("'")) str = str.substring(1);
-        return str;
-    }
-
-    function getBangkokDateStr(d = new Date()) {
-        const options = { timeZone: 'Asia/Bangkok', year: 'numeric', month: '2-digit', day: '2-digit', hour12: false };
-        const formatter = new Intl.DateTimeFormat('en-CA', options);
-        const parts = formatter.formatToParts(d);
-        const y = parts.find(p => p.type === 'year').value;
-        const m = parts.find(p => p.type === 'month').value;
-        const day = parts.find(p => p.type === 'day').value;
-        return `${y}-${m}-${day}`;
-    }
-
-    function getBangkokTimeStr(d = new Date()) {
-        const options = { timeZone: 'Asia/Bangkok', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
-        const formatter = new Intl.DateTimeFormat('th-TH', options);
-        const parts = formatter.formatToParts(d);
-        const hh = (parts.find(p => p.type === 'hour')?.value || '00').padStart(2, '0');
-        const mm = (parts.find(p => p.type === 'minute')?.value || '00').padStart(2, '0');
-        const ss = (parts.find(p => p.type === 'second')?.value || '00').padStart(2, '0');
-        return `${hh}:${mm}:${ss}`;
-    }
-
-    function getWeekRangeBKK() {
-        const now = new Date();
-        const bkkStr = getBangkokDateStr(now);
-        const [y, m, d] = bkkStr.split('-').map(Number);
-        const curDate = new Date(y, m - 1, d);
-        const dayOfWeek = curDate.getDay() === 0 ? 7 : curDate.getDay();
-        const monday = new Date(curDate);
-        monday.setDate(curDate.getDate() - dayOfWeek + 1);
-        const sunday = new Date(monday);
-        sunday.setDate(monday.getDate() + 6);
-        return { start: getBangkokDateStr(monday), end: getBangkokDateStr(sunday) };
-    }
-
-    function formatThaiDateTime(rawDate, rawTime) {
-        let cleanTime = String(rawTime || '00:00:00').replace(/^['"]/, '').substring(0, 5);
-        let normD = normalizeDateStr(rawDate);
-        let todayStr = getBangkokDateStr(new Date());
-
-        if (normD === todayStr) return `วันนี้ • ${cleanTime} น.`;
-        
-        let parts = normD.split('-');
-        if (parts.length === 3) {
-            let y = parseInt(parts[0], 10);
-            let m = parseInt(parts[1], 10) - 1;
-            let d = parseInt(parts[2], 10);
-            return `${d} ${THAI_MONTHS_SHORT[m]} ${String(y + 543).slice(-2)} • ${cleanTime} น.`;
-        }
-        return `${normD} • ${cleanTime} น.`;
-    }
-
-    const initialBkkDate = getBangkokDateStr(new Date());
-    selectDateInput.value = initialBkkDate;
-    selectMonthInput.value = initialBkkDate.substring(0, 7);
-    backdateDateInput.value = initialBkkDate;
-    backdateTimeInput.value = getBangkokTimeStr(new Date()).substring(0, 5);
-
-    function findPrice(name) {
-        if (!name) return 0;
-        if (priceBook[name] !== undefined) return priceBook[name];
-        const cleanName = name.replace(/\s+/g, '');
-        for (let k in priceBook) {
-            if (k.replace(/\s+/g, '') === cleanName) return priceBook[k];
-        }
-        return 0;
-    }
-
-    async function syncData() {
-        if (isSyncing) return;
-        isSyncing = true;
-        try {
-            const res = await fetch(SCRIPT_URL + '?action=get_all');
-            const data = await res.json();
-            if (data.status === 'success') {
-                const serverSales = data.sales || [];
-                const serverIds = new Set(serverSales.map(s => String(s.id)));
-                
-                for (let [id, pendingItem] of localPendingSales.entries()) {
-                    if (serverIds.has(String(id))) localPendingSales.delete(id);
-                }
-
-                const unconfirmed = Array.from(localPendingSales.values());
-                const combined = [...unconfirmed, ...serverSales];
-                
-                const seen = new Set();
-                sales = combined.filter(item => {
-                    const itId = String(item.id);
-                    if (seen.has(itId)) return false;
-                    seen.add(itId);
-                    return true;
-                });
-
-                expenses = data.expenses || [];
-                priceBook = Object.assign({}, MASTER_PRICES, data.prices || {});
-                recipeBook = Object.assign({}, MASTER_RECIPES, data.recipes || {});
-                saveLocalBackup();
-                renderUI();
-                renderPriceSettingList();
-                document.getElementById('syncStatus').innerText = 'ซิงค์ข้อมูลสำเร็จ';
-            }
-        } catch (e) {
-            document.getElementById('syncStatus').innerText = 'พร้อมใช้งาน (ออฟไลน์)';
-        } finally {
-            isSyncing = false;
-        }
-    }
-
-    setInterval(syncData, 4000);
-    syncData();
-    renderUI();
-
-    function clearOldDataCache() {
-        if (confirm('คุณต้องการล้างแคชข้อมูลค้างในเครื่องเพื่อรีเซ็ตหน้าจอใช่หรือไม่?')) {
-            localStorage.removeItem('flukchafe_sales_cache');
-            sales = [];
-            localPendingSales.clear();
-            renderUI();
-            syncData();
-            alert('ล้างแคชเรียบร้อยแล้ว กำลังซิงค์ข้อมูลใหม่...');
-        }
-    }
-
-    function toggleProfitPanel() {
-        isProfitShown = !isProfitShown;
-        secretProfitPanel.style.display = isProfitShown ? 'grid' : 'none';
-        btnToggleProfit.innerText = isProfitShown ? '🔒 ปิดผลประกอบการ' : '📊 สรุปผลประกอบการ';
-    }
-
-    function toggleBackdateMode() {
-        isBackdateActive = !isBackdateActive;
-        backdateBox.style.display = isBackdateActive ? 'block' : 'none';
-        btnToggleBackdate.classList.toggle('active', isBackdateActive);
-    }
-
-    function setTimeFilter(filter, btn) {
-        currentFilter = filter;
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        customFilterBox.style.display = filter === 'custom' ? 'block' : 'none';
-        renderUI();
-    }
-
-    function applyCustomFilter(type) { customFilterType = type; renderUI(); }
-
-    function setCategory(cat, btn) {
-        selectedCategory = cat;
-        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        quickInput.focus();
-    }
-
-    function detectCategory(name) {
-        if (selectedCategory !== 'auto') return selectedCategory;
-        const n = String(name).toLowerCase();
-        if (n.includes('ปัง') || n.includes('โทสต์') || n.includes('เนยนม') || n.includes('เนยน้ำตาล') || n.includes('แยม') || n.includes('ปิ้ง')) return 'ขนมปังปิ้ง';
-        if (n.includes('เฟรน') || n.includes('ฟราย') || n.includes('ชีส') || n.includes('ทอด') || n.includes('ไส้กรอก') || n.includes('ป๊อบ') || n.includes('นักเก็ต')) return 'ของทอด/ทานเล่น';
-        if (n.includes('กะเพรา') || n.includes('กระเพรา') || n.includes('ข้าว') || n.includes('หมูปิ้ง') || n.includes('ไข่ดาว')) return 'อาหาร/กะเพรา';
-        return 'เครื่องดื่ม';
-    }
-
-    async function quickOrderPreset(name) {
-        quickInput.value = name;
-        await handleAdd();
-    }
-
-    function parseSingleOrder(rawText) {
-        let text = String(rawText).trim().replace(/\s+/g, ' ');
-        if (!text) return null;
-        let name = text;
-        let qty = 1;
-
-        const multiMatch = text.match(/^(.+?)\s*[*xX]\s*(\d+)$/);
-        if (multiMatch) {
-            name = multiMatch[1].trim();
-            qty = Math.max(1, parseInt(multiMatch[2]) || 1);
-            let unitP = findPrice(name);
-            return { name, unitPrice: unitP > 0 ? unitP : 0, qty };
-        }
-
-        const parts = text.split(' ');
-        if (parts.length >= 2) {
-            const lastPart = parts[parts.length - 1];
-            const qtyNum = parseInt(lastPart, 10);
-            if (!isNaN(qtyNum) && qtyNum > 0 && qtyNum <= 100) {
-                const possibleName = parts.slice(0, parts.length - 1).join(' ').trim();
-                const price = findPrice(possibleName);
-                if (price > 0) return { name: possibleName, unitPrice: price, qty: qtyNum };
-            }
-        }
-
-        let exactPrice = findPrice(text);
-        if (exactPrice > 0) return { name: text, unitPrice: exactPrice, qty: 1 };
-
-        let workingParts = [...parts];
-        let calculatedQty = 1;
-        const lastWord = workingParts[workingParts.length - 1];
-        const maybeQty = parseInt(lastWord, 10);
-        if (!isNaN(maybeQty) && maybeQty > 0 && maybeQty <= 100 && workingParts.length > 1) {
-            calculatedQty = maybeQty;
-            workingParts.pop();
-        }
-
-        while (workingParts.length > 0) {
-            let partialName = workingParts.join(' ');
-            let p = findPrice(partialName);
-            if (p > 0) return { name: text, unitPrice: p, qty: calculatedQty };
-            workingParts.pop();
-        }
-
-        return { name: text, unitPrice: 0, qty: qty };
-    }
-
-    async function handleAdd(e) {
-        if (e) e.preventDefault();
-        if (isProcessingAdd) return false;
-
-        const rawVal = quickInput.value.trim();
-        if (!rawVal) return false;
-
-        const segments = rawVal.split(/[,[,，\n+]/).map(s => s.trim()).filter(s => s.length > 0);
-        if (!segments.length) return false;
-
-        let parsedItems = [];
-        for (let seg of segments) {
-            const parsed = parseSingleOrder(seg);
-            if (!parsed || !parsed.name) continue;
-            let { name, unitPrice, qty } = parsed;
-            if ((!unitPrice || unitPrice <= 0)) unitPrice = findPrice(name);
-            parsedItems.push({ name, unitPrice, qty });
-        }
-
-        if (!parsedItems.length) return false;
-
-        isProcessingAdd = true;
-        btnSubmitOrder.disabled = true;
-
-        let recordDate = getBangkokDateStr(new Date());
-        let recordTime = getBangkokTimeStr(new Date());
-
-        if (isBackdateActive && backdateDateInput.value) {
-            recordDate = backdateDateInput.value;
-            recordTime = (backdateTimeInput.value || '12:00') + ':00';
-        }
-
-        const newItemsToPost = [];
-        const baseTs = Date.now();
-        parsedItems.forEach((it, idx) => {
-            const newId = 'ORD-' + baseTs + '-' + idx;
-            const newItem = {
-                id: newId,
-                timestamp: baseTs + idx,
-                date: recordDate,
-                time: recordTime,
-                name: it.name,
-                category: detectCategory(it.name),
-                unitPrice: Number(it.unitPrice),
-                qty: Number(it.qty),
-                totalPrice: Number(it.unitPrice * it.qty),
-                paymentMethod: 'cash',
-                status: 'pending'
-            };
-            localPendingSales.set(newId, newItem);
-            sales.unshift(newItem);
-            newItemsToPost.push(newItem);
-        });
-
-        quickInput.value = '';
-        saveLocalBackup();
-        renderUI();
-
-        fetch(SCRIPT_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify({ action: 'add_sale', items: newItemsToPost })
-        }).catch(err => console.error("Background sync error:", err));
-
-        isProcessingAdd = false;
-        btnSubmitOrder.disabled = false;
-        quickInput.focus();
-        return false;
-    }
-
-    async function addExpense() {
-        const name = document.getElementById('newExpenseName').value.trim();
-        const cost = parseFloat(document.getElementById('newExpenseCost').value);
-        if (!name || isNaN(cost) || cost <= 0) return alert('กรอกรายการและจำนวนเงินให้ถูกต้อง');
-
-        const baseTs = Date.now();
-        const newId = 'EXP-' + baseTs;
-        const newExp = {
-            id: newId,
-            timestamp: baseTs,
-            date: getBangkokDateStr(new Date()),
-            time: getBangkokTimeStr(new Date()),
-            name: name,
-            cost: cost
-        };
-
-        document.getElementById('newExpenseName').value = '';
-        document.getElementById('newExpenseCost').value = '';
-        expenses.unshift(newExp);
-        saveLocalBackup();
-        renderUI();
-
-        fetch(SCRIPT_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify({ action: 'add_expense', id: newId, name: name, cost: cost })
-        }).catch(e => {});
-    }
-
-    async function deleteItem(id) {
-        if (!confirm('ยืนยันการลบออเดอร์นี้?')) return;
-        localPendingSales.delete(id);
-        sales = sales.filter(s => String(s.id) !== String(id));
-        saveLocalBackup();
-        renderUI();
-        fetch(SCRIPT_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify({ action: 'delete_sale', id: id })
-        }).catch(e => {});
-    }
-
-    async function deleteExpense(id) {
-        if (!confirm('ยืนยันการลบรายการต้นทุนนี้?')) return;
-        expenses = expenses.filter(e => String(e.id) !== String(id));
-        saveLocalBackup();
-        renderUI();
-        fetch(SCRIPT_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify({ action: 'delete_expense', id: id })
-        }).catch(e => {});
-    }
-
-    function openEditModal(id) {
-        const item = sales.find(s => String(s.id) === String(id));
-        if (!item) return;
-        editItemId.value = item.id;
-        editItemName.value = item.name;
-        editItemCategory.value = item.category || 'เครื่องดื่ม';
-        editItemUnitPrice.value = item.unitPrice;
-        editItemQty.value = item.qty;
-        editModal.style.display = 'flex';
-    }
-    function closeEditModal() { editModal.style.display = 'none'; }
-
-    async function saveEditedItem() {
-        const id = editItemId.value;
-        const name = editItemName.value.trim();
-        const category = editItemCategory.value;
-        const unitPrice = parseFloat(editItemUnitPrice.value);
-        const qty = parseInt(editItemQty.value);
-
-        if (!name || isNaN(unitPrice) || isNaN(qty)) return alert('กรอกข้อมูลให้ถูกต้อง');
-
-        const item = sales.find(s => String(s.id) === String(id));
-        if (item) {
-            item.name = name;
-            item.category = category;
-            item.unitPrice = unitPrice;
-            item.qty = qty;
-            item.totalPrice = unitPrice * qty;
-            if (localPendingSales.has(id)) localPendingSales.set(id, item);
-            saveLocalBackup();
-            renderUI();
-            fetch(SCRIPT_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain' },
-                body: JSON.stringify({ action: 'edit_sale', id, name, category, unitPrice, qty, totalPrice: unitPrice * qty })
-            }).catch(e => {});
-        }
-        closeEditModal();
-    }
-
-    function getFilteredData() {
-        const todayStr = getBangkokDateStr(new Date());
-        const weekRange = getWeekRangeBKK();
-
-        let filterFn = () => true;
-        if (currentFilter === 'today') {
-            filterFn = it => normalizeDateStr(it.date) === todayStr;
-        } else if (currentFilter === 'week') {
-            filterFn = it => {
-                const d = normalizeDateStr(it.date);
-                return d >= weekRange.start && d <= weekRange.end;
-            };
-        } else if (currentFilter === 'custom') {
-            if (customFilterType === 'date' && selectDateInput.value) {
-                const targetD = normalizeDateStr(selectDateInput.value);
-                filterFn = it => normalizeDateStr(it.date) === targetD;
-            } else if (customFilterType === 'month' && selectMonthInput.value) {
-                const targetM = selectMonthInput.value.substring(0, 7);
-                filterFn = it => normalizeDateStr(it.date).substring(0, 7) === targetM;
-            }
-        }
-        return { sales: sales.filter(filterFn), expenses: expenses.filter(filterFn) };
-    }
-
-    function renderUI() {
-        const { sales: displaySales, expenses: displayExpenses } = getFilteredData();
-        let totalS = 0, totalC = 0, totalCashSum = 0, totalQrSum = 0, totalPieces = 0;
-        
-        displayExpenses.forEach(e => totalC += Number(e.cost) || 0);
-
-        const catStats = { 
-            'เครื่องดื่ม': { sum: 0, count: 0, cash: 0, qr: 0 }, 
-            'ของทอด/ทานเล่น': { sum: 0, count: 0, cash: 0, qr: 0 }, 
-            'ขนมปังปิ้ง': { sum: 0, count: 0, cash: 0, qr: 0 }, 
-            'อาหาร/กะเพรา': { sum: 0, count: 0, cash: 0, qr: 0 } 
-        };
-        const menuGrouped = { 'เครื่องดื่ม': {}, 'ของทอด/ทานเล่น': {}, 'ขนมปังปิ้ง': {}, 'อาหาร/กะเพรา': {} };
-
-        itemList.innerHTML = '';
-        if (!displaySales.length) {
-            itemList.innerHTML = '<div class="empty-text">ยังไม่มีรายการขายในช่วงนี้</div>';
-        } else {
-            displaySales.forEach(item => {
-                const unitP = Number(item.unitPrice) || 0;
-                const qty = Number(item.qty) || 1;
-                const price = Number(item.totalPrice) > 0 ? Number(item.totalPrice) : (unitP * qty);
-                const isQR = item.paymentMethod === 'promptpay';
-
-                totalS += price;
-                totalPieces += qty;
-                if (isQR) totalQrSum += price; else totalCashSum += price;
-
-                let cat = item.category;
-                if (!catStats[cat]) {
-                    const rawC = String(cat || '');
-                    if (rawC.includes('ทอด') || rawC.includes('เล่น')) cat = 'ของทอด/ทานเล่น';
-                    else if (rawC.includes('ปัง')) cat = 'ขนมปังปิ้ง';
-                    else if (rawC.includes('อาหาร') || rawC.includes('ข้าว') || rawC.includes('กะเพรา')) cat = 'อาหาร/กะเพรา';
-                    else cat = detectCategory(item.name);
-                }
-
-                catStats[cat].sum += price;
-                catStats[cat].count += qty;
-                if (isQR) catStats[cat].qr += price; else catStats[cat].cash += price;
-
-                if (!menuGrouped[cat][item.name]) menuGrouped[cat][item.name] = { qty: 0, sum: 0 };
-                menuGrouped[cat][item.name].qty += qty;
-                menuGrouped[cat][item.name].sum += price;
-            });
-
-            const sorted = displaySales.slice().sort((a, b) => {
-                return (b.timestamp || 0) - (a.timestamp || 0);
-            });
-
-            const batches = [];
-            let currBatch = null;
-
-            sorted.forEach(item => {
-                const itemTimeKey = formatThaiDateTime(item.date, item.time);
-                if (!currBatch || currBatch.timeKey !== itemTimeKey) {
-                    if (currBatch) batches.push(currBatch);
-                    currBatch = { timeKey: itemTimeKey, items: [item] };
-                } else currBatch.items.push(item);
-            });
-            if (currBatch) batches.push(currBatch);
-
-            batches.forEach(b => {
-                let bTotal = 0, bQty = 0;
-                b.items.forEach(it => { 
-                    const uP = Number(it.unitPrice) || 0;
-                    const q = Number(it.qty) || 1;
-                    const p = Number(it.totalPrice) > 0 ? Number(it.totalPrice) : (uP * q);
-                    bTotal += p; 
-                    bQty += q; 
-                });
-
-                const card = document.createElement('div');
-                card.className = 'order-batch-card';
-                card.innerHTML = `
-                    <div class="batch-header">
-                        <div class="batch-time-tag">🕒 ${b.timeKey} (${bQty} ชิ้น)</div>
-                        <div class="batch-total-price">รวม ฿${bTotal.toLocaleString()}</div>
-                    </div>
-                    <div>${b.items.map(item => {
-                        const itPrice = Number(item.totalPrice) > 0 ? Number(item.totalPrice) : (Number(item.unitPrice||0) * Number(item.qty||1));
-                        return `
-                        <div class="batch-item-row ${item.status === 'done' ? 'item-done' : ''}">
-                            <div class="batch-item-left">
-                                <div class="item-check-box" onclick="fastToggle(event, '${item.id}')">${item.status === 'done' ? '✓' : ''}</div>
-                                <div>
-                                    <div class="item-title-text">${item.name} <b style="color:#0284c7;">x${item.qty}</b></div>
-                                    <div class="item-sub-detail">(@${item.unitPrice} บ.)</div>
-                                </div>
-                            </div>
-                            <div style="display:flex; align-items:center;">
-                                <span class="item-price-text" style="font-weight:600; font-size:0.92rem; margin-right:6px;">฿${itPrice.toLocaleString()}</span>
-                                <button type="button" class="pay-badge ${item.paymentMethod === 'promptpay' ? 'qr' : 'cash'}" onclick="togglePayMethod('${item.id}')">${item.paymentMethod === 'promptpay' ? '📱 สแกน' : '💵 สด'}</button>
-                                <button type="button" class="btn-edit" onclick="openEditModal('${item.id}')">✏️</button>
-                                <button type="button" class="btn-del" onclick="deleteItem('${item.id}')">✕</button>
-                            </div>
-                        </div>
-                    `;}).join('')}</div>
-                `;
-                itemList.appendChild(card);
-            });
-        }
-
-        expenseList.innerHTML = displayExpenses.map(item => `
-            <div class="summary-row">
-                <div>
-                    <div style="color:#ef4444; font-weight:500;">💸 ${item.name}</div>
-                    <div style="font-size:0.75rem; color:#64748b;">${formatThaiDateTime(item.date, item.time)}</div>
-                </div>
-                <div style="display:flex; align-items:center; gap:8px;">
-                    <span style="color:#ef4444; font-weight:600;">-฿${(item.cost||0).toLocaleString()}</span>
-                    <button type="button" class="btn-del" onclick="deleteExpense('${item.id}')">ลบ</button>
-                </div>
-            </div>
-        `).join('') || '<div class="empty-text">ไม่มีรายการต้นทุน</div>';
-
-        totalSales.innerText = `฿${totalS.toLocaleString()}`;
-        totalSalesSub.innerText = `ยอดขายรวม • ${totalPieces} ชิ้น (${displaySales.length} รายการ)`;
-        totalCash.innerText = `฿${totalCashSum.toLocaleString()}`;
-        totalQr.innerText = `฿${totalQrSum.toLocaleString()}`;
-        totalCost.innerText = `฿${totalC.toLocaleString()}`;
-        totalProfit.innerText = `฿${(totalS - totalC).toLocaleString()}`;
-
-        document.getElementById('catDrinkSum').innerText = `฿${catStats['เครื่องดื่ม'].sum.toLocaleString()}`;
-        document.getElementById('catDrinkCount').innerText = `${catStats['เครื่องดื่ม'].count} แก้ว`;
-        document.getElementById('catDrinkPay').innerHTML = `<span>💵 ฿${catStats['เครื่องดื่ม'].cash.toLocaleString()}</span><span>📱 ฿${catStats['เครื่องดื่ม'].qr.toLocaleString()}</span>`;
-
-        document.getElementById('catSnackSum').innerText = `฿${catStats['ของทอด/ทานเล่น'].sum.toLocaleString()}`;
-        document.getElementById('catSnackCount').innerText = `${catStats['ของทอด/ทานเล่น'].count} รายการ`;
-        document.getElementById('catSnackPay').innerHTML = `<span>💵 ฿${catStats['ของทอด/ทานเล่น'].cash.toLocaleString()}</span><span>📱 ฿${catStats['ของทอด/ทานเล่น'].qr.toLocaleString()}</span>`;
-
-        document.getElementById('catBreadSum').innerText = `฿${catStats['ขนมปังปิ้ง'].sum.toLocaleString()}`;
-        document.getElementById('catBreadCount').innerText = `${catStats['ขนมปังปิ้ง'].count} ชิ้น`;
-        document.getElementById('catBreadPay').innerHTML = `<span>💵 ฿${catStats['ขนมปังปิ้ง'].cash.toLocaleString()}</span><span>📱 ฿${catStats['ขนมปังปิ้ง'].qr.toLocaleString()}</span>`;
-
-        document.getElementById('catFoodSum').innerText = `฿${catStats['อาหาร/กะเพรา'].sum.toLocaleString()}`;
-        document.getElementById('catFoodCount').innerText = `${catStats['อาหาร/กะเพรา'].count} จาน/ชุด`;
-        document.getElementById('catFoodPay').innerHTML = `<span>💵 ฿${catStats['อาหาร/กะเพรา'].cash.toLocaleString()}</span><span>📱 ฿${catStats['อาหาร/กะเพรา'].qr.toLocaleString()}</span>`;
-
-        menuSummaryList.innerHTML = Object.entries(menuGrouped).map(([cat, items]) => {
-            const keys = Object.keys(items);
-            if (!keys.length) return '';
-            return `
-                <div class="summary-group-title">${cat} (รวม ฿${catStats[cat].sum.toLocaleString()})</div>
-                ${keys.map(name => `<div class="summary-row"><span>${name} (x${items[name].qty})</span><span><b>฿${items[name].sum.toLocaleString()}</b></span></div>`).join('')}
-            `;
-        }).join('') || '<div class="empty-text">ไม่มีข้อมูลสรุป</div>';
-    }
-
-    function renderPriceSettingList() {
-        const kw = (priceSearchInput.value || '').trim().toLowerCase().replace(/\s+/g, '');
-        const keys = Object.keys(priceBook).filter(k => k.toLowerCase().replace(/\s+/g, '').includes(kw)).sort();
-        
-        priceSettingList.innerHTML = keys.map(name => {
-            const price = priceBook[name];
-            const safeName = name.replace(/'/g, "\\'");
-            const rowId = 'row-' + btoa(encodeURIComponent(name));
-            return `
-            <div class="price-item-card" id="${rowId}">
-                <div class="price-item-header">
-                    <span style="font-weight:500;">📝 ${name}</span>
-                    <div style="display:flex; align-items:center; gap:6px;">
-                        <b style="color:#0284c7;">฿${price}</b>
-                        <button type="button" class="btn-inline-cancel" style="background:#0284c7; color:#fff;" onclick="enableInlineEdit('${safeName}', ${price}, '${rowId}')">แก้ไข</button>
-                        <button type="button" class="btn-del" onclick="deletePrice('${safeName}')">✕</button>
-                    </div>
-                </div>
-                <div class="inline-edit-container" id="edit-box-${rowId}">
-                    <div class="inline-edit-inputs">
-                        <input type="text" id="edit-name-${rowId}" value="${name}" class="inline-edit-input" style="flex:2;">
-                        <input type="number" id="edit-price-${rowId}" value="${price}" class="inline-edit-input" style="flex:1;">
-                    </div>
-                    <div class="inline-edit-btns">
-                        <button type="button" class="btn-inline-save" onclick="saveInlineEdit('${safeName}', '${rowId}')">บันทึก</button>
-                        <button type="button" class="btn-inline-cancel" onclick="cancelInlineEdit('${rowId}')">ยกเลิก</button>
-                    </div>
-                </div>
-            </div>
-        `;}).join('') || '<div class="empty-text">ไม่พบเมนู</div>';
-    }
-
-    function enableInlineEdit(name, currentPrice, rowId) {
-        document.querySelectorAll('.inline-edit-container').forEach(el => el.style.display = 'none');
-        const editBox = document.getElementById(`edit-box-${rowId}`);
-        if (editBox) editBox.style.display = 'block';
-    }
-
-    function cancelInlineEdit(rowId) {
-        const editBox = document.getElementById(`edit-box-${rowId}`);
-        if (editBox) editBox.style.display = 'none';
-    }
-
-    async function saveInlineEdit(oldName, rowId) {
-        const newNameInput = document.getElementById(`edit-name-${rowId}`).value.trim();
-        const newPriceInput = parseFloat(document.getElementById(`edit-price-${rowId}`).value);
-
-        if (!newNameInput || isNaN(newPriceInput) || newPriceInput <= 0) {
-            alert('กรุณากรอกชื่อและราคาให้ถูกต้อง');
-            return;
-        }
-
-        if (oldName !== newNameInput) {
-            delete priceBook[oldName];
-            if (recipeBook[oldName]) {
-                recipeBook[newNameInput] = recipeBook[oldName];
-                delete recipeBook[oldName];
-            }
-        }
-
-        priceBook[newNameInput] = newPriceInput;
-        renderPriceSettingList();
-
-        fetch(SCRIPT_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify({ action: 'update_price', name: newNameInput, price: newPriceInput, recipe: recipeBook[newNameInput] || '' })
-        }).catch(e => {});
-
-        if (oldName !== newNameInput) {
-            fetch(SCRIPT_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain' },
-                body: JSON.stringify({ action: 'delete_price', name: oldName })
-            }).catch(e => {});
-        }
-    }
-
-    async function addOrUpdatePrice(e) {
-        if (e) e.preventDefault();
-        const name = document.getElementById('newMenuName').value.trim();
-        const price = parseFloat(document.getElementById('newMenuPrice').value);
-        const recipe = document.getElementById('newMenuRecipe').value.trim();
-
-        if (!name || isNaN(price) || price <= 0) return alert('กรอกชื่อและราคาให้ถูกต้อง');
-
-        priceBook[name] = price;
-        if (recipe) recipeBook[name] = recipe;
-        renderPriceSettingList();
-
-        document.getElementById('newMenuName').value = '';
-        document.getElementById('newMenuPrice').value = '';
-        document.getElementById('newMenuRecipe').value = '';
-
-        fetch(SCRIPT_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify({ action: 'update_price', name, price, recipe })
-        }).catch(e => {});
-    }
-
-    async function deletePrice(name) {
-        if (!confirm(`ยืนยันการลบเมนู "${name}"?`)) return;
-        delete priceBook[name];
-        delete recipeBook[name];
-        renderPriceSettingList();
-        fetch(SCRIPT_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify({ action: 'delete_price', name })
-        }).catch(e => {});
-    }
-
-    function switchTab(tab) {
-        ['history', 'summary', 'expenses', 'prices'].forEach(t => {
-            document.getElementById(`tab${t.charAt(0).toUpperCase() + t.slice(1)}`).classList.toggle('active', t === tab);
-            document.getElementById(`${t}View`).style.display = t === tab ? 'block' : 'none';
-        });
-    }
-
-    function exportSalesToCSV() {
-        if (!sales.length) return alert('ไม่มีข้อมูลยอดขาย');
-        let csv = '\uFEFFวันที่,เวลา,ชื่อเมนู,หมวดหมู่,วิธีชำระ,ราคา/หน่วย,จำนวน,ราคารวม\n';
-        sales.forEach(s => {
-            const uP = Number(s.unitPrice) || 0;
-            const q = Number(s.qty) || 1;
-            const tP = Number(s.totalPrice) > 0 ? Number(s.totalPrice) : (uP * q);
-            csv += `"${normalizeDateStr(s.date)}","${s.time}","${s.name}","${s.category}","${s.paymentMethod==='promptpay'?'สแกน':'เงินสด'}",${uP},${q},${tP}\n`;
-        });
-        downloadBlob(csv, `FLUKCHAFE_Sales_${getBangkokDateStr(new Date())}.csv`);
-    }
-
-    function exportExpensesToCSV() {
-        if (!expenses.length) return alert('ไม่มีข้อมูลต้นทุน');
-        let csv = '\uFEFFวันที่,เวลา,รายการ,จำนวนเงิน\n';
-        expenses.forEach(e => csv += `"${normalizeDateStr(e.date)}","${e.time}","${e.name}",${e.cost}\n`);
-        downloadBlob(csv, `FLUKCHAFE_Expenses_${getBangkokDateStr(new Date())}.csv`);
-    }
-
-    function downloadBlob(content, filename) {
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(new Blob([content], { type: 'text/csv;charset=utf-8;' }));
-        link.download = filename;
-        link.click();
-    }
-</script>
-</body>
-</html>
+  }
+  return -1;
+}
+
+function jsonResponse(data) {
+  return ContentService.createTextOutput(JSON.stringify(data))
+    .setMimeType(ContentService.MimeType.JSON);
+}
