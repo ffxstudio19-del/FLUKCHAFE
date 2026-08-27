@@ -1212,43 +1212,60 @@
     }
 
     function parseSingleOrder(rawText) {
-        let text = String(rawText).trim();
+        let text = String(rawText).trim().replace(/\s+/g, ' ');
         if (!text) return null;
+
+        let name = text;
+        let qty = 1;
 
         const multiMatch = text.match(/^(.+?)\s*[*xX]\s*(\d+)$/);
         if (multiMatch) {
-            const name = multiMatch[1].trim();
-            const qty = Math.max(1, parseInt(multiMatch[2]) || 1);
-            return { name, unitPrice: findPrice(name), qty };
+            name = multiMatch[1].trim();
+            qty = Math.max(1, parseInt(multiMatch[2]) || 1);
+            let unitP = findPrice(name);
+            return { name, unitPrice: unitP > 0 ? unitP : 0, qty };
         }
 
-        const foundP = findPrice(text);
-        if (foundP > 0) return { name: text, unitPrice: foundP, qty: 1 };
-
-        const parts = text.split(/\s+/);
+        const parts = text.split(' ');
         if (parts.length >= 2) {
             const lastPart = parts[parts.length - 1];
-            const qtyNum = parseInt(lastPart);
+            const qtyNum = parseInt(lastPart, 10);
 
             if (!isNaN(qtyNum) && qtyNum > 0 && qtyNum <= 100) {
                 const possibleName = parts.slice(0, parts.length - 1).join(' ').trim();
                 const price = findPrice(possibleName);
-                if (price > 0) return { name: possibleName, unitPrice: price, qty: qtyNum };
+                if (price > 0) {
+                    return { name: possibleName, unitPrice: price, qty: qtyNum };
+                }
             }
         }
 
-        if (parts.length >= 2) {
-            const lastPart = parts[parts.length - 1];
-            const priceNum = parseFloat(lastPart);
-            if (!isNaN(priceNum) && priceNum >= 5) {
-                const name = parts.slice(0, parts.length - 1).join(' ').trim();
-                const exactPrice = findPrice(name);
-                return { name: name, unitPrice: exactPrice > 0 ? exactPrice : priceNum, qty: 1 };
-            }
+        let exactPrice = findPrice(text);
+        if (exactPrice > 0) {
+            return { name: text, unitPrice: exactPrice, qty: 1 };
         }
 
-        const fallbackPrice = findPrice(text);
-        return { name: text, unitPrice: fallbackPrice > 0 ? fallbackPrice : 0, qty: 1 };
+        let workingParts = [...parts];
+        let calculatedQty = 1;
+        
+        const lastWord = workingParts[workingParts.length - 1];
+        const maybeQty = parseInt(lastWord, 10);
+        if (!isNaN(maybeQty) && maybeQty > 0 && maybeQty <= 100 && workingParts.length > 1) {
+            calculatedQty = maybeQty;
+            workingParts.pop();
+        }
+
+        while (workingParts.length > 0) {
+            let partialName = workingParts.join(' ');
+            let p = findPrice(partialName);
+            if (p > 0) {
+                return { name: text, unitPrice: p, qty: calculatedQty };
+            }
+            workingParts.pop();
+        }
+
+        return { name: text, unitPrice: 0, qty: qty };
+    }
     }
 
     async function handleAdd(e) {
@@ -1483,7 +1500,20 @@
                 menuGrouped[cat][item.name].sum += price;
             });
 
-            const sorted = displaySales.slice().sort((a, b) => (new Date(normalizeDateStr(b.date) + ' ' + b.time).getTime() || 0) - (new Date(normalizeDateStr(a.date) + ' ' + a.time).getTime() || 0));
+            const sorted = displaySales.slice().sort((a, b) => {
+                let timeA = (a.time || '00:00').trim();
+                let timeB = (b.time || '00:00').trim();
+                if (timeA.length === 5) timeA += ':00';
+                if (timeB.length === 5) timeB += ':00';
+                
+                let dtA = new Date(`${normalizeDateStr(a.date)}T${timeA}`);
+                let dtB = new Date(`${normalizeDateStr(b.date)}T${timeB}`);
+                
+                let tA = isNaN(dtA.getTime()) ? 0 : dtA.getTime();
+                let tB = isNaN(dtB.getTime()) ? 0 : dtB.getTime();
+                
+                return tB - tA;
+            });
             const batches = [];
             let currBatch = null;
 
