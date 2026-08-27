@@ -941,15 +941,11 @@
         } catch(e) {}
     }
 
+    // ฟังก์ชันจัดการสตริงวันที่ให้ตรงตามมาตรฐาน YYYY-MM-DD แบบไม่เพี้ยน TimeZone
     function normalizeDateStr(raw) {
         if (!raw) return "";
         let str = String(raw).trim();
         if (str.includes('T')) str = str.split('T')[0];
-
-        if (str.includes('GMT') || str.includes('Mon') || str.includes('Tue') || str.includes('Wed') || str.includes('Thu') || str.includes('Fri') || str.includes('Sat') || str.includes('Sun')) {
-            const d = new Date(str);
-            if (!isNaN(d.getTime())) return getBangkokDateStr(d);
-        }
 
         if (str.includes('/')) {
             const parts = str.split('/');
@@ -970,49 +966,57 @@
                 return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
             }
         }
+        return str;
+    }
 
-        const parsed = new Date(str);
-        if (!isNaN(parsed.getTime())) {
-            let y = parsed.getFullYear();
-            if (y > 2400) y -= 543;
-            return `${y}-${String(parsed.getMonth() + 1).padStart(2, '0')}-${String(parsed.getDate()).padStart(2, '0')}`;
+    // ฟังก์ชันจัดสตริงเวลา HH:mm:ss โดยตรง
+    function normalizeTimeStr(raw) {
+        if (!raw) return "00:00:00";
+        let str = String(raw).trim();
+        if (str.includes('T')) str = str.split('T')[1].split('.')[0];
+        let parts = str.split(':');
+        if (parts.length >= 2) {
+            let hh = parts[0].padStart(2, '0');
+            let mm = parts[1].padStart(2, '0');
+            let ss = (parts[2] || '00').padStart(2, '0');
+            return `${hh}:${mm}:${ss}`;
         }
         return str;
     }
 
-    function getBangkokDateStr(d = new Date()) {
-        const options = { timeZone: 'Asia/Bangkok', year: 'numeric', month: '2-digit', day: '2-digit', hour12: false };
-        const formatter = new Intl.DateTimeFormat('en-CA', options);
-        const parts = formatter.formatToParts(d);
-        return `${parts.find(p => p.type === 'year').value}-${parts.find(p => p.type === 'month').value}-${parts.find(p => p.type === 'day').value}`;
+    function getBangkokDateStr() {
+        const d = new Date();
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
     }
 
-    function getBangkokTimeStr(d = new Date()) {
-        const options = { timeZone: 'Asia/Bangkok', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
-        const formatter = new Intl.DateTimeFormat('th-TH', options);
-        const parts = formatter.formatToParts(d);
-        const hh = (parts.find(p => p.type === 'hour')?.value || '00').padStart(2, '0');
-        const mm = (parts.find(p => p.type === 'minute')?.value || '00').padStart(2, '0');
-        const ss = (parts.find(p => p.type === 'second')?.value || '00').padStart(2, '0');
+    function getBangkokTimeStr() {
+        const d = new Date();
+        const hh = String(d.getHours()).padStart(2, '0');
+        const mm = String(d.getMinutes()).padStart(2, '0');
+        const ss = String(d.getSeconds()).padStart(2, '0');
         return `${hh}:${mm}:${ss}`;
     }
 
     function getWeekRangeBKK() {
         const now = new Date();
-        const [y, m, d] = getBangkokDateStr(now).split('-').map(Number);
-        const curDate = new Date(y, m - 1, d);
+        const curDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         const dayOfWeek = curDate.getDay() === 0 ? 7 : curDate.getDay();
         const monday = new Date(curDate);
         monday.setDate(curDate.getDate() - dayOfWeek + 1);
         const sunday = new Date(monday);
         sunday.setDate(monday.getDate() + 6);
-        return { start: getBangkokDateStr(monday), end: getBangkokDateStr(sunday) };
+        
+        const fmt = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        return { start: fmt(monday), end: fmt(sunday) };
     }
 
     function formatThaiDateTime(rawDate, rawTime) {
-        let cleanTime = (rawTime || '00:00:00').substring(0, 5);
+        let cleanTime = normalizeTimeStr(rawTime).substring(0, 5);
         let normD = normalizeDateStr(rawDate);
-        let todayStr = getBangkokDateStr(new Date());
+        let todayStr = getBangkokDateStr();
 
         if (normD === todayStr) return `วันนี้ • ${cleanTime} น.`;
         
@@ -1026,11 +1030,11 @@
         return `${normD} • ${cleanTime} น.`;
     }
 
-    const initialBkkDate = getBangkokDateStr(new Date());
+    const initialBkkDate = getBangkokDateStr();
     selectDateInput.value = initialBkkDate;
     selectMonthInput.value = initialBkkDate.substring(0, 7);
     backdateDateInput.value = initialBkkDate;
-    backdateTimeInput.value = getBangkokTimeStr(new Date()).substring(0, 5);
+    backdateTimeInput.value = getBangkokTimeStr().substring(0, 5);
 
     function findRecipeText(name) {
         if (!name) return "";
@@ -1107,7 +1111,7 @@
             localPendingSales.clear();
             renderUI();
             syncData();
-            alert('ล้างแคชเรียบร้อยแล้ว กำลังซิงค์ข้อมูลใหม่...');
+            alert('ล้างแคชเรียบร้อยแล้ว');
         }
     }
 
@@ -1288,8 +1292,8 @@
         isProcessingAdd = true;
         btnSubmitOrder.disabled = true;
 
-        let recordDate = getBangkokDateStr(new Date());
-        let recordTime = getBangkokTimeStr(new Date());
+        let recordDate = getBangkokDateStr();
+        let recordTime = getBangkokTimeStr();
 
         if (isBackdateActive && backdateDateInput.value) {
             recordDate = backdateDateInput.value;
@@ -1325,7 +1329,7 @@
             method: 'POST',
             headers: { 'Content-Type': 'text/plain' },
             body: JSON.stringify({ action: 'add_sale', items: newItemsToPost })
-        }).catch(err => console.error("Background sync error:", err));
+        }).catch(err => console.error("Sync error:", err));
 
         isProcessingAdd = false;
         btnSubmitOrder.disabled = false;
@@ -1342,8 +1346,8 @@
         const newId = 'EXP-' + baseTs;
         const newExp = {
             id: newId,
-            date: getBangkokDateStr(new Date()),
-            time: getBangkokTimeStr(new Date()),
+            date: getBangkokDateStr(),
+            time: getBangkokTimeStr(),
             name: name,
             cost: cost
         };
@@ -1427,7 +1431,7 @@
     }
 
     function getFilteredData() {
-        const todayStr = getBangkokDateStr(new Date());
+        const todayStr = getBangkokDateStr();
         const weekRange = getWeekRangeBKK();
 
         let filterFn = () => true;
@@ -1496,14 +1500,14 @@
                 menuGrouped[cat][item.name].sum += price;
             });
 
-            // จัดเรียงแน่นอนแบบ 100% ไม่สลับเด้ง
+            // จัดเรียงแบบ String เปรียบเทียบตรงตัว Date -> Time -> ID
             const sorted = displaySales.slice().sort((a, b) => {
                 const dateA = normalizeDateStr(a.date);
                 const dateB = normalizeDateStr(b.date);
                 if (dateA !== dateB) return dateB.localeCompare(dateA);
                 
-                const timeA = String(a.time || '00:00:00').substring(0, 8);
-                const timeB = String(b.time || '00:00:00').substring(0, 8);
+                const timeA = normalizeTimeStr(a.time);
+                const timeB = normalizeTimeStr(b.time);
                 if (timeB !== timeA) return timeB.localeCompare(timeA);
                 
                 return String(b.id).localeCompare(String(a.id));
@@ -1737,16 +1741,16 @@
             const uP = Number(s.unitPrice) || 0;
             const q = Number(s.qty) || 1;
             const tP = Number(s.totalPrice) > 0 ? Number(s.totalPrice) : (uP * q);
-            csv += `"${normalizeDateStr(s.date)}","${s.time}","${s.name}","${s.category}","${s.paymentMethod==='promptpay'?'สแกน':'เงินสด'}",${uP},${q},${tP}\n`;
+            csv += `"${normalizeDateStr(s.date)}","${normalizeTimeStr(s.time)}","${s.name}","${s.category}","${s.paymentMethod==='promptpay'?'สแกน':'เงินสด'}",${uP},${q},${tP}\n`;
         });
-        downloadBlob(csv, `FLUKCHAFE_Sales_${getBangkokDateStr(new Date())}.csv`);
+        downloadBlob(csv, `FLUKCHAFE_Sales_${getBangkokDateStr()}.csv`);
     }
 
     function exportExpensesToCSV() {
         if (!expenses.length) return alert('ไม่มีข้อมูลต้นทุน');
         let csv = 'วันที่,เวลา,รายการ,จำนวนเงิน\n';
-        expenses.forEach(e => csv += `"${normalizeDateStr(e.date)}","${e.time}","${e.name}",${e.cost}\n`);
-        downloadBlob(csv, `FLUKCHAFE_Expenses_${getBangkokDateStr(new Date())}.csv`);
+        expenses.forEach(e => csv += `"${normalizeDateStr(e.date)}","${normalizeTimeStr(e.time)}","${e.name}",${e.cost}\n`);
+        downloadBlob(csv, `FLUKCHAFE_Expenses_${getBangkokDateStr()}.csv`);
     }
 
     function downloadBlob(content, filename) {
