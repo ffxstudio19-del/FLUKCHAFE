@@ -1301,7 +1301,7 @@
         const rawVal = quickInput.value.trim();
         if (!rawVal) return false;
 
-        const segments = rawVal.split(/[,，\n+]/).map(s => s.trim()).filter(s => s.length > 0);
+        const segments = rawVal.split(/[,[,，\n+]/).map(s => s.trim()).filter(s => s.length > 0);
         if (!segments.length) return false;
 
         let parsedItems = [];
@@ -1713,7 +1713,6 @@
     }
 
     async function addOrUpdatePrice(e) {
-        if (e) g.preventDefault(); // Fixed
         if (e) e.preventDefault();
         const name = document.getElementById('newMenuName').value.trim();
         const price = parseFloat(document.getElementById('newMenuPrice').value);
@@ -1730,5 +1729,56 @@
         document.getElementById('newMenuRecipe').value = '';
 
         fetch(SCRIPT_URL, {
-            ...
-        }
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({ action: 'update_price', name, price, recipe })
+        }).catch(e => {});
+    }
+
+    async function deletePrice(name) {
+        if (!confirm(`ยืนยันการลบเมนู "${name}"?`)) return;
+        delete priceBook[name];
+        delete recipeBook[name];
+        renderPriceSettingList();
+        fetch(SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({ action: 'delete_price', name })
+        }).catch(e => {});
+    }
+
+    function switchTab(tab) {
+        ['history', 'summary', 'expenses', 'prices'].forEach(t => {
+            document.getElementById(`tab${t.charAt(0).toUpperCase() + t.slice(1)}`).classList.toggle('active', t === tab);
+            document.getElementById(`${t}View`).style.display = t === tab ? 'block' : 'none';
+        });
+    }
+
+    function exportSalesToCSV() {
+        if (!sales.length) return alert('ไม่มีข้อมูลยอดขาย');
+        let csv = '\uFEFFวันที่,เวลา,ชื่อเมนู,หมวดหมู่,วิธีชำระ,ราคา/หน่วย,จำนวน,ราคารวม\n';
+        sales.forEach(s => {
+            const uP = Number(s.unitPrice) || 0;
+            const q = Number(s.qty) || 1;
+            const tP = Number(s.totalPrice) > 0 ? Number(s.totalPrice) : (uP * q);
+            csv += `"${normalizeDateStr(s.date)}","${s.time}","${s.name}","${s.category}","${s.paymentMethod==='promptpay'?'สแกน':'เงินสด'}",${uP},${q},${tP}\n`;
+        });
+        downloadBlob(csv, `FLUKCHAFE_Sales_${getBangkokDateStr(new Date())}.csv`);
+    }
+
+    function exportExpensesToCSV() {
+        if (!expenses.length) return alert('ไม่มีข้อมูลต้นทุน');
+        let csv = '\uFEFFวันที่,เวลา,รายการ,จำนวนเงิน\n';
+        expenses.forEach(e => csv += `"${normalizeDateStr(e.date)}","${e.time}","${e.name}",${e.cost}\n`);
+        downloadBlob(csv, `FLUKCHAFE_Expenses_${getBangkokDateStr(new Date())}.csv`);
+    }
+
+    function downloadBlob(content, filename) {
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(new Blob([content], { type: 'text/csv;charset=utf-8;' }));
+        link.download = filename;
+        link.click();
+    }
+</script>
+</body>
+</html>
