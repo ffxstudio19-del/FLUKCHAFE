@@ -1088,6 +1088,11 @@
                     const itId = String(item.id);
                     if (seen.has(itId)) return false;
                     seen.add(itId);
+                    // เติม timestamp สำรองให้ข้อมูลเก่าจากเซิร์ฟเวอร์ที่ไม่มี timestamp
+                    if (!item.timestamp) {
+                        const parsedDt = new Date(`${normalizeDateStr(item.date)}T${item.time || '00:00:00'}`);
+                        item.timestamp = isNaN(parsedDt.getTime()) ? Date.now() : parsedDt.getTime();
+                    }
                     return true;
                 });
 
@@ -1312,13 +1317,12 @@
         }
 
         const newItemsToPost = [];
+        const baseTs = Date.now();
         parsedItems.forEach((it, idx) => {
-            // ใช้ timestamp จริงต่อท้าย ID เพื่อป้องกันออเดอร์ชนกันและใช้เรียงลำดับเวลาได้อย่างแม่นยำ
-            const baseTs = Date.now();
             const newId = 'ORD-' + baseTs + '-' + idx;
             const newItem = {
                 id: newId,
-                timestamp: baseTs + idx, // ประทับเวลาดิบเรียงลำดับแน่นอน
+                timestamp: baseTs + idx,
                 date: recordDate,
                 time: recordTime,
                 name: it.name,
@@ -1514,7 +1518,6 @@
                 menuGrouped[cat][item.name].sum += price;
             });
 
-            // 🔒 ระบบเรียงลำดับใหม่: ใช้ Timestamp ร่วมกับ Date/Time ป้องกันเวลาตีลังการั่ว 100%
             const sorted = displaySales.slice().sort((a, b) => {
                 if (a.timestamp && b.timestamp) {
                     return b.timestamp - a.timestamp;
