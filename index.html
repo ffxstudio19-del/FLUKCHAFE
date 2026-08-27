@@ -666,6 +666,7 @@
             <div style="font-size: 0.75rem; color: #64748b; font-weight: 600; margin-bottom: 6px;">📊 จัดการข้อมูล & รายงาน (Excel)</div>
             <button type="button" class="btn-export" onclick="exportSalesToCSV()">📥 ดาวน์โหลดรายงานยอดขาย (CSV/Excel)</button>
             <button type="button" class="btn-export" style="background:#6366f1;" onclick="exportExpensesToCSV()">📥 ดาวน์โหลดรายงานต้นทุน (CSV/Excel)</button>
+            <button type="button" class="btn-export" style="background:#ef4444;" onclick="clearOldDataCache()">🧹 ล้างแคชข้อมูลค้างในเครื่อง</button>
         </div>
     </div>
 
@@ -787,7 +788,7 @@
         "สตอเบอร์รี่โยเกิร์ต ปั่น": "📍 สตอเบอร์รี่ปั่น โยเกิร์ต • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ราดซอสสตอ,โยเกิร์ตรอบแก้ว )\n⁃ น้ำร้อน 40 ml\n⁃ ไซรัปสตอ 50 ml\n⁃ น้ำเชื่อม 50 ml\n⁃ ซอสสตอ 2 ช้อนโต๊ะ\n⁃ สตอเบอร์รี่ 3-4 ชิ้น\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ ราดไซรัปสตอ,โยเกิร์ต รอบแก้ว",
         "สตอเบอร์รี่ปั่น โยเกิร์ต": "📍 สตอเบอร์รี่ปั่น โยเกิร์ต • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ราดซอสสตอ,โยเกิร์ตรอบแก้ว )\n⁃ น้ำร้อน 40 ml\n⁃ ไซรัปสตอ 50 ml\n⁃ น้ำเชื่อม 50 ml\n⁃ ซอสสตอ 2 ช้อนโต๊ะ\n⁃ สตอเบอร์รี่ 3-4 ชิ้น\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ ราดไซรัปสตอ,โยเกิร์ต รอบแก้ว",
         "สตอเบอร์รี่ เย็น": "📍 สตอเบอร์รี่ • เย็น 20 ออนซ์\n( ไม่แยกชั้น ใส่สตอเบอร์รี่ )\n⁃ ไซรัปสตอ 60 ml\n⁃ น้ำเปล่า 140 ml\n⁃ ใส่สตอท็อปปิ้งบน 1 ชิ้น",
-        "สตอเบอร์รี่ ปั่น": "📍 สตอเบอร์รี่ • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ราดซอสสตอรอบแก้ว )\n⁃ น้ำร้อน 40 ml\n⁃ ไซรัปสตอ 50 ml\n⁃ น้ำเชื่อม 50 ml\n⁃ ซอสสตอ 2 ช้อนโต๊ะ\n⁃ สตอเบอร์รี่ 3-4 ชิ้น\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ ราดไซรัปสตอรอบแก้ว",
+        "สตอเบอร์รี่ ปั่น": "📍 สตอเบอร์รี่ • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ราดซอสสตอรอบแก้ว )\n⁃ น้ำร้อน 40 ml\n⁃ ไซรัปสตอ 50 ml\n⁃ น้ำเชื่อม 50 ml\n⁃ ซอสสตอ 2 ช้อนโต๊ะ\n⁃ สตอเบอร์รี่ 3-4 ชิ้น\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ ราดซอสสตอรอบแก้ว",
         "ชาไทยนมสดสตอเบอร์รี่ เย็น": "📍 ชาไทยนมสดสตอเบอร์รี่ • เย็น 20 ออนซ์\n( แยก 3 ชั้น )\n⁃ ไซรัปสตอ 40 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n——————————————\n⁃ นมสด 100 ml\n⁃ นมข้นจืด 40 ml\n⁃ นมข้นหวาน 30 ml\n——————————————\n⁃ ราดเบสชาไทย 60 ml",
         "ชาไทยโกโก้ เย็น": "📍 ชาไทยโกโก้ • เย็น 20 ออนซ์\n( แยกชั้น )\n⁃ เบสชาไทย 90 ml\n⁃ นมข้นจืด 40 ml\n⁃ นมข้นหวาน 40 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n——————————————\n⁃ ผงโกโก้ 1 ช้อนกลาง ( 10g )\n⁃ น้ำร้อน 50 ml\n⁃ ราดบนสุด",
         "ชาเขียวนมสดสตอเบอร์รี่ เย็น": "📍 ชาเขียวนมสดสตอเบอร์รี่ • เย็น 20 ออนซ์\n( แยก 3 ชั้น )\n⁃ ไซรัปสตอ 40 ml\n⁃ ใส่น้ำแข็งเต็มแก้ว\n——————————————\n⁃ นมสด 100 ml\n⁃ นมข้นจืด 40 ml\n⁃ นมข้นหวาน 30 ml\n——————————————\n⁃ ราดเบสชาเขียว 60 ml",
@@ -812,7 +813,7 @@
         "มะพร้าวนมสด ปั่น": "📍 มะพร้าวปั่นนมสด • ปั่น 22 ออนซ์\n( ไม่แยกชั้น )\n⁃ ไซรัปมะพร้าว 50 ml\n⁃ นมข้นหวาน 10 ml\n⁃ น้ำร้อน 20 ml\n⁃ นมสด 100 ml\n⁃ น้ำเชื่อม 10 ml",
         "แอปเปิ้ล ปั่น": "📍 แอปเปิ้ลปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ราดไซรัปรอบแก้ว )\n⁃ ไซรัปแอปเปิ้ล 60 ml\n⁃ น้ำเชื่อม 20 ml\n⁃ น้ำโซดา 150 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ ราดไซรัปแอปเปิ้ลรอบแก้ว",
         "บลูฮาวาย ปั่น": "📍 บลูฮาวายปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น )\n⁃ ไซรัปบลูฮาวาย 100 ml\n⁃ น้ำเชื่อม 30 ml\n⁃ น้ำร้อน 30 ml\n⁃ น้ำแข็ง 400 g. ( 1 แก้ว )",
-        "ลิ้นจี่ ปั่น": "📍 ลิ้นจี่ปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ราਦไซรัปรอบแก้ว )\n⁃ ไซรัปลิ้นจี่ 50 ml\n⁃ น้ำเชื่อม 40 ml\n⁃ น้ำเปล่า 80 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ ราดไซรัปรอบแก้ว",
+        "ลิ้นจี่ ปั่น": "📍 ลิ้นจี่ปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ราਦไซรัปรอบแก้ว )\n⁃ ไซรัปลิ้นจี่ 50 ml\n⁃ น้ำเชื่อม 40 ml\n⁃ น้ำเปล่า 80 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ ราਦไซรัปรอบแก้ว",
         "กีวี่ ปั่น": "📍 กีวี่ปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ราดไซรัปรอบแก้ว )\n⁃ ไซรัปกีวี่ 45 ml\n⁃ น้ำเชื่อม 40 ml\n⁃ น้ำเปล่า 120 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ ราดไซรัปแอปเปิ้ลรอบแก้ว",
         "ส้ม ปั่น": "📍 ส้มปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ราดไซรัปรอบแก้ว )\n⁃ ไซรัปส้ม 70 ml\n⁃ น้ำเชื่อม 30 ml\n⁃ น้ำเปล่า 50 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ ราดไซรัปแอปเปิ้ลรอบแก้ว",
         "องุ่น ปั่น": "📍 องุ่นปั่น • ปั่น 22 ออนซ์\n( ไม่แยกชั้น ราดไซรัปรอบแก้ว )\n⁃ ไซรัปองุ่น 70 ml\n⁃ น้ำเชื่อม 30 ml\n⁃ น้ำโซดา 100 ml\n⁃ น้ำแข็ง 440 g. ( 1 แก้วครึ่ง )\n⁃ ราดไซรัปแอปเปิ้ลรอบแก้ว",
@@ -1114,6 +1115,17 @@
     setInterval(syncData, 4000);
     syncData();
     renderUI();
+
+    function clearOldDataCache() {
+        if (confirm('คุณต้องการล้างแคชข้อมูลค้างในเครื่องเพื่อรีเซ็ตหน้าจอใช่หรือไม่?')) {
+            localStorage.removeItem('flukchafe_sales_cache');
+            sales = [];
+            localPendingSales.clear();
+            renderUI();
+            syncData();
+            alert('ล้างแคชเรียบร้อยแล้ว กำลังซิงค์ข้อมูลใหม่...');
+        }
+    }
 
     function showRecipe(menuName, category) {
         if (category !== 'เครื่องดื่ม') return;
@@ -1518,23 +1530,9 @@
                 menuGrouped[cat][item.name].sum += price;
             });
 
-            // 🔒 เรียงลำดับจากใหม่ไปเก่าตาม Timestamp เสมอ ห้ามเปลี่ยน
+            // 🔒 บังคับเรียงตาม Timestamp เท่านั้น ห้ามเปลี่ยนตำแหน่งเด็ดขาด
             const sorted = displaySales.slice().sort((a, b) => {
-                if (a.timestamp && b.timestamp) {
-                    return b.timestamp - a.timestamp;
-                }
-                let timeA = (a.time || '00:00:00').trim();
-                let timeB = (b.time || '00:00:00').trim();
-                if (timeA.length === 5) timeA += ':00';
-                if (timeB.length === 5) timeB += ':00';
-                
-                let dtA = new Date(`${normalizeDateStr(a.date)}T${timeA}`);
-                let dtB = new Date(`${normalizeDateStr(b.date)}T${timeB}`);
-                
-                let tA = isNaN(dtA.getTime()) ? 0 : dtA.getTime();
-                let tB = isNaN(dtB.getTime()) ? 0 : dtB.getTime();
-                
-                return tB - tA;
+                return (b.timestamp || 0) - (a.timestamp || 0);
             });
 
             const batches = [];
@@ -1715,6 +1713,7 @@
     }
 
     async function addOrUpdatePrice(e) {
+        if (e) g.preventDefault(); // Fixed
         if (e) e.preventDefault();
         const name = document.getElementById('newMenuName').value.trim();
         const price = parseFloat(document.getElementById('newMenuPrice').value);
@@ -1731,56 +1730,5 @@
         document.getElementById('newMenuRecipe').value = '';
 
         fetch(SCRIPT_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify({ action: 'update_price', name, price, recipe })
-        }).catch(e => {});
-    }
-
-    async function deletePrice(name) {
-        if (!confirm(`ยืนยันการลบเมนู "${name}"?`)) return;
-        delete priceBook[name];
-        delete recipeBook[name];
-        renderPriceSettingList();
-        fetch(SCRIPT_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify({ action: 'delete_price', name })
-        }).catch(e => {});
-    }
-
-    function switchTab(tab) {
-        ['history', 'summary', 'expenses', 'prices'].forEach(t => {
-            document.getElementById(`tab${t.charAt(0).toUpperCase() + t.slice(1)}`).classList.toggle('active', t === tab);
-            document.getElementById(`${t}View`).style.display = t === tab ? 'block' : 'none';
-        });
-    }
-
-    function exportSalesToCSV() {
-        if (!sales.length) return alert('ไม่มีข้อมูลยอดขาย');
-        let csv = '\uFEFFวันที่,เวลา,ชื่อเมนู,หมวดหมู่,วิธีชำระ,ราคา/หน่วย,จำนวน,ราคารวม\n';
-        sales.forEach(s => {
-            const uP = Number(s.unitPrice) || 0;
-            const q = Number(s.qty) || 1;
-            const tP = Number(s.totalPrice) > 0 ? Number(s.totalPrice) : (uP * q);
-            csv += `"${normalizeDateStr(s.date)}","${s.time}","${s.name}","${s.category}","${s.paymentMethod==='promptpay'?'สแกน':'เงินสด'}",${uP},${q},${tP}\n`;
-        });
-        downloadBlob(csv, `FLUKCHAFE_Sales_${getBangkokDateStr(new Date())}.csv`);
-    }
-
-    function exportExpensesToCSV() {
-        if (!expenses.length) return alert('ไม่มีข้อมูลต้นทุน');
-        let csv = '\uFEFFวันที่,เวลา,รายการ,จำนวนเงิน\n';
-        expenses.forEach(e => csv += `"${normalizeDateStr(e.date)}","${e.time}","${e.name}",${e.cost}\n`);
-        downloadBlob(csv, `FLUKCHAFE_Expenses_${getBangkokDateStr(new Date())}.csv`);
-    }
-
-    function downloadBlob(content, filename) {
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(new Blob([content], { type: 'text/csv;charset=utf-8;' }));
-        link.download = filename;
-        link.click();
-    }
-</script>
-</body>
-</html>
+            ...
+        }
