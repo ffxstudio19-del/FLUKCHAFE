@@ -81,8 +81,12 @@
         body.dark-mode .summary-row { background: #1e293b; border-bottom-color: #334155; color: #f1f5f9; }
         body.dark-mode .price-mgr-form input, body.dark-mode .price-mgr-form textarea { background: #0f172a; color: #f1f5f9; border-color: #334155; }
         body.dark-mode .price-search-box input { background: #0f172a; color: #f1f5f9; border-color: #334155; }
-        body.dark-mode .inline-edit-container { background: #1e293b !important; border-color: #334155 !important; }
-        body.dark-mode .inline-edit-input { background: #0f172a; color: #f1f5f9; border-color: #38bdf8; }
+        
+        /* 🌙 ปรับแต่งกล่องตั้งราคาใน Dark Mode สบายตา ไม่แสบตา */
+        body.dark-mode .price-item-card { background: #1e293b !important; border-color: #334155 !important; color: #f1f5f9; }
+        body.dark-mode .inline-edit-container { background: #0f172a !important; border-top-color: #334155 !important; }
+        body.dark-mode .inline-edit-input { background: #1e293b; color: #f1f5f9; border-color: #38bdf8; }
+
         body.dark-mode .bottom-sync-bar { border-top-color: #334155; }
         body.dark-mode .sync-status-indicator { background: #1e293b; color: #94a3b8; }
         body.dark-mode .modal-box { background: #1e293b; color: #f1f5f9; }
@@ -464,15 +468,15 @@
         .price-search-box { margin-bottom: 8px; }
         .price-search-box input { width: 100%; padding: 7px 10px; border: 1.5px solid #94a3b8; border-radius: 8px; font-size: 0.8rem; outline: none; background: #f8fafc; }
 
-        /* 📝 สไตล์กล่องแก้ไขราคาแบบวางด้านล่าง (Inline Edit Bottom Form) */
-        .price-item-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px 10px; margin-bottom: 8px; font-size: 0.85rem; }
+        /* 📝 สไตล์กล่องแก้ไขราคา (ปรับแต่งให้สบายตา กลมกลืนทุกโหมด) */
+        .price-item-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; font-size: 0.85rem; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
         .price-item-header { display: flex; justify-content: space-between; align-items: center; }
-        .inline-edit-container { display: none; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #cbd5e1; background: #f8fafc; border-radius: 6px; padding: 8px; }
-        .inline-edit-inputs { display: flex; gap: 6px; margin-bottom: 6px; }
-        .inline-edit-input { padding: 6px 8px; border: 1.5px solid #0284c7; border-radius: 6px; font-size: 0.85rem; outline: none; background: #fff; color: #0f172a; }
+        .inline-edit-container { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #cbd5e1; background: transparent; border-radius: 6px; }
+        .inline-edit-inputs { display: flex; gap: 6px; margin-bottom: 8px; }
+        .inline-edit-input { padding: 8px 10px; border: 1.5px solid #0284c7; border-radius: 8px; font-size: 0.9rem; outline: none; background: #ffffff; color: #0f172a; width: 100%; }
         .inline-edit-btns { display: flex; gap: 6px; }
-        .btn-inline-save { flex: 1; background: #10b981; color: #fff; border: none; padding: 6px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
-        .btn-inline-cancel { flex: 1; background: #e2e8f0; color: #475569; border: none; padding: 6px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
+        .btn-inline-save { flex: 1; background: #10b981; color: #fff; border: none; padding: 8px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+        .btn-inline-cancel { flex: 1; background: #e2e8f0; color: #475569; border: none; padding: 8px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
 
         .export-section { margin-top: 16px; padding-top: 12px; border-top: 1.5px dashed #cbd5e1; }
         .btn-export { width: 100%; background: #10b981; color: #fff; border: none; padding: 8px; border-radius: 8px; font-size: 0.8rem; font-weight: 500; margin-bottom: 6px; cursor: pointer; }
@@ -1507,7 +1511,6 @@
                 menuGrouped[cat][item.name].sum += price;
             });
 
-            // เรียงลำดับจากล่าสุดไปเก่าสุดอย่างแม่นยำ (รองรับทั้ง Time ที่มีหรือไม่มีวินาที)
             const sorted = displaySales.slice().sort((a, b) => {
                 let timeA = (a.time || '00:00:00').trim();
                 let timeB = (b.time || '00:00:00').trim();
