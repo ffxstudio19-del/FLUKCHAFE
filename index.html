@@ -81,6 +81,7 @@
         body.dark-mode .summary-row { background: #1e293b; border-bottom-color: #334155; color: #f1f5f9; }
         body.dark-mode .price-mgr-form input, body.dark-mode .price-mgr-form textarea { background: #0f172a; color: #f1f5f9; border-color: #334155; }
         body.dark-mode .price-search-box input { background: #0f172a; color: #f1f5f9; border-color: #334155; }
+        body.dark-mode .inline-edit-container { background: #1e293b !important; border-color: #334155 !important; }
         body.dark-mode .inline-edit-input { background: #0f172a; color: #f1f5f9; border-color: #38bdf8; }
         body.dark-mode .bottom-sync-bar { border-top-color: #334155; }
         body.dark-mode .sync-status-indicator { background: #1e293b; color: #94a3b8; }
@@ -463,9 +464,15 @@
         .price-search-box { margin-bottom: 8px; }
         .price-search-box input { width: 100%; padding: 7px 10px; border: 1.5px solid #94a3b8; border-radius: 8px; font-size: 0.8rem; outline: none; background: #f8fafc; }
 
-        .inline-edit-input { padding: 4px 8px; border: 1px solid #0284c7; border-radius: 6px; font-size: 0.85rem; outline: none; background: #fff; }
-        .btn-inline-save { background: #10b981; color: #fff; border: none; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
-        .btn-inline-cancel { background: #e2e8f0; color: #475569; border: none; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
+        /* 📝 สไตล์กล่องแก้ไขราคาแบบวางด้านล่าง (Inline Edit Bottom Form) */
+        .price-item-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px 10px; margin-bottom: 8px; font-size: 0.85rem; }
+        .price-item-header { display: flex; justify-content: space-between; align-items: center; }
+        .inline-edit-container { display: none; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #cbd5e1; background: #f8fafc; border-radius: 6px; padding: 8px; }
+        .inline-edit-inputs { display: flex; gap: 6px; margin-bottom: 6px; }
+        .inline-edit-input { padding: 6px 8px; border: 1.5px solid #0284c7; border-radius: 6px; font-size: 0.85rem; outline: none; background: #fff; color: #0f172a; }
+        .inline-edit-btns { display: flex; gap: 6px; }
+        .btn-inline-save { flex: 1; background: #10b981; color: #fff; border: none; padding: 6px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
+        .btn-inline-cancel { flex: 1; background: #e2e8f0; color: #475569; border: none; padding: 6px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
 
         .export-section { margin-top: 16px; padding-top: 12px; border-top: 1.5px dashed #cbd5e1; }
         .btn-export { width: 100%; background: #10b981; color: #fff; border: none; padding: 8px; border-radius: 8px; font-size: 0.8rem; font-weight: 500; margin-bottom: 6px; cursor: pointer; }
@@ -993,7 +1000,8 @@
         const parts = formatter.formatToParts(d);
         const hh = (parts.find(p => p.type === 'hour')?.value || '00').padStart(2, '0');
         const mm = (parts.find(p => p.type === 'minute')?.value || '00').padStart(2, '0');
-        return `${hh}:${mm}`;
+        const ss = (parts.find(p => p.type === 'second')?.value || '00').padStart(2, '0');
+        return `${hh}:${mm}:${ss}`;
     }
 
     function getWeekRangeBKK() {
@@ -1010,7 +1018,7 @@
     }
 
     function formatThaiDateTime(rawDate, rawTime) {
-        let cleanTime = rawTime || '00:00';
+        let cleanTime = (rawTime || '00:00:00').substring(0, 5);
         let normD = normalizeDateStr(rawDate);
         let todayStr = getBangkokDateStr(new Date());
 
@@ -1030,7 +1038,7 @@
     selectDateInput.value = initialBkkDate;
     selectMonthInput.value = initialBkkDate.substring(0, 7);
     backdateDateInput.value = initialBkkDate;
-    backdateTimeInput.value = getBangkokTimeStr(new Date());
+    backdateTimeInput.value = getBangkokTimeStr(new Date()).substring(0, 5);
 
     function findRecipeText(name) {
         if (!name) return "";
@@ -1298,7 +1306,7 @@
 
         if (isBackdateActive && backdateDateInput.value) {
             recordDate = backdateDateInput.value;
-            recordTime = backdateTimeInput.value || '12:00';
+            recordTime = (backdateTimeInput.value || '12:00') + ':00';
         }
 
         const newItemsToPost = [];
@@ -1499,9 +1507,10 @@
                 menuGrouped[cat][item.name].sum += price;
             });
 
+            // เรียงลำดับจากล่าสุดไปเก่าสุดอย่างแม่นยำ (รองรับทั้ง Time ที่มีหรือไม่มีวินาที)
             const sorted = displaySales.slice().sort((a, b) => {
-                let timeA = (a.time || '00:00').trim();
-                let timeB = (b.time || '00:00').trim();
+                let timeA = (a.time || '00:00:00').trim();
+                let timeB = (b.time || '00:00:00').trim();
                 if (timeA.length === 5) timeA += ':00';
                 if (timeB.length === 5) timeB += ':00';
                 
@@ -1513,6 +1522,7 @@
                 
                 return tB - tA;
             });
+
             const batches = [];
             let currBatch = null;
 
@@ -1619,36 +1629,40 @@
         priceSettingList.innerHTML = keys.map(name => {
             const price = priceBook[name];
             const safeName = name.replace(/'/g, "\\'");
+            const rowId = 'row-' + btoa(encodeURIComponent(name));
             return `
-            <div class="summary-row price-list-row" id="row-${btoa(encodeURIComponent(name))}">
-                <div style="flex:1; display:flex; align-items:center; gap:6px;">
+            <div class="price-item-card" id="${rowId}">
+                <div class="price-item-header">
                     <span style="font-weight:500;">📝 ${name}</span>
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <b style="color:#0284c7;">฿${price}</b>
+                        <button type="button" class="btn-inline-cancel" style="background:#0284c7; color:#fff;" onclick="enableInlineEdit('${safeName}', ${price}, '${rowId}')">แก้ไข</button>
+                        <button type="button" class="btn-del" onclick="deletePrice('${safeName}')">✕</button>
+                    </div>
                 </div>
-                <div style="display:flex; align-items:center; gap:6px;">
-                    <b style="color:#0284c7;">฿${price}</b>
-                    <button type="button" class="btn-inline-cancel" style="background:#0284c7; color:#fff;" onclick="enableInlineEdit('${safeName}', ${price})">แก้ไข</button>
-                    <button type="button" class="btn-del" onclick="deletePrice('${safeName}')">✕</button>
+                <div class="inline-edit-container" id="edit-box-${rowId}">
+                    <div class="inline-edit-inputs">
+                        <input type="text" id="edit-name-${rowId}" value="${name}" class="inline-edit-input" style="flex:2;">
+                        <input type="number" id="edit-price-${rowId}" value="${price}" class="inline-edit-input" style="flex:1;">
+                    </div>
+                    <div class="inline-edit-btns">
+                        <button type="button" class="btn-inline-save" onclick="saveInlineEdit('${safeName}', '${rowId}')">บันทึก</button>
+                        <button type="button" class="btn-inline-cancel" onclick="cancelInlineEdit('${rowId}')">ยกเลิก</button>
+                    </div>
                 </div>
             </div>
         `;}).join('') || '<div class="empty-text">ไม่พบเมนู</div>';
     }
 
-    function enableInlineEdit(name, currentPrice) {
-        const rowId = 'row-' + btoa(encodeURIComponent(name));
-        const rowEl = document.getElementById(rowId);
-        if (!rowEl) return;
+    function enableInlineEdit(name, currentPrice, rowId) {
+        document.querySelectorAll('.inline-edit-container').forEach(el => el.style.display = 'none');
+        const editBox = document.getElementById(`edit-box-${rowId}`);
+        if (editBox) editBox.style.display = 'block';
+    }
 
-        const safeName = name.replace(/'/g, "\\'");
-        rowEl.innerHTML = `
-            <div style="flex:1; display:flex; gap:6px; align-items:center;">
-                <input type="text" id="edit-name-${rowId}" value="${name}" class="inline-edit-input" style="flex:2;">
-                <input type="number" id="edit-price-${rowId}" value="${currentPrice}" class="inline-edit-input" style="flex:1;">
-            </div>
-            <div style="display:flex; gap:4px; align-items:center;">
-                <button type="button" class="btn-inline-save" onclick="saveInlineEdit('${safeName}', '${rowId}')">บันทึก</button>
-                <button type="button" class="btn-inline-cancel" onclick="renderPriceSettingList()">ยกเลิก</button>
-            </div>
-        `;
+    function cancelInlineEdit(rowId) {
+        const editBox = document.getElementById(`edit-box-${rowId}`);
+        if (editBox) editBox.style.display = 'none';
     }
 
     async function saveInlineEdit(oldName, rowId) {
