@@ -1563,7 +1563,8 @@
         }
     }
 
-    setInterval(() => syncData(false), 20000);
+    // ปรับความเร็วซิงค์อัตโนมัติเหลือทุกๆ 6 วินาที (ซิงค์ไว ไม่หน่วง)
+    setInterval(() => syncData(false), 6000);
     syncData(true);
     renderUI();
 
