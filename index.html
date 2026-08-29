@@ -521,6 +521,7 @@
             cursor: pointer;
             white-space: nowrap;
         }
+        .btn-studio-submit:disabled { opacity: 0.6; cursor: not-allowed; }
 
         .backdate-toggle-bar {
             display: flex;
@@ -1073,7 +1074,7 @@
     </div>
 </div>
 
-<!-- Recipe Modal (รองรับการแก้ไขสูตรชงโดยตรงจากหน้าประวัติได้เลย) -->
+<!-- Recipe Modal -->
 <div class="glass-modal-backdrop" id="recipeModal" onclick="closeRecipeModal(event)">
     <div class="modal-body-card" onclick="event.stopPropagation()">
         <div style="font-size:1.1rem; font-weight:700; color:var(--brand-accent); margin-bottom:10px;" id="recipeModalTitle">📖 สูตรชงเครื่องดื่ม</div>
@@ -1267,7 +1268,7 @@
     let customFilterType = 'month';
     let isProfitShown = false;
     let isBackdateActive = false;
-    let isProcessingAdd = false;
+    let isSubmittingOrder = false; // ป้องกันการกดเบิ้ล
     let isSyncing = false;
 
     if (localStorage.getItem('flukchafe_light_mode') === 'true') {
@@ -1576,7 +1577,6 @@
         }
     }
 
-    // ฟังก์ชันจัดการสูตรชงจากหน้าประวัติ
     function showRecipe(menuName, category) {
         if (category !== 'เครื่องดื่ม') return;
         recipeModalMenuName.value = menuName;
@@ -1761,11 +1761,17 @@
 
     async function handleAdd(e) {
         if (e) e.preventDefault();
-        if (isProcessingAdd) return false;
+        if (isSubmittingOrder) return false;
+        
         const rawVal = quickInput.value.trim();
         if (!rawVal) return false;
+        
         const segments = rawVal.split(/[,，\n+]/).map(s => s.trim()).filter(s => s.length > 0);
         if (!segments.length) return false;
+
+        isSubmittingOrder = true;
+        const submitBtn = document.getElementById('btnSubmitOrder');
+        if (submitBtn) submitBtn.disabled = true;
 
         let parsedItems = [];
         for (let seg of segments) {
@@ -1775,7 +1781,12 @@
             if (!unitPrice || unitPrice <= 0) unitPrice = findPrice(name);
             parsedItems.push({ name, unitPrice, qty });
         }
-        if (!parsedItems.length) return false;
+        
+        if (!parsedItems.length) {
+            isSubmittingOrder = false;
+            if (submitBtn) submitBtn.disabled = false;
+            return false;
+        }
 
         let recordDate = getBangkokDateStr();
         let recordTime = getBangkokTimeStr();
@@ -1806,18 +1817,30 @@
         });
 
         quickInput.value = '';
+        quickInput.blur(); // ซ่อนคีย์บอร์ดมือถืออัตโนมัติทันที
+        suggestBox.style.display = 'none';
+        
         saveLocalBackup();
         renderUI();
         playSound('order');
-        quickInput.focus();
 
-        fetch(SCRIPT_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify({ action: 'add_sale', items: newItemsToPost })
-        }).then(res => res.json())
-          .then(data => { document.getElementById('syncStatus').innerText = 'ซิงค์สำเร็จ'; })
-          .catch(err => { document.getElementById('syncStatus').innerText = 'บันทึกในเครื่องแล้ว'; });
+        try {
+            const res = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({ action: 'add_sale', items: newItemsToPost })
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                document.getElementById('syncStatus').innerText = 'ซิงค์สำเร็จ';
+            }
+        } catch (err) {
+            document.getElementById('syncStatus').innerText = 'บันทึกในเครื่องแล้ว (ออฟไลน์)';
+        } finally {
+            isSubmittingOrder = false;
+            if (submitBtn) submitBtn.disabled = false;
+            quickInput.focus();
+        }
 
         return false;
     }
