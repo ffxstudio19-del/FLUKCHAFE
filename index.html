@@ -75,7 +75,7 @@
         body.dark-mode .price-mgr-form input, body.dark-mode .price-mgr-form textarea { background: #0f172a; color: #f1f5f9; border-color: #334155; }
         body.dark-mode .price-search-box input { background: #0f172a; color: #f1f5f9; border-color: #334155; }
         body.dark-mode .price-item-card { background: #1e293b !important; border-color: #334155 !important; color: #f1f5f9; }
-        body.dark-mode .inline-edit-input { background: #1e293b; color: #f1f5f9; border-color: #38bdf8; }
+        body.dark-mode .inline-edit-input { background: #0f172a; color: #f1f5f9; border-color: #38bdf8; }
         body.dark-mode .bottom-sync-bar { border-top-color: #334155; }
         body.dark-mode .sync-status-indicator { background: #1e293b; color: #94a3b8; }
 
@@ -130,7 +130,10 @@
         .quick-input-box { margin-bottom: 14px; position: relative; }
         .input-btn-group { display: flex; gap: 6px; }
         .input-btn-group input { flex: 1; padding: 12px 14px; font-size: 1.02rem; border: 2px solid #0284c7; border-radius: 12px; outline: none; background: #ffffff; color: #0f172a; }
-        .btn-order-submit { background: #0284c7; color: #fff; border: none; padding: 0 16px; font-size: 0.95rem; font-weight: 600; border-radius: 12px; cursor: pointer; white-space: nowrap; }
+        
+        /* สไตล์ปุ่มรับออเดอร์ พร้อม transition ให้ดูลื่นตา */
+        .btn-order-submit { background: #0284c7; color: #fff; border: none; padding: 0 16px; font-size: 0.95rem; font-weight: 600; border-radius: 12px; cursor: pointer; white-space: nowrap; transition: opacity 0.2s, background-color 0.2s; }
+        .btn-order-submit:disabled { opacity: 0.6; cursor: not-allowed; }
 
         .backdate-control { display: flex; align-items: center; justify-content: space-between; margin-top: 6px; padding: 0 2px; }
         .btn-toggle-backdate { background: transparent; border: 1px solid #cbd5e1; color: #64748b; padding: 3px 8px; border-radius: 8px; font-size: 0.72rem; cursor: pointer; }
@@ -159,7 +162,7 @@
         .item-done .item-check-box { background: #10b981 !important; border-color: #10b981 !important; color: #ffffff !important; }
         .item-done .item-title-text { text-decoration: line-through; color: #94a3b8 !important; }
 
-        .item-title-text { font-size: 0.9rem; font-weight: 500; }
+        .item-title-text { font-size: 0.9rem; font-weight: 500; cursor: pointer; }
         .pay-badge { display: inline-flex; align-items: center; padding: 3px 6px; border-radius: 6px; font-size: 0.65rem; font-weight: 500; cursor: pointer; margin-right: 4px; }
         .pay-badge.qr { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
         .pay-badge.cash { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
@@ -180,7 +183,7 @@
         .price-item-header { display: flex; justify-content: space-between; align-items: center; }
         .inline-edit-container { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #cbd5e1; }
         .inline-edit-inputs { display: flex; gap: 6px; margin-bottom: 8px; }
-        .inline-edit-input { padding: 8px 10px; border: 1.5px solid #0284c7; border-radius: 8px; font-size: 0.9rem; outline: none; width: 100%; }
+        .inline-edit-input { padding: 8px 10px; border: 1.5px solid #0284c7; border-radius: 8px; font-size: 0.9rem; outline: none; width: 100%; background: #ffffff; }
         .inline-edit-btns { display: flex; gap: 6px; }
         .btn-inline-save { flex: 1; background: #10b981; color: #fff; border: none; padding: 8px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
         .btn-inline-cancel { flex: 1; background: #e2e8f0; color: #475569; border: none; padding: 8px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
@@ -358,7 +361,7 @@
         </div>
 
         <div class="price-search-box">
-            <input type="text" id="priceSearchInput" placeholder="🔍 ค้นหาเมนูเพื่อแก้ไขราคาตรงนี้..." oninput="renderPriceSettingList()">
+            <input type="text" id="priceSearchInput" placeholder="🔍 ค้นหาเมนูเพื่อแก้ไขราคา/สูตรตรงนี้..." oninput="renderPriceSettingList()">
         </div>
         <div id="priceSettingList"></div>
 
@@ -632,7 +635,6 @@
         return 0;
     }
 
-    // ระบบ Smart Sync: ดึงข้อมูลและป้องกันเรนเดอร์ทับตอนกำลังแก้ไขราคา
     async function syncData(manual = false) {
         if (isSyncing) return;
         isSyncing = true;
@@ -664,7 +666,6 @@
                 saveLocalBackup();
                 
                 renderUI();
-                // ถ้าไม่ได้กำลังเปิดแก้ไขราคาอยู่ ถึงจะอนุญาตให้อัปเดตรายการราคา
                 if (!editingRowId && activeTab === 'prices') {
                     renderPriceSettingList();
                 }
@@ -677,7 +678,6 @@
         }
     }
 
-    // ซิงค์อัตโนมัติทุก 20 วินาที เพื่อไม่ให้เซิร์ฟเวอร์ติด Lock
     setInterval(() => syncData(false), 20000);
     syncData(true);
     renderUI();
@@ -841,6 +841,7 @@
         return { name: text, unitPrice: 0, qty: qty };
     }
 
+    // [ข้อ 3] ปรับปรุง handleAdd ให้แสดงสถานะชัดเจนบนปุ่ม และปลดล็อกเมื่อเสร็จ
     async function handleAdd(e) {
         if (e) e.preventDefault();
         if (isProcessingAdd) return false;
@@ -863,6 +864,8 @@
 
         isProcessingAdd = true;
         btnSubmitOrder.disabled = true;
+        const originalBtnText = btnSubmitOrder.innerText;
+        btnSubmitOrder.innerText = '⏳ กำลังบันทึก...';
 
         let recordDate = getBangkokDateStr();
         let recordTime = getBangkokTimeStr();
@@ -897,15 +900,21 @@
         saveLocalBackup();
         renderUI();
 
-        fetch(SCRIPT_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify({ action: 'add_sale', items: newItemsToPost })
-        }).catch(err => console.error("Sync error:", err));
+        try {
+            await fetch(SCRIPT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({ action: 'add_sale', items: newItemsToPost })
+            });
+        } catch (err) {
+            console.error("Sync error:", err);
+        } finally {
+            isProcessingAdd = false;
+            btnSubmitOrder.disabled = false;
+            btnSubmitOrder.innerText = originalBtnText;
+            quickInput.focus();
+        }
 
-        isProcessingAdd = false;
-        btnSubmitOrder.disabled = false;
-        quickInput.focus();
         return false;
     }
 
@@ -1121,7 +1130,7 @@
                             <div class="batch-item-left">
                                 <div class="item-check-box" onclick="fastToggle(event, '${item.id}')">${item.status === 'done' ? '✓' : ''}</div>
                                 <div>
-                                    <div class="item-title-text ${item.category === 'เครื่องดื่ม' ? 'has-recipe' : ''}" onclick="showRecipe('${item.name}', '${item.category}')">${item.name} <b style="color:#0284c7;">x${item.qty}</b></div>
+                                    <div class="item-title-text" onclick="showRecipe('${item.name}', '${item.category}')">${item.name} <b style="color:#0284c7;">x${item.qty}</b></div>
                                     <div class="item-sub-detail">(@${item.unitPrice} บ.)</div>
                                 </div>
                             </div>
@@ -1184,7 +1193,6 @@
         }).join('') || '<div class="empty-text">ไม่มีข้อมูลสรุป</div>';
     }
 
-    // ฟังก์ชันจัดการรายการราคาแบบแยกส่วน (กดติดง่ายขึ้น 100%)
     function renderPriceSettingList() {
         const kw = (priceSearchInput.value || '').trim().toLowerCase().replace(/\s+/g, '');
         const keys = Object.keys(priceBook).filter(k => k.toLowerCase().replace(/\s+/g, '').includes(kw)).sort();
@@ -1206,8 +1214,11 @@
                 </div>
                 <div class="inline-edit-container" id="edit-box-${rowId}" style="display: ${isEditing ? 'block' : 'none'};">
                     <div class="inline-edit-inputs">
-                        <input type="text" id="edit-name-${rowId}" value="${name}" class="inline-edit-input" style="flex:2;">
-                        <input type="number" id="edit-price-${rowId}" value="${price}" class="inline-edit-input" style="flex:1;">
+                        <input type="text" id="edit-name-${rowId}" value="${name}" class="inline-edit-input" style="flex:2;" placeholder="ชื่อเมนู">
+                        <input type="number" id="edit-price-${rowId}" value="${price}" class="inline-edit-input" style="flex:1;" placeholder="ราคา">
+                    </div>
+                    <div style="margin-bottom: 8px;">
+                        <textarea id="edit-recipe-${rowId}" class="inline-edit-input" style="width:100%; font-size:0.85rem; padding:8px; border-radius:8px;" rows="3" placeholder="สูตรชง..."></textarea>
                     </div>
                     <div class="inline-edit-btns">
                         <button type="button" class="btn-inline-save" onclick="saveInlineEdit('${safeName}', '${rowId}')">บันทึก</button>
@@ -1222,7 +1233,13 @@
         editingRowId = rowId;
         document.querySelectorAll('.inline-edit-container').forEach(el => el.style.display = 'none');
         const editBox = document.getElementById(`edit-box-${rowId}`);
-        if (editBox) editBox.style.display = 'block';
+        if (editBox) {
+            editBox.style.display = 'block';
+            const recipeInput = document.getElementById(`edit-recipe-${rowId}`);
+            if (recipeInput) {
+                recipeInput.value = findRecipeText(name);
+            }
+        }
     }
 
     function cancelInlineEdit(rowId) {
@@ -1234,25 +1251,30 @@
     async function saveInlineEdit(oldName, rowId) {
         const newNameInput = document.getElementById(`edit-name-${rowId}`).value.trim();
         const newPriceInput = parseFloat(document.getElementById(`edit-price-${rowId}`).value);
+        const newRecipeInput = document.getElementById(`edit-recipe-${rowId}`).value.trim();
 
         if (!newNameInput || isNaN(newPriceInput) || newPriceInput <= 0) return alert('กรุณากรอกชื่อและราคาให้ถูกต้อง');
 
         if (oldName !== newNameInput) {
             delete priceBook[oldName];
-            if (recipeBook[oldName]) {
-                recipeBook[newNameInput] = recipeBook[oldName];
-                delete recipeBook[oldName];
-            }
+            delete recipeBook[oldName];
         }
 
         priceBook[newNameInput] = newPriceInput;
+        recipeBook[newNameInput] = newRecipeInput;
+
         editingRowId = null;
         renderPriceSettingList();
 
         fetch(SCRIPT_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify({ action: 'update_price', name: newNameInput, price: newPriceInput, recipe: recipeBook[newNameInput] || '' })
+            body: JSON.stringify({ 
+                action: 'update_price', 
+                name: newNameInput, 
+                price: newPriceInput, 
+                recipe: newRecipeInput 
+            })
         }).catch(e => {});
 
         if (oldName !== newNameInput) {
