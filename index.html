@@ -15,35 +15,39 @@
     <link rel="apple-touch-icon" href="logo.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --bg-gradient: radial-gradient(circle at top, #1e293b 0%, #0f172a 100%);
-            --card-bg: rgba(255, 255, 255, 0.94);
-            --card-border: rgba(255, 255, 255, 0.8);
+            --bg-gradient: radial-gradient(circle at 50% 0%, #1e293b 0%, #090d16 100%);
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --card-border: rgba(255, 255, 255, 0.85);
             --text-main: #0f172a;
             --text-sub: #64748b;
             --primary: #0284c7;
             --primary-hover: #0369a1;
-            --primary-glow: rgba(2, 132, 199, 0.35);
+            --primary-light: #e0f2fe;
+            --primary-glow: rgba(2, 132, 199, 0.3);
             --accent: #38bdf8;
             --success: #10b981;
             --danger: #ef4444;
             --surface-subtle: #f8fafc;
             --border-subtle: #e2e8f0;
-            --shadow-card: 0 20px 40px -15px rgba(0, 0, 0, 0.3), 0 0 1px 1px rgba(255, 255, 255, 0.1);
+            --shadow-card: 0 24px 48px -12px rgba(0, 0, 0, 0.35), 0 0 1px 1px rgba(255, 255, 255, 0.15);
+            --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.04);
         }
 
         body.dark-mode {
-            --bg-gradient: radial-gradient(circle at top, #0f172a 0%, #050811 100%);
-            --card-bg: rgba(15, 23, 42, 0.85);
-            --card-border: rgba(255, 255, 255, 0.08);
+            --bg-gradient: radial-gradient(circle at 50% 0%, #0f172a 0%, #030712 100%);
+            --card-bg: rgba(15, 23, 42, 0.88);
+            --card-border: rgba(255, 255, 255, 0.09);
             --text-main: #f8fafc;
             --text-sub: #94a3b8;
+            --primary-light: rgba(56, 189, 248, 0.12);
             --surface-subtle: #1e293b;
             --border-subtle: #334155;
-            --shadow-card: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 1px 1px rgba(255, 255, 255, 0.05);
+            --shadow-card: 0 30px 60px -15px rgba(0, 0, 0, 0.65), 0 0 1px 1px rgba(255, 255, 255, 0.06);
+            --shadow-soft: 0 4px 14px rgba(0, 0, 0, 0.3);
         }
 
         * { box-sizing: border-box; font-family: 'Prompt', sans-serif; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -51,27 +55,28 @@
         body { 
             background: var(--bg-gradient) fixed;
             min-height: 100vh;
-            padding: 16px 12px 24px; 
+            padding: 16px 12px 28px; 
             color: var(--text-main); 
             transition: color 0.3s ease;
         }
 
         .container { 
-            max-width: 500px; 
+            max-width: 520px; 
             margin: 0 auto; 
             background: var(--card-bg); 
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 28px; 
-            padding: 20px; 
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-radius: 32px; 
+            padding: 22px; 
             box-shadow: var(--shadow-card); 
             border: 1px solid var(--card-border);
             position: relative;
         }
 
+        /* --- Header Brand --- */
         .brand-header { 
             text-align: center; 
-            margin-bottom: 16px; 
+            margin-bottom: 18px; 
             position: relative; 
             display: flex;
             flex-direction: column;
@@ -83,252 +88,274 @@
             right: 0; 
             background: var(--surface-subtle); 
             border: 1px solid var(--border-subtle);
-            width: 38px; 
-            height: 38px; 
+            width: 40px; 
+            height: 40px; 
             border-radius: 50%; 
             cursor: pointer; 
-            font-size: 1.1rem; 
+            font-size: 1.15rem; 
             display: flex; 
             align-items: center; 
             justify-content: center;
-            transition: all 0.2s ease;
+            box-shadow: var(--shadow-soft);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .btn-dark-toggle:active { transform: scale(0.9); }
 
         .brand-logo { 
-            width: 80px; 
-            height: 80px; 
+            width: 84px; 
+            height: 84px; 
             border-radius: 50%; 
             object-fit: cover; 
-            box-shadow: 0 8px 20px rgba(2, 132, 199, 0.25); 
-            border: 3px solid #38bdf8;
-            margin-bottom: 6px;
+            box-shadow: 0 10px 25px rgba(2, 132, 199, 0.3); 
+            border: 3.5px solid #38bdf8;
+            margin-bottom: 8px;
+            transition: transform 0.3s;
         }
+        .brand-logo:hover { transform: scale(1.03); }
+
         .brand-name-en { 
             font-family: 'Plus Jakarta Sans', sans-serif;
-            font-size: 1.65rem; 
+            font-size: 1.75rem; 
             font-weight: 800; 
-            letter-spacing: 1px;
+            letter-spacing: 1.2px;
             background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            line-height: 1.2; 
+            line-height: 1.15; 
         }
         .brand-name-th { 
-            font-size: 0.9rem; 
+            font-size: 0.92rem; 
             font-weight: 500; 
             color: var(--text-sub); 
             letter-spacing: 0.5px;
+            margin-top: 2px;
         }
 
+        /* --- Time Filter Bar --- */
         .time-filter { 
             display: grid; 
             grid-template-columns: repeat(4, 1fr); 
-            gap: 4px; 
+            gap: 5px; 
             background: var(--surface-subtle); 
-            padding: 4px; 
-            border-radius: 14px; 
-            margin-bottom: 12px;
+            padding: 5px; 
+            border-radius: 16px; 
+            margin-bottom: 14px;
             border: 1px solid var(--border-subtle);
         }
         .filter-btn { 
-            padding: 8px 2px; 
+            padding: 9px 2px; 
             border: none; 
             background: transparent; 
-            border-radius: 10px; 
-            font-size: 0.76rem; 
+            border-radius: 12px; 
+            font-size: 0.78rem; 
             font-weight: 500; 
             cursor: pointer; 
             color: var(--text-sub); 
             white-space: nowrap;
-            transition: all 0.2s;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .filter-btn.active { 
             background: #ffffff; 
             color: var(--primary); 
             font-weight: 600; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.06); 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
         }
         body.dark-mode .filter-btn.active {
             background: #334155;
             color: #38bdf8;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
 
         .custom-filter-box { 
             display: none; 
-            margin-bottom: 12px; 
+            margin-bottom: 14px; 
             background: var(--surface-subtle); 
             border: 1px solid var(--border-subtle); 
-            border-radius: 14px; 
-            padding: 10px 12px; 
+            border-radius: 16px; 
+            padding: 12px 14px; 
         }
-        .custom-filter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .filter-input-group label { display: block; font-size: 0.72rem; color: var(--text-sub); margin-bottom: 4px; font-weight: 600; }
+        .custom-filter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .filter-input-group label { display: block; font-size: 0.72rem; color: var(--text-sub); margin-bottom: 5px; font-weight: 600; }
         .filter-input-group input { 
             width: 100%; 
-            padding: 8px; 
-            border-radius: 8px; 
+            padding: 9px 10px; 
+            border-radius: 10px; 
             border: 1.5px solid var(--border-subtle); 
-            font-size: 0.8rem; 
+            font-size: 0.82rem; 
             outline: none; 
             background: var(--card-bg); 
             color: var(--text-main); 
+            transition: border-color 0.2s;
         }
+        .filter-input-group input:focus { border-color: var(--primary); }
 
+        /* --- Total Banner --- */
         .total-banner { 
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); 
+            background: linear-gradient(135deg, #090d16 0%, #1e293b 100%); 
             color: #ffffff; 
-            border-radius: 20px; 
-            padding: 18px 14px 14px; 
+            border-radius: 24px; 
+            padding: 20px 16px 16px; 
             text-align: center; 
-            margin-bottom: 14px; 
-            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.4); 
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            margin-bottom: 16px; 
+            box-shadow: 0 14px 30px -8px rgba(9, 13, 22, 0.5); 
+            border: 1px solid rgba(255, 255, 255, 0.1);
             position: relative;
             overflow: hidden;
         }
-        .total-banner::after {
+        .total-banner::before {
             content: '';
             position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(56, 189, 248, 0.1) 0%, transparent 60%);
+            top: -40%;
+            left: -40%;
+            width: 180%;
+            height: 180%;
+            background: radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, transparent 65%);
             pointer-events: none;
         }
         .total-banner .amount { 
             font-family: 'Plus Jakarta Sans', sans-serif;
-            font-size: 2.6rem; 
+            font-size: 2.75rem; 
             font-weight: 800; 
             color: #38bdf8; 
             line-height: 1.1; 
             letter-spacing: -0.5px;
+            text-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);
         }
-        .total-banner .sub { font-size: 0.82rem; color: #94a3b8; margin-top: 4px; font-weight: 400; }
+        .total-banner .sub { font-size: 0.84rem; color: #94a3b8; margin-top: 5px; font-weight: 400; }
 
         .btn-toggle-profit { 
             background: rgba(255, 255, 255, 0.08); 
             color: #e2e8f0; 
-            border: 1px solid rgba(255, 255, 255, 0.15); 
+            border: 1px solid rgba(255, 255, 255, 0.18); 
             border-radius: 20px; 
-            padding: 5px 16px; 
-            font-size: 0.75rem; 
+            padding: 6px 18px; 
+            font-size: 0.78rem; 
             font-weight: 500;
-            margin-top: 10px; 
+            margin-top: 12px; 
             cursor: pointer; 
             transition: all 0.2s;
         }
+        .btn-toggle-profit:hover { background: rgba(255, 255, 255, 0.14); }
         .btn-toggle-profit:active { transform: scale(0.95); }
 
         .secret-profit-panel { 
             display: none; 
             grid-template-columns: 1fr 1fr; 
-            gap: 8px; 
-            margin-top: 12px; 
-            padding-top: 12px; 
-            border-top: 1px dashed rgba(255, 255, 255, 0.15); 
+            gap: 10px; 
+            margin-top: 14px; 
+            padding-top: 14px; 
+            border-top: 1px dashed rgba(255, 255, 255, 0.18); 
         }
         .secret-box { 
-            background: rgba(255, 255, 255, 0.05); 
-            border-radius: 12px; 
-            padding: 10px 8px; 
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.06); 
+            border-radius: 14px; 
+            padding: 12px 10px; 
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(4px);
         }
-        .secret-title { font-size: 0.72rem; color: #94a3b8; }
-        .secret-val { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.15rem; font-weight: 700; margin-top: 2px; }
+        .secret-title { font-size: 0.74rem; color: #94a3b8; }
+        .secret-val { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.2rem; font-weight: 700; margin-top: 3px; }
         .secret-val.cost { color: #f87171; }
         .secret-val.profit { color: #4ade80; }
         .secret-val.cash { color: #34d399; }
         .secret-val.qr { color: #38bdf8; }
 
+        /* --- Category Grid Cards --- */
         .category-summary-grid { 
             display: grid; 
             grid-template-columns: 1fr 1fr; 
-            gap: 8px; 
-            margin-bottom: 12px; 
+            gap: 10px; 
+            margin-bottom: 14px; 
         }
         .cat-box { 
             background: var(--surface-subtle); 
             border: 1px solid var(--border-subtle); 
-            border-radius: 16px; 
-            padding: 10px 12px; 
+            border-radius: 18px; 
+            padding: 12px 14px; 
+            box-shadow: var(--shadow-soft);
+            transition: transform 0.2s;
         }
-        .cat-title { font-size: 0.76rem; color: var(--text-sub); font-weight: 500; }
-        .cat-val { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.15rem; font-weight: 700; color: var(--text-main); margin-top: 2px; }
-        .cat-count { font-size: 0.72rem; color: var(--primary); font-weight: 600; }
+        .cat-box:hover { transform: translateY(-2px); }
+        .cat-title { font-size: 0.78rem; color: var(--text-sub); font-weight: 500; }
+        .cat-val { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.2rem; font-weight: 700; color: var(--text-main); margin-top: 2px; }
+        .cat-count { font-size: 0.74rem; color: var(--primary); font-weight: 600; }
         .cat-pay-detail { 
-            font-size: 0.68rem; 
+            font-size: 0.7rem; 
             color: var(--text-sub); 
-            margin-top: 6px; 
-            padding-top: 4px; 
+            margin-top: 8px; 
+            padding-top: 5px; 
             border-top: 1px dashed var(--border-subtle); 
             display: flex; 
             justify-content: space-between; 
         }
 
+        /* --- Quick Category Selector --- */
         .cat-selector { 
             display: grid; 
             grid-template-columns: repeat(5, 1fr); 
-            gap: 5px; 
-            margin-bottom: 10px; 
+            gap: 6px; 
+            margin-bottom: 12px; 
         }
         .cat-btn { 
             background: var(--surface-subtle); 
             border: 1px solid var(--border-subtle); 
-            padding: 8px 2px; 
-            border-radius: 12px; 
-            font-size: 0.72rem; 
+            padding: 9px 2px; 
+            border-radius: 14px; 
+            font-size: 0.74rem; 
             cursor: pointer; 
             font-weight: 500; 
             color: var(--text-sub); 
-            transition: all 0.2s;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
+        .cat-btn:active { transform: scale(0.95); }
         .cat-btn.active { 
             background: var(--primary); 
             color: #ffffff; 
             border-color: var(--primary);
-            box-shadow: 0 4px 12px var(--primary-glow);
+            box-shadow: 0 4px 14px var(--primary-glow);
         }
 
+        /* --- Best Seller Pills --- */
         .best-seller-section { 
             background: var(--surface-subtle); 
             border: 1px solid var(--border-subtle); 
-            border-radius: 16px; 
-            padding: 10px 12px; 
-            margin-bottom: 12px; 
+            border-radius: 18px; 
+            padding: 12px 14px; 
+            margin-bottom: 14px; 
         }
-        .best-seller-title { font-size: 0.76rem; font-weight: 600; color: var(--text-sub); margin-bottom: 8px; display: flex; align-items: center; gap: 4px; }
-        .quick-pills { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+        .best-seller-title { font-size: 0.78rem; font-weight: 600; color: var(--text-sub); margin-bottom: 8px; display: flex; align-items: center; gap: 5px; }
+        .quick-pills { display: flex; gap: 7px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
         .quick-pills::-webkit-scrollbar { display: none; }
         .quick-pill { 
             background: var(--card-bg); 
             color: var(--primary); 
             border: 1.5px solid var(--border-subtle); 
-            padding: 6px 12px; 
+            padding: 7px 14px; 
             border-radius: 20px; 
-            font-size: 0.78rem; 
+            font-size: 0.8rem; 
             font-weight: 600; 
             white-space: nowrap; 
             cursor: pointer; 
             flex-shrink: 0; 
+            box-shadow: var(--shadow-soft);
             transition: all 0.2s;
         }
-        .quick-pill:active { transform: scale(0.92); border-color: var(--primary); }
+        .quick-pill:hover { border-color: var(--primary); }
+        .quick-pill:active { transform: scale(0.92); }
 
-        .quick-input-box { margin-bottom: 16px; position: relative; }
+        /* --- Quick Input Form --- */
+        .quick-input-box { margin-bottom: 18px; position: relative; }
         .input-btn-group { display: flex; gap: 8px; }
         .input-btn-group input { 
             flex: 1; 
-            padding: 12px 16px; 
+            padding: 13px 16px; 
             font-size: 1rem; 
             border: 2px solid var(--border-subtle); 
-            border-radius: 14px; 
+            border-radius: 16px; 
             outline: none; 
             background: var(--card-bg); 
             color: var(--text-main); 
-            transition: border-color 0.2s, box-shadow 0.2s;
+            transition: all 0.2s ease;
         }
         .input-btn-group input:focus {
             border-color: var(--primary);
@@ -339,26 +366,26 @@
             background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); 
             color: #fff; 
             border: none; 
-            padding: 0 20px; 
-            font-size: 0.95rem; 
+            padding: 0 22px; 
+            font-size: 0.96rem; 
             font-weight: 600; 
-            border-radius: 14px; 
+            border-radius: 16px; 
             cursor: pointer; 
             white-space: nowrap; 
-            box-shadow: 0 4px 14px var(--primary-glow);
+            box-shadow: 0 6px 18px var(--primary-glow);
             transition: all 0.2s; 
         }
         .btn-order-submit:active { transform: scale(0.96); }
         .btn-order-submit:disabled { opacity: 0.6; cursor: not-allowed; }
 
-        .backdate-control { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; padding: 0 2px; }
+        .backdate-control { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; padding: 0 4px; }
         .btn-toggle-backdate { 
             background: transparent; 
             border: 1px solid var(--border-subtle); 
             color: var(--text-sub); 
-            padding: 4px 10px; 
+            padding: 5px 12px; 
             border-radius: 10px; 
-            font-size: 0.72rem; 
+            font-size: 0.74rem; 
             cursor: pointer; 
             transition: all 0.2s;
         }
@@ -368,29 +395,29 @@
             display: none; 
             background: #fffbeb; 
             border: 1.5px dashed #f59e0b; 
-            border-radius: 12px; 
-            padding: 10px; 
-            margin-top: 8px; 
+            border-radius: 14px; 
+            padding: 12px; 
+            margin-top: 10px; 
         }
         .backdate-inputs { display: flex; gap: 8px; }
-        .backdate-inputs input { flex: 1; padding: 8px 10px; border: 1px solid #fcd34d; border-radius: 8px; font-size: 0.8rem; outline: none; }
+        .backdate-inputs input { flex: 1; padding: 8px 10px; border: 1px solid #fcd34d; border-radius: 8px; font-size: 0.82rem; outline: none; }
 
         .suggest-box { 
             position: absolute; 
-            top: 56px; 
+            top: 58px; 
             left: 0; 
             right: 120px; 
             background: var(--card-bg); 
             border: 1.5px solid var(--primary); 
-            border-radius: 14px; 
+            border-radius: 16px; 
             max-height: 220px; 
             overflow-y: auto; 
             z-index: 1000; 
             display: none; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.18);
         }
         .suggest-item { 
-            padding: 10px 14px; 
+            padding: 11px 16px; 
             border-bottom: 1px solid var(--border-subtle); 
             font-size: 0.92rem; 
             display: flex; 
@@ -400,13 +427,14 @@
         }
         .suggest-item:hover { background: var(--surface-subtle); }
 
-        .tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 14px; }
+        /* --- Tabs --- */
+        .tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 16px; }
         .tab-btn { 
-            padding: 10px 2px; 
+            padding: 11px 2px; 
             border: none; 
             background: var(--surface-subtle); 
-            border-radius: 12px; 
-            font-size: 0.74rem; 
+            border-radius: 14px; 
+            font-size: 0.76rem; 
             font-weight: 500; 
             cursor: pointer; 
             color: var(--text-sub); 
@@ -416,21 +444,22 @@
             background: #0f172a; 
             color: #ffffff; 
             font-weight: 600; 
-            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2); 
+            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.25); 
         }
         body.dark-mode .tab-btn.active { background: #38bdf8; color: #0f172a; }
 
-        .list-container { max-height: 440px; overflow-y: auto; padding-right: 2px; }
-        .list-container::-webkit-scrollbar { width: 4px; }
-        .list-container::-webkit-scrollbar-thumb { background: var(--border-subtle); border-radius: 4px; }
+        /* --- Lists & Order Cards --- */
+        .list-container { max-height: 440px; overflow-y: auto; padding-right: 4px; }
+        .list-container::-webkit-scrollbar { width: 5px; }
+        .list-container::-webkit-scrollbar-thumb { background: var(--border-subtle); border-radius: 10px; }
 
         .order-batch-card { 
             background: var(--card-bg); 
             border: 1px solid var(--border-subtle); 
-            border-radius: 18px; 
-            padding: 14px; 
-            margin-bottom: 12px; 
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+            border-radius: 20px; 
+            padding: 16px; 
+            margin-bottom: 14px; 
+            box-shadow: var(--shadow-soft);
         }
         .batch-header { 
             display: flex; 
@@ -444,44 +473,45 @@
             font-size: 0.76rem; 
             font-weight: 600; 
             color: #0369a1; 
-            background: #e0f2fe; 
-            padding: 4px 10px; 
+            background: var(--primary-light); 
+            padding: 5px 12px; 
             border-radius: 20px; 
         }
-        body.dark-mode .batch-time-tag { background: #0f172a; color: #38bdf8; }
-        .batch-total-price { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1rem; font-weight: 700; color: var(--text-main); }
+        body.dark-mode .batch-time-tag { color: #38bdf8; }
+        .batch-total-price { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.05rem; font-weight: 700; color: var(--text-main); }
 
-        .batch-item-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border-subtle); }
+        .batch-item-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--border-subtle); }
         .batch-item-row:last-child { border-bottom: none; }
         .batch-item-left { display: flex; align-items: center; gap: 12px; flex: 1; }
         
         .item-check-box { 
-            width: 26px; 
-            height: 26px; 
-            border-radius: 8px; 
+            width: 28px; 
+            height: 28px; 
+            border-radius: 9px; 
             border: 2px solid var(--border-subtle); 
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            font-size: 0.9rem; 
+            font-size: 0.95rem; 
             font-weight: 700; 
             color: transparent; 
             flex-shrink: 0; 
             background: var(--card-bg); 
             cursor: pointer; 
-            transition: all 0.2s;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
+        .item-check-box:active { transform: scale(0.9); }
         .item-done .item-check-box { background: var(--success) !important; border-color: var(--success) !important; color: #ffffff !important; }
         .item-done .item-title-text { text-decoration: line-through; color: var(--text-sub) !important; }
 
-        .item-title-text { font-size: 0.92rem; font-weight: 500; cursor: pointer; }
+        .item-title-text { font-size: 0.94rem; font-weight: 500; cursor: pointer; }
         
         .pay-badge { 
             display: inline-flex; 
             align-items: center; 
-            padding: 4px 8px; 
+            padding: 5px 9px; 
             border-radius: 8px; 
-            font-size: 0.7rem; 
+            font-size: 0.72rem; 
             font-weight: 600; 
             cursor: pointer; 
             margin-right: 6px; 
@@ -492,42 +522,44 @@
         .pay-badge.qr { background: #e0f2fe; color: #0369a1; }
         .pay-badge.cash { background: #ecfdf5; color: #047857; }
 
-        .btn-edit { background: var(--surface-subtle); color: var(--primary); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 4px 8px; font-size: 0.7rem; cursor: pointer; margin-right: 4px; }
-        .btn-del { background: #fee2e2; color: var(--danger); border: none; border-radius: 8px; padding: 4px 8px; font-size: 0.7rem; font-weight: 600; cursor: pointer; }
+        .btn-edit { background: var(--surface-subtle); color: var(--primary); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 5px 8px; font-size: 0.72rem; cursor: pointer; margin-right: 4px; }
+        .btn-del { background: #fee2e2; color: var(--danger); border: none; border-radius: 8px; padding: 5px 8px; font-size: 0.72rem; font-weight: 600; cursor: pointer; }
 
-        .summary-group-title { background: var(--surface-subtle); padding: 6px 10px; font-size: 0.8rem; font-weight: 600; color: var(--text-sub); border-radius: 8px; margin: 10px 0 6px 0; }
-        .summary-row { display: flex; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid var(--border-subtle); font-size: 0.88rem; align-items: center; }
-        .empty-text { text-align: center; color: var(--text-sub); padding: 32px 0; font-size: 0.88rem; }
+        .summary-group-title { background: var(--surface-subtle); padding: 7px 12px; font-size: 0.82rem; font-weight: 600; color: var(--text-sub); border-radius: 10px; margin: 12px 0 6px 0; }
+        .summary-row { display: flex; justify-content: space-between; padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); font-size: 0.9rem; align-items: center; }
+        .empty-text { text-align: center; color: var(--text-sub); padding: 36px 0; font-size: 0.9rem; }
 
+        /* --- Forms & Settings --- */
         .price-mgr-form { display: flex; gap: 8px; margin-bottom: 8px; }
-        .price-mgr-form input, .price-mgr-form textarea { padding: 10px; border: 1px solid var(--border-subtle); border-radius: 10px; font-size: 0.85rem; outline: none; width: 100%; background: var(--card-bg); color: var(--text-main); }
-        .price-mgr-form button { background: var(--primary); color: #fff; border: none; padding: 10px 16px; border-radius: 10px; cursor: pointer; font-size: 0.85rem; font-weight: 600; white-space: nowrap; }
+        .price-mgr-form input, .price-mgr-form textarea { padding: 11px; border: 1px solid var(--border-subtle); border-radius: 12px; font-size: 0.88rem; outline: none; width: 100%; background: var(--card-bg); color: var(--text-main); }
+        .price-mgr-form button { background: var(--primary); color: #fff; border: none; padding: 11px 18px; border-radius: 12px; cursor: pointer; font-size: 0.88rem; font-weight: 600; white-space: nowrap; }
         
-        .price-search-box { margin-bottom: 10px; }
-        .price-search-box input { width: 100%; padding: 8px 12px; border: 1.5px solid var(--border-subtle); border-radius: 10px; font-size: 0.82rem; outline: none; background: var(--surface-subtle); color: var(--text-main); }
+        .price-search-box { margin-bottom: 12px; }
+        .price-search-box input { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border-subtle); border-radius: 12px; font-size: 0.85rem; outline: none; background: var(--surface-subtle); color: var(--text-main); }
 
-        .price-item-card { background: var(--card-bg); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 12px; margin-bottom: 8px; font-size: 0.88rem; }
+        .price-item-card { background: var(--card-bg); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 14px; margin-bottom: 10px; font-size: 0.9rem; }
         .price-item-header { display: flex; justify-content: space-between; align-items: center; }
         .inline-edit-container { display: none; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border-subtle); }
         .inline-edit-inputs { display: flex; gap: 8px; margin-bottom: 8px; }
-        .inline-edit-input { padding: 8px 10px; border: 1.5px solid var(--primary); border-radius: 8px; font-size: 0.9rem; outline: none; width: 100%; background: var(--card-bg); color: var(--text-main); }
+        .inline-edit-input { padding: 9px 12px; border: 1.5px solid var(--primary); border-radius: 10px; font-size: 0.92rem; outline: none; width: 100%; background: var(--card-bg); color: var(--text-main); }
         .inline-edit-btns { display: flex; gap: 8px; }
-        .btn-inline-save { flex: 1; background: var(--success); color: #fff; border: none; padding: 8px; border-radius: 8px; font-size: 0.82rem; font-weight: 600; cursor: pointer; }
-        .btn-inline-cancel { flex: 1; background: var(--surface-subtle); color: var(--text-sub); border: 1px solid var(--border-subtle); padding: 8px; border-radius: 8px; font-size: 0.82rem; font-weight: 600; cursor: pointer; }
+        .btn-inline-save { flex: 1; background: var(--success); color: #fff; border: none; padding: 9px; border-radius: 10px; font-size: 0.84rem; font-weight: 600; cursor: pointer; }
+        .btn-inline-cancel { flex: 1; background: var(--surface-subtle); color: var(--text-sub); border: 1px solid var(--border-subtle); padding: 9px; border-radius: 10px; font-size: 0.84rem; font-weight: 600; cursor: pointer; }
 
-        .export-section { margin-top: 16px; padding-top: 14px; border-top: 1.5px dashed var(--border-subtle); }
-        .btn-export { width: 100%; background: var(--success); color: #fff; border: none; padding: 10px; border-radius: 10px; font-size: 0.82rem; font-weight: 600; margin-bottom: 8px; cursor: pointer; }
+        .export-section { margin-top: 18px; padding-top: 16px; border-top: 1.5px dashed var(--border-subtle); }
+        .btn-export { width: 100%; background: var(--success); color: #fff; border: none; padding: 11px; border-radius: 12px; font-size: 0.85rem; font-weight: 600; margin-bottom: 8px; cursor: pointer; }
 
-        .bottom-sync-bar { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border-subtle); }
-        .sync-status-indicator { display: inline-flex; align-items: center; gap: 6px; font-size: 0.72rem; color: var(--text-sub); padding: 4px 10px; border-radius: 20px; background: var(--surface-subtle); }
-        .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); display: inline-block; }
-        .btn-manual-sync { background: var(--primary); color: #fff; border: none; padding: 6px 14px; border-radius: 10px; font-size: 0.74rem; font-weight: 600; cursor: pointer; }
+        .bottom-sync-bar { display: flex; align-items: center; justify-content: space-between; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border-subtle); }
+        .sync-status-indicator { display: inline-flex; align-items: center; gap: 7px; font-size: 0.74rem; color: var(--text-sub); padding: 5px 12px; border-radius: 20px; background: var(--surface-subtle); }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); display: inline-block; }
+        .btn-manual-sync { background: var(--primary); color: #fff; border: none; padding: 7px 16px; border-radius: 12px; font-size: 0.76rem; font-weight: 600; cursor: pointer; }
 
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(6px); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 16px; }
-        .modal-box { background: var(--card-bg); border-radius: 20px; padding: 20px; width: 100%; max-width: 400px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3); max-height: 90vh; display: flex; flex-direction: column; border: 1px solid var(--border-subtle); color: var(--text-main); }
-        .modal-title { font-size: 1.15rem; font-weight: 700; color: var(--primary); margin-bottom: 10px; }
-        .recipe-content { background: var(--surface-subtle); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 14px; font-size: 0.95rem; color: var(--text-main); white-space: pre-line; line-height: 1.6; margin-bottom: 16px; overflow-y: auto; }
-        .btn-modal-close-large { width: 100%; background: var(--primary); color: #fff; border: none; padding: 12px; border-radius: 12px; font-size: 0.95rem; font-weight: 600; cursor: pointer; }
+        /* --- Modals --- */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(9, 13, 22, 0.7); backdrop-filter: blur(8px); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 16px; }
+        .modal-box { background: var(--card-bg); border-radius: 24px; padding: 22px; width: 100%; max-width: 420px; box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.4); max-height: 90vh; display: flex; flex-direction: column; border: 1px solid var(--border-subtle); color: var(--text-main); }
+        .modal-title { font-size: 1.2rem; font-weight: 700; color: var(--primary); margin-bottom: 12px; }
+        .recipe-content { background: var(--surface-subtle); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 16px; font-size: 0.95rem; color: var(--text-main); white-space: pre-line; line-height: 1.6; margin-bottom: 18px; overflow-y: auto; }
+        .btn-modal-close-large { width: 100%; background: var(--primary); color: #fff; border: none; padding: 13px; border-radius: 14px; font-size: 0.96rem; font-weight: 600; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -643,7 +675,7 @@
         <div id="suggestBox" class="suggest-box"></div>
 
         <div class="backdate-control">
-            <span style="font-size:0.72rem; color:var(--text-sub);">💡 พิมพ์ชื่อเมนูตามด้วยจำนวน หรือกดเลือกด้านบน</span>
+            <span style="font-size:0.74rem; color:var(--text-sub);">💡 พิมพ์ชื่อเมนูตามด้วยจำนวน หรือกดเลือกด้านบน</span>
             <button type="button" class="btn-toggle-backdate" id="btnToggleBackdate" onclick="toggleBackdateMode()">🕒 บันทึกย้อนหลัง</button>
         </div>
 
@@ -675,16 +707,16 @@
     </div>
 
     <div class="list-container" id="pricesView" style="display: none;">
-        <div style="background:var(--surface-subtle); border:1px solid var(--border-subtle); border-radius:14px; padding:12px; margin-bottom:12px;">
-            <div style="font-size:0.84rem; font-weight:600; color:var(--primary); margin-bottom:8px;">➕ เพิ่มเมนูใหม่</div>
-            <div class="price-mgr-form" style="margin-bottom:6px;">
+        <div style="background:var(--surface-subtle); border:1px solid var(--border-subtle); border-radius:16px; padding:14px; margin-bottom:14px;">
+            <div style="font-size:0.86rem; font-weight:600; color:var(--primary); margin-bottom:10px;">➕ เพิ่มเมนูใหม่</div>
+            <div class="price-mgr-form" style="margin-bottom:8px;">
                 <input type="text" id="newMenuName" placeholder="ชื่อเมนู เช่น ชาไทย เย็น" style="flex:2;">
                 <input type="number" id="newMenuPrice" placeholder="ราคา" style="flex:1;">
             </div>
-            <div class="price-mgr-form" style="margin-bottom:8px;">
+            <div class="price-mgr-form" style="margin-bottom:10px;">
                 <textarea id="newMenuRecipe" placeholder="สูตรชง เช่น เบสชาไทย 120ml..." rows="2"></textarea>
             </div>
-            <button type="button" onclick="addOrUpdatePrice(event)" style="width:100%; background:var(--primary); color:#fff; border:none; padding:10px; border-radius:10px; font-weight:600; cursor:pointer;">เพิ่มเมนูใหม่</button>
+            <button type="button" onclick="addOrUpdatePrice(event)" style="width:100%; background:var(--primary); color:#fff; border:none; padding:11px; border-radius:12px; font-weight:600; cursor:pointer;">เพิ่มเมนูใหม่</button>
         </div>
 
         <div class="price-search-box">
@@ -720,32 +752,32 @@
     <div class="modal-box">
         <div class="modal-title">✏️ แก้ไขข้อมูลออเดอร์</div>
         <input type="hidden" id="editItemId">
-        <div style="margin-bottom:8px;">
+        <div style="margin-bottom:10px;">
             <label style="font-size:0.75rem; color:var(--text-sub);">ชื่อเมนู:</label>
-            <input type="text" id="editItemName" style="width:100%; padding:8px; border:1px solid var(--border-subtle); border-radius:8px; background:var(--card-bg); color:var(--text-main);">
+            <input type="text" id="editItemName" style="width:100%; padding:9px; border:1px solid var(--border-subtle); border-radius:10px; background:var(--card-bg); color:var(--text-main);">
         </div>
-        <div style="margin-bottom:8px;">
+        <div style="margin-bottom:10px;">
             <label style="font-size:0.75rem; color:var(--text-sub);">หมวดหมู่:</label>
-            <select id="editItemCategory" style="width:100%; padding:8px; border:1px solid var(--border-subtle); border-radius:8px; background:var(--card-bg); color:var(--text-main);">
+            <select id="editItemCategory" style="width:100%; padding:9px; border:1px solid var(--border-subtle); border-radius:10px; background:var(--card-bg); color:var(--text-main);">
                 <option value="เครื่องดื่ม">🧋 เครื่องดื่ม</option>
                 <option value="ของทอด/ทานเล่น">🍟 ของทอด/ทานเล่น</option>
                 <option value="ขนมปังปิ้ง">🍞 ขนมปังปิ้ง</option>
                 <option value="อาหาร/กะเพรา">🍳 อาหาร/กะเพรา</option>
             </select>
         </div>
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:14px;">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:16px;">
             <div>
                 <label style="font-size:0.75rem; color:var(--text-sub);">ราคา/หน่วย:</label>
-                <input type="number" id="editItemUnitPrice" style="width:100%; padding:8px; border:1px solid var(--border-subtle); border-radius:8px; background:var(--card-bg); color:var(--text-main);">
+                <input type="number" id="editItemUnitPrice" style="width:100%; padding:9px; border:1px solid var(--border-subtle); border-radius:10px; background:var(--card-bg); color:var(--text-main);">
             </div>
             <div>
                 <label style="font-size:0.75rem; color:var(--text-sub);">จำนวน:</label>
-                <input type="number" id="editItemQty" min="1" style="width:100%; padding:8px; border:1px solid var(--border-subtle); border-radius:8px; background:var(--card-bg); color:var(--text-main);">
+                <input type="number" id="editItemQty" min="1" style="width:100%; padding:9px; border:1px solid var(--border-subtle); border-radius:10px; background:var(--card-bg); color:var(--text-main);">
             </div>
         </div>
         <div style="display: flex; gap: 8px;">
-            <button type="button" style="flex:1; padding: 10px; border-radius: 10px; background: var(--surface-subtle); border: 1px solid var(--border-subtle); font-weight: 600; color:var(--text-sub);" onclick="closeEditModal()">ยกเลิก</button>
-            <button type="button" style="flex:1; padding: 10px; border-radius: 10px; background: var(--primary); border: none; font-weight: 600; color: #fff;" onclick="saveEditedItem()">บันทึก</button>
+            <button type="button" style="flex:1; padding: 11px; border-radius: 12px; background: var(--surface-subtle); border: 1px solid var(--border-subtle); font-weight: 600; color:var(--text-sub);" onclick="closeEditModal()">ยกเลิก</button>
+            <button type="button" style="flex:1; padding: 11px; border-radius: 12px; background: var(--primary); border: none; font-weight: 600; color: #fff;" onclick="saveEditedItem()">บันทึก</button>
         </div>
     </div>
 </div>
@@ -782,7 +814,7 @@
 
     let sales = [];
     let expenses = [];
-    let historySummary = []; // ข้อมูลสรุปของเดือนเก่าๆ จากชีต Monthly_Summary
+    let historySummary = [];
     let localPendingSales = new Map();
     let priceBook = Object.assign({}, MASTER_PRICES);
     let recipeBook = Object.assign({}, MASTER_RECIPES);
@@ -1493,7 +1525,6 @@
             </div>
         `).join('') || '<div class="empty-text">ไม่มีรายการต้นทุน</div>';
 
-        // รวมยอดสะสมของเดือนเก่าๆ กรณีเลือกดู "ทั้งหมด"
         let displayTotalSales = totalS;
         let displayTotalCash = totalCashSum;
         let displayTotalQr = totalQrSum;
@@ -1533,14 +1564,13 @@
         document.getElementById('catFoodCount').innerText = `${catStats['อาหาร/กะเพรา'].count} จาน/ชุด`;
         document.getElementById('catFoodPay').innerHTML = `<span>💵 ฿${catStats['อาหาร/กะเพรา'].cash.toLocaleString()}</span><span>📱 ฿${catStats['อาหาร/กะเพรา'].qr.toLocaleString()}</span>`;
 
-        // สรุปรายเมนู + ตารางสรุปรายเดือนย้อนหลัง
         let summaryHtml = '';
         
         if (currentFilter === 'all' && historySummary.length > 0) {
             summaryHtml += `<div class="summary-group-title">📊 สรุปผลประกอบการรายเดือนย้อนหลัง</div>`;
             historySummary.forEach(h => {
                 summaryHtml += `
-                    <div class="summary-row" style="font-size:0.8rem;">
+                    <div class="summary-row" style="font-size:0.82rem;">
                         <span>🗓️ เดือน ${h.month} (${h.totalQty} ชิ้น)</span>
                         <span>ยอด <b>฿${h.sales.toLocaleString()}</b> (กำไร ฿${h.profit.toLocaleString()})</span>
                     </div>
@@ -1585,7 +1615,7 @@
                         <input type="number" id="edit-price-${rowId}" value="${price}" class="inline-edit-input" style="flex:1;" placeholder="ราคา">
                     </div>
                     <div style="margin-bottom: 8px;">
-                        <textarea id="edit-recipe-${rowId}" class="inline-edit-input" style="width:100%; font-size:0.85rem; padding:10px; border-radius:10px;" rows="3" placeholder="สูตรชง..."></textarea>
+                        <textarea id="edit-recipe-${rowId}" class="inline-edit-input" style="width:100%; font-size:0.88rem; padding:10px; border-radius:10px;" rows="3" placeholder="สูตรชง..."></textarea>
                     </div>
                     <div class="inline-edit-btns">
                         <button type="button" class="btn-inline-save" onclick="saveInlineEdit('${safeName}', '${rowId}')">บันทึก</button>
