@@ -359,7 +359,6 @@
         .matrix-digit.cost { color: #f87171; }
         .matrix-digit.profit { color: #4ade80; }
 
-        /* Category Stat Pods (Compact 2x2) */
         .category-pods-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -387,7 +386,6 @@
             justify-content: space-between;
         }
 
-        /* บีบขนาดฟอนต์หัวข้อของทอดให้อยู่ในบรรทัดเดียว ไม่ขึ้นบรรทัดใหม่ */
         .pod-title {
             font-size: 0.68rem;
             font-weight: 700;
@@ -438,7 +436,6 @@
         .split-chip.qr { color: #38bdf8; background: rgba(56, 189, 248, 0.12); }
         .split-chip.qr::before { content: "📱 โอน ฿"; }
 
-        /* Bestseller Grid */
         .bestseller-pos-section {
             margin-top: 8px;
             background: linear-gradient(135deg, rgba(2, 132, 199, 0.06) 0%, var(--surface-hover) 100%);
@@ -500,7 +497,6 @@
         }
         .quick-price::before { content: "฿"; }
 
-        /* Order Input Studio */
         .order-input-studio { margin-top: 8px; position: relative; }
         .studio-input-bar { display: flex; gap: 6px; }
         .studio-input-bar input {
@@ -578,7 +574,7 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.4);
         }
         .suggest-row {
-            padding: 9px 12px;
+            padding: 8px 14px;
             border-bottom: 1px solid var(--surface-border);
             font-size: 0.85rem;
             font-weight: 600;
@@ -586,10 +582,19 @@
             justify-content: space-between;
             align-items: center;
             cursor: pointer;
+            transition: background 0.1s;
         }
-        .suggest-row::after { content: "฿"; }
+        .suggest-row:hover { background: rgba(56, 189, 248, 0.15); color: var(--brand-accent); }
+        .suggest-row span:last-child {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            color: var(--brand-accent);
+            background: rgba(56, 189, 248, 0.12);
+            padding: 2px 10px;
+            border-radius: var(--radius-pill);
+        }
+        .suggest-row span:last-child::after { content: " ฿"; }
 
-        /* Workspace Tabs */
         .workspace-tabs {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -1068,12 +1073,25 @@
     </div>
 </div>
 
-<!-- Recipe Modal -->
+<!-- Recipe Modal (รองรับการแก้ไขสูตรชงโดยตรงจากหน้าประวัติได้เลย) -->
 <div class="glass-modal-backdrop" id="recipeModal" onclick="closeRecipeModal(event)">
     <div class="modal-body-card" onclick="event.stopPropagation()">
-        <div style="font-size:1.05rem; font-weight:700; color:var(--brand-accent);" id="recipeModalTitle">📖 สูตรชง</div>
-        <div class="recipe-preview-box" id="recipeModalBody">-</div>
-        <button type="button" class="btn-solid-action" style="width:100%;" onclick="closeRecipeModal()">ปิดหน้าต่าง</button>
+        <div style="font-size:1.1rem; font-weight:700; color:var(--brand-accent); margin-bottom:10px;" id="recipeModalTitle">📖 สูตรชงเครื่องดื่ม</div>
+        <input type="hidden" id="recipeModalMenuName">
+        <div id="recipeViewMode">
+            <div class="recipe-preview-box" id="recipeModalBody">-</div>
+            <div style="display:flex; gap:8px;">
+                <button type="button" style="flex:1; padding:10px; border-radius:12px; background:var(--surface-hover); border:1px solid var(--surface-border); color:var(--text-secondary); font-weight:600; cursor:pointer;" onclick="closeRecipeModal()">ปิดหน้าต่าง</button>
+                <button type="button" class="btn-solid-action" style="flex:1;" onclick="switchToEditRecipeMode()">แก้ไขสูตร</button>
+            </div>
+        </div>
+        <div id="recipeEditMode" style="display:none;">
+            <textarea id="recipeModalTextarea" rows="6" style="width:100%; padding:10px; border:1px solid var(--surface-border); border-radius:12px; background:var(--surface-hover); color:var(--text-primary); outline:none; font-size:0.88rem; line-height:1.5; margin-bottom:10px;"></textarea>
+            <div style="display:flex; gap:8px;">
+                <button type="button" style="flex:1; padding:10px; border-radius:12px; background:var(--surface-hover); border:1px solid var(--surface-border); color:var(--text-secondary); font-weight:600; cursor:pointer;" onclick="cancelEditRecipeMode()">ยกเลิก</button>
+                <button type="button" class="btn-solid-action" style="flex:1; background:var(--success-color);" onclick="saveRecipeFromModal()">บันทึก</button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -1112,6 +1130,34 @@
     </div>
 </div>
 
+<!-- Price Edit Modal -->
+<div class="glass-modal-backdrop" id="priceEditModal">
+    <div class="modal-body-card">
+        <div style="font-size:1.1rem; font-weight:700; color:var(--brand-accent); margin-bottom:12px;">⚙️ แก้ไขราคาและสูตรชง</div>
+        <input type="hidden" id="modalOldName">
+        
+        <div style="margin-bottom:10px;">
+            <label style="font-size:0.72rem; color:var(--text-secondary); margin-bottom:4px; display:block;">ชื่อเมนู:</label>
+            <input type="text" id="modalEditName" style="width:100%; padding:10px; border:1px solid var(--surface-border); border-radius:10px; background:var(--surface-hover); color:var(--text-primary); outline:none; font-size:0.9rem;">
+        </div>
+
+        <div style="margin-bottom:10px;">
+            <label style="font-size:0.72rem; color:var(--text-secondary); margin-bottom:4px; display:block;">ราคาขาย (บาท):</label>
+            <input type="number" id="modalEditPrice" style="width:100%; padding:10px; border:1px solid var(--surface-border); border-radius:10px; background:var(--surface-hover); color:var(--text-primary); outline:none; font-size:0.9rem; font-family:'Outfit',sans-serif; font-weight:700;">
+        </div>
+
+        <div id="modalRecipeContainer" style="margin-bottom:14px; display:none;">
+            <label style="font-size:0.72rem; color:var(--text-secondary); margin-bottom:4px; display:block;">📖 สูตรชงเครื่องดื่ม:</label>
+            <textarea id="modalEditRecipe" rows="4" placeholder="ระบุสูตรชง..." style="width:100%; padding:10px; border:1px solid var(--surface-border); border-radius:10px; background:var(--surface-hover); color:var(--text-primary); outline:none; font-size:0.85rem; line-height:1.4;"></textarea>
+        </div>
+
+        <div style="display: flex; gap: 8px;">
+            <button type="button" style="flex:1; padding: 11px; border-radius: 12px; background: var(--surface-hover); border: 1px solid var(--surface-border); color:var(--text-secondary); font-weight:600; font-size:0.85rem; cursor:pointer;" onclick="closePriceModal()">ยกเลิก</button>
+            <button type="button" class="btn-solid-action" style="flex:1; background: var(--success-color);" onclick="savePriceModalData()">บันทึก</button>
+        </div>
+    </div>
+</div>
+
 <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwuVtheTjpEPp33z7VswY70n-C22KfgvnmfzD7yUiyDr4VN_1XFT0zKCd4KMj4ctOMiYA/exec";
 
@@ -1129,9 +1175,7 @@
             const AudioContext = window.AudioContext || window.webkitAudioContext;
             if (AudioContext) audioCtx = new AudioContext();
         }
-        if (audioCtx && audioCtx.state === 'suspended') {
-            audioCtx.resume();
-        }
+        if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
     }
 
     function toggleSound() {
@@ -1142,9 +1186,7 @@
 
     function updateSoundIcon() {
         const icon = document.getElementById('soundIcon');
-        if (icon) {
-            icon.className = isSoundEnabled ? 'ph-bold ph-speaker-high' : 'ph-bold ph-speaker-slash';
-        }
+        if (icon) icon.className = isSoundEnabled ? 'ph-bold ph-speaker-high' : 'ph-bold ph-speaker-slash';
     }
     updateSoundIcon();
 
@@ -1155,35 +1197,22 @@
             if (!audioCtx) return;
             const now = audioCtx.currentTime;
             if (type === 'order') {
-                const osc1 = audioCtx.createOscillator();
-                const osc2 = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
+                const osc1 = audioCtx.createOscillator(); const osc2 = audioCtx.createOscillator(); const gain = audioCtx.createGain();
                 osc1.type = 'sine'; osc2.type = 'sine';
-                osc1.frequency.setValueAtTime(587.33, now);
-                osc2.frequency.setValueAtTime(880.00, now + 0.08);
-                gain.gain.setValueAtTime(0.12, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+                osc1.frequency.setValueAtTime(587.33, now); osc2.frequency.setValueAtTime(880.00, now + 0.08);
+                gain.gain.setValueAtTime(0.12, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
                 osc1.connect(gain); osc2.connect(gain); gain.connect(audioCtx.destination);
-                osc1.start(now); osc1.stop(now + 0.08);
-                osc2.start(now + 0.08); osc2.stop(now + 0.35);
+                osc1.start(now); osc1.stop(now + 0.08); osc2.start(now + 0.08); osc2.stop(now + 0.35);
             } else if (type === 'done') {
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(400, now);
-                osc.frequency.exponentialRampToValueAtTime(1200, now + 0.08);
-                gain.gain.setValueAtTime(0.15, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+                const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+                osc.type = 'sine'; osc.frequency.setValueAtTime(400, now); osc.frequency.exponentialRampToValueAtTime(1200, now + 0.08);
+                gain.gain.setValueAtTime(0.15, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
                 osc.connect(gain); gain.connect(audioCtx.destination);
                 osc.start(now); osc.stop(now + 0.12);
             } else if (type === 'delete') {
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(220, now);
-                osc.frequency.exponentialRampToValueAtTime(110, now + 0.09);
-                gain.gain.setValueAtTime(0.12, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+                const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(220, now); osc.frequency.exponentialRampToValueAtTime(110, now + 0.09);
+                gain.gain.setValueAtTime(0.12, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
                 osc.connect(gain); gain.connect(audioCtx.destination);
                 osc.start(now); osc.stop(now + 0.09);
             }
@@ -1240,7 +1269,6 @@
     let isBackdateActive = false;
     let isProcessingAdd = false;
     let isSyncing = false;
-    let editingRowId = null;
 
     if (localStorage.getItem('flukchafe_light_mode') === 'true') {
         document.body.classList.add('light-mode');
@@ -1290,7 +1318,18 @@
 
     const recipeModal = document.getElementById('recipeModal');
     const recipeModalTitle = document.getElementById('recipeModalTitle');
+    const recipeModalMenuName = document.getElementById('recipeModalMenuName');
     const recipeModalBody = document.getElementById('recipeModalBody');
+    const recipeModalTextarea = document.getElementById('recipeModalTextarea');
+    const recipeViewMode = document.getElementById('recipeViewMode');
+    const recipeEditMode = document.getElementById('recipeEditMode');
+
+    const priceEditModal = document.getElementById('priceEditModal');
+    const modalOldName = document.getElementById('modalOldName');
+    const modalEditName = document.getElementById('modalEditName');
+    const modalEditPrice = document.getElementById('modalEditPrice');
+    const modalEditRecipe = document.getElementById('modalEditRecipe');
+    const modalRecipeContainer = document.getElementById('modalRecipeContainer');
 
     const THAI_MONTHS_SHORT = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
     const THAI_MONTHS_FULL = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
@@ -1513,7 +1552,7 @@
                 recipeBook = Object.assign({}, MASTER_RECIPES, data.recipes || {});
                 saveLocalBackup();
                 renderUI();
-                if (!editingRowId && activeTab === 'prices') renderPriceSettingList();
+                if (activeTab === 'prices') renderPriceSettingList();
                 document.getElementById('syncStatus').innerText = 'ซิงค์สำเร็จ';
             }
         } catch (e) {
@@ -1537,11 +1576,51 @@
         }
     }
 
+    // ฟังก์ชันจัดการสูตรชงจากหน้าประวัติ
     function showRecipe(menuName, category) {
         if (category !== 'เครื่องดื่ม') return;
+        recipeModalMenuName.value = menuName;
         recipeModalTitle.innerText = `📖 สูตรชง: ${menuName}`;
-        recipeModalBody.innerText = findRecipeText(menuName) || "ยังไม่มีการบันทึกสูตรชงสำหรับเมนูนี้";
+        const recipeText = findRecipeText(menuName) || "ยังไม่มีการบันทึกสูตรชงสำหรับเมนูนี้";
+        recipeModalBody.innerText = recipeText;
+        recipeModalTextarea.value = recipeText;
+        
+        recipeViewMode.style.display = 'block';
+        recipeEditMode.style.display = 'none';
         recipeModal.style.display = 'flex';
+    }
+
+    function switchToEditRecipeMode() {
+        recipeViewMode.style.display = 'none';
+        recipeEditMode.style.display = 'block';
+    }
+
+    function cancelEditRecipeMode() {
+        recipeViewMode.style.display = 'block';
+        recipeEditMode.style.display = 'none';
+    }
+
+    async function saveRecipeFromModal() {
+        const menuName = recipeModalMenuName.value.trim();
+        const newRecipe = recipeModalTextarea.value.trim();
+        const currentPrice = findPrice(menuName);
+
+        recipeBook[menuName] = newRecipe;
+        recipeModalBody.innerText = newRecipe;
+        cancelEditRecipeMode();
+        closeRecipeModal();
+        playSound('order');
+
+        fetch(SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({ 
+                action: 'update_price', 
+                name: menuName, 
+                price: currentPrice, 
+                recipe: newRecipe 
+            })
+        }).catch(e => {});
     }
 
     function closeRecipeModal() { recipeModal.style.display = 'none'; }
@@ -2048,73 +2127,78 @@
         priceSettingList.innerHTML = keys.map(name => {
             const price = priceBook[name];
             const safeName = name.replace(/'/g, "\\'");
-            const rowId = 'row-' + btoa(encodeURIComponent(name)).replace(/=/g, '');
-            const isEditing = editingRowId === rowId;
             const isDrink = isDrinkItem(name);
 
             return `
-            <div class="price-edit-unit" id="${rowId}">
+            <div class="price-edit-unit">
                 <div class="price-unit-header">
                     <span style="font-weight:600; font-size:0.85rem;">📝 ${name} ${isDrink ? '<span style="font-size:0.65rem; color:var(--brand-accent);">[เครื่องดื่ม]</span>' : ''}</span>
-                    <div style="display:flex; align-items:center; gap:5px;">
+                    <div style="display:flex; align-items:center; gap:6px;">
                         <b style="font-family:'Outfit',sans-serif; color:var(--brand-accent); font-size:1rem;">฿${price}</b>
-                        <button type="button" class="btn-solid-action" style="padding:4px 10px; font-size:0.7rem;" onclick="enableInlineEdit('${safeName}', ${price}, '${rowId}')">แก้ไข</button>
+                        <button type="button" class="btn-solid-action" style="padding:4px 10px; font-size:0.7rem;" onclick="openPriceModal('${safeName}', ${price})">แก้ไข</button>
                         <button type="button" class="btn-item-ctrl del" onclick="deletePrice('${safeName}')"><i class="ph-bold ph-trash"></i></button>
-                    </div>
-                </div>
-                <div class="inline-edit-container" id="edit-box-${rowId}" style="display: ${isEditing ? 'block' : 'none'}; margin-top:8px; padding-top:8px; border-top:1px dashed var(--surface-border);">
-                    <div class="input-row-grid">
-                        <input type="text" id="edit-name-${rowId}" value="${name}" placeholder="ชื่อเมนู" style="flex:2;">
-                        <input type="number" id="edit-price-${rowId}" value="${price}" placeholder="ราคา" style="flex:1;">
-                    </div>
-                    ${isDrink ? `
-                    <div style="margin-bottom: 6px;">
-                        <textarea id="edit-recipe-${rowId}" rows="2" placeholder="สูตรชง..." style="width:100%; padding:8px; border-radius:10px; border:1px solid var(--surface-border); background:var(--surface-hover); color:var(--text-primary); outline:none; font-size:0.82rem;"></textarea>
-                    </div>` : ''}
-                    <div style="display:flex; gap:6px;">
-                        <button type="button" class="btn-solid-action" style="flex:1; background:var(--success-color); padding:8px;" onclick="saveInlineEdit('${safeName}', '${rowId}')">บันทึก</button>
-                        <button type="button" style="flex:1; background:var(--surface-hover); color:var(--text-secondary); border:1px solid var(--surface-border); border-radius:10px; font-weight:600; cursor:pointer; font-size:0.75rem;" onclick="cancelInlineEdit('${rowId}')">ยกเลิก</button>
                     </div>
                 </div>
             </div>
         `;}).join('') || '<div class="empty-placeholder">ไม่พบเมนู</div>';
     }
 
-    function enableInlineEdit(name, currentPrice, rowId) {
-        editingRowId = rowId;
-        document.querySelectorAll('.inline-edit-container').forEach(el => el.style.display = 'none');
-        const editBox = document.getElementById(`edit-box-${rowId}`);
-        if (editBox) {
-            editBox.style.display = 'block';
-            const recipeInput = document.getElementById(`edit-recipe-${rowId}`);
-            if (recipeInput) recipeInput.value = findRecipeText(name);
+    function openPriceModal(name, price) {
+        modalOldName.value = name;
+        modalEditName.value = name;
+        modalEditPrice.value = price;
+        const isDrink = isDrinkItem(name);
+        if (isDrink) {
+            modalRecipeContainer.style.display = 'block';
+            modalEditRecipe.value = findRecipeText(name);
+        } else {
+            modalRecipeContainer.style.display = 'none';
+            modalEditRecipe.value = '';
         }
+        priceEditModal.style.display = 'flex';
     }
 
-    function cancelInlineEdit(rowId) {
-        editingRowId = null;
-        const editBox = document.getElementById(`edit-box-${rowId}`);
-        if (editBox) editBox.style.display = 'none';
+    function closePriceModal() {
+        priceEditModal.style.display = 'none';
     }
 
-    async function saveInlineEdit(oldName, rowId) {
-        const newNameInput = document.getElementById(`edit-name-${rowId}`).value.trim();
-        const newPriceInput = parseFloat(document.getElementById(`edit-price-${rowId}`).value);
-        const recipeEl = document.getElementById(`edit-recipe-${rowId}`);
-        const newRecipeInput = recipeEl ? recipeEl.value.trim() : "";
-        if (!newNameInput || isNaN(newPriceInput) || newPriceInput <= 0) return alert('กรุณากรอกชื่อและราคาให้ถูกต้อง');
+    async function savePriceModalData() {
+        const oldName = modalOldName.value.trim();
+        const newName = modalEditName.value.trim();
+        const newPrice = parseFloat(modalEditPrice.value);
+        const newRecipe = modalEditRecipe.value.trim();
 
-        if (oldName !== newNameInput) { delete priceBook[oldName]; delete recipeBook[oldName]; }
-        priceBook[newNameInput] = newPriceInput;
-        if (isDrinkItem(newNameInput)) recipeBook[newNameInput] = newRecipeInput; else delete recipeBook[newNameInput];
+        if (!newName || isNaN(newPrice) || newPrice <= 0) return alert('กรุณากรอกชื่อและราคาให้ถูกต้อง');
 
-        editingRowId = null; renderPriceSettingList(); renderDynamicBestSellers(); playSound('order');
+        if (oldName !== newName) {
+            delete priceBook[oldName];
+            delete recipeBook[oldName];
+        }
+
+        priceBook[newName] = newPrice;
+        if (isDrinkItem(newName)) {
+            recipeBook[newName] = newRecipe;
+        } else {
+            delete recipeBook[newName];
+        }
+
+        closePriceModal();
+        renderPriceSettingList();
+        renderDynamicBestSellers();
+        playSound('order');
+
         fetch(SCRIPT_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify({ action: 'update_price', name: newNameInput, price: newPriceInput, recipe: isDrinkItem(newNameInput) ? newRecipeInput : "" })
+            body: JSON.stringify({ 
+                action: 'update_price', 
+                name: newName, 
+                price: newPrice, 
+                recipe: isDrinkItem(newName) ? newRecipe : "" 
+            })
         }).catch(e => {});
-        if (oldName !== newNameInput) {
+
+        if (oldName !== newName) {
             fetch(SCRIPT_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain' },
