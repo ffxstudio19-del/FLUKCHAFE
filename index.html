@@ -110,7 +110,6 @@
             box-shadow: 0 15px 35px -10px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
         }
 
-        /* Compact Header */
         .brand-center-header {
             display: flex;
             align-items: center;
@@ -200,7 +199,6 @@
             font-weight: 400;
         }
 
-        /* Filter Segmented */
         .filter-segmented {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -268,7 +266,6 @@
             color: var(--text-primary);
         }
 
-        /* Revenue Hero Card - แก้ไขระยะห่าง ฿ ให้เว้นวรรคสวยงาม */
         .revenue-hero-card {
             background: linear-gradient(145deg, rgba(2, 132, 199, 0.2) 0%, rgba(15, 23, 42, 0.88) 100%);
             border: 1.2px solid rgba(56, 189, 248, 0.3);
@@ -297,7 +294,6 @@
             gap: 5px;
         }
 
-        /* แก้ไขตัวเลขให้ ฿ มีช่องไฟห่างจากตัวเลขเล็กน้อย */
         .revenue-display-amount {
             font-family: 'Outfit', sans-serif;
             font-size: 2.3rem;
@@ -363,7 +359,7 @@
         .matrix-digit.cost { color: #f87171; }
         .matrix-digit.profit { color: #4ade80; }
 
-        /* Category Stat Pods - Compact 2x2 */
+        /* Category Stat Pods (แก้ไขขนาดตัวอักษรแถวของทอดให้บรรทัดเดียว) */
         .category-pods-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -391,25 +387,29 @@
             justify-content: space-between;
         }
 
+        /* ปรับแต่งหัวข้อให้กระชับ ไม่ให้ตกบรรทัดสอง */
         .pod-title {
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             font-weight: 700;
             color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .pod-count-badge {
-            font-size: 0.62rem;
+            font-size: 0.6rem;
             font-weight: 700;
-            padding: 2px 6px;
+            padding: 2px 5px;
             border-radius: var(--radius-pill);
             background: rgba(255, 255, 255, 0.08);
+            white-space: nowrap;
         }
         .drink-theme .pod-count-badge { color: #38bdf8; background: rgba(56, 189, 248, 0.12); }
         .snack-theme .pod-count-badge { color: #fbbf24; background: rgba(251, 191, 36, 0.12); }
         .bread-theme .pod-count-badge { color: #f472b6; background: rgba(244, 114, 182, 0.12); }
         .food-theme .pod-count-badge { color: #34d399; background: rgba(52, 211, 153, 0.12); }
 
-        /* เว้นวรรค ฿ ใน Pods เล็ก */
         .pod-val {
             font-family: 'Outfit', sans-serif;
             font-size: 1.15rem;
@@ -427,17 +427,17 @@
             border-top: 1px dashed rgba(255, 255, 255, 0.1);
         }
         .split-chip {
-            font-size: 0.62rem;
+            font-size: 0.6rem;
             font-weight: 700;
-            padding: 1px 5px;
+            padding: 1px 4px;
             border-radius: 6px;
         }
-        .split-chip.cash { color: #34d399; background: rgba(52, 211, 153, 0.1); }
-        .split-chip.cash::before { content: "สด ฿"; }
-        .split-chip.qr { color: #38bdf8; background: rgba(56, 189, 248, 0.1); }
-        .split-chip.qr::before { content: "โอน ฿"; }
+        .split-chip.cash { color: #34d399; background: rgba(52, 211, 153, 0.12); }
+        .split-chip.cash::before { content: "💵 สด ฿"; }
+        .split-chip.qr { color: #38bdf8; background: rgba(56, 189, 248, 0.12); }
+        .split-chip.qr::before { content: "📱 โอน ฿"; }
 
-        /* Bestseller Grid - กระชับเหลือ 1 แถวเลื่อนข้าง หรือจัดเรียงกะทัดรัด */
+        /* Bestseller Grid */
         .bestseller-pos-section {
             margin-top: 8px;
             background: linear-gradient(135deg, rgba(2, 132, 199, 0.06) 0%, var(--surface-hover) 100%);
