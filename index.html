@@ -350,10 +350,10 @@
         }
         .matrix-tag { font-size: 0.65rem; color: #94a3b8; font-weight: 600; }
         .matrix-digit { font-family: 'Outfit', sans-serif; font-size: 1.05rem; font-weight: 800; margin-top: 2px; }
-        .matrix-digit.cash::before { content: "฿ "; margin-right: 2px; }
-        .matrix-digit.qr::before { content: "฿ "; margin-right: 2px; }
-        .matrix-digit.cost::before { content: "฿ "; margin-right: 2px; }
-        .matrix-digit.profit::before { content: "฿ "; margin-right: 2px; }
+        .matrix-digit.cash::before { content: "฿ "; margin-right: 3px; }
+        .matrix-digit.qr::before { content: "฿ "; margin-right: 3px; }
+        .matrix-digit.cost::before { content: "฿ "; margin-right: 3px; }
+        .matrix-digit.profit::before { content: "฿ "; margin-right: 3px; }
         .matrix-digit.cash { color: #34d399; }
         .matrix-digit.qr { color: #38bdf8; }
         .matrix-digit.cost { color: #f87171; }
@@ -414,7 +414,7 @@
             font-weight: 800;
             margin: 4px 0 6px;
         }
-        .pod-val::before { content: "฿ "; font-size: 0.95rem; margin-right: 2px; }
+        .pod-val::before { content: "฿ "; font-size: 0.95rem; margin-right: 3px; }
 
         .pod-split-chips {
             display: flex;
@@ -495,7 +495,7 @@
             padding: 1px 6px;
             border-radius: var(--radius-pill);
         }
-        .quick-price::before { content: "฿ "; margin-right: 2px; }
+        .quick-price::before { content: "฿ "; margin-right: 3px; }
 
         .order-input-studio { margin-top: 8px; position: relative; }
         .studio-input-bar { display: flex; gap: 6px; }
@@ -664,8 +664,7 @@
             font-size: 0.95rem;
             font-weight: 800;
         }
-        .cluster-total-tag::before { content: "฿ "; margin-right: 2px; }
-        .cluster-total-tag::after { content: " บาท"; font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); margin-left: 2px; }
+        .cluster-total-tag::before { content: "฿ "; margin-right: 3px; }
 
         .cluster-item-row {
             display: flex;
@@ -696,7 +695,7 @@
             gap: 6px;
             flex-shrink: 0;
         }
-        .cluster-item-right span[style*="Outfit"]::before { content: "฿ "; margin-right: 2px; }
+        .cluster-item-right span[style*="Outfit"]::before { content: "฿ "; margin-right: 3px; }
 
         .checkbox-tick-square {
             width: 24px;
@@ -777,7 +776,7 @@
         }
         .price-unit-header { display: flex; justify-content: space-between; align-items: center; }
 
-        /* แยกกรอบเพิ่มเมนูใหม่ และช่องค้นหาในโหมด Light Mode ให้ดูสะอาดตา ชัดเจน */
+        /* ปรับแต่งแยกกรอบ "เพิ่มเมนูใหม่" และ "ช่องค้นหาเมนู" ในแท็บตั้งราคา สำหรับโหมดเช้า (Light Mode) ให้ดูสะอาดตา ชัดเจน ไม่กลืนกัน */
         body.light-mode #pricesView > div:first-child {
             background: #ffffff !important;
             border: 1px solid #cbd5e1 !important;
@@ -2066,7 +2065,7 @@
                                 </div>
                             </div>
                             <div class="cluster-item-right">
-                                <span style="font-family:'Outfit',sans-serif; font-weight:700; font-size:0.88rem; margin-right:2px;">${itPrice.toLocaleString()}</span>
+                                <span style="font-family:'Outfit',sans-serif; font-weight:700; font-size:0.88rem; margin-right:3px;">${itPrice.toLocaleString()}</span>
                                 <button type="button" class="pay-switch-badge ${item.paymentMethod === 'promptpay' ? 'qr' : 'cash'}" onclick="togglePayMethod('${item.id}')">${item.paymentMethod === 'promptpay' ? '📱 สแกน' : '💵 สด'}</button>
                                 <button type="button" class="btn-item-ctrl" onclick="openEditModal('${item.id}')"><i class="ph-bold ph-pencil-simple"></i></button>
                                 <button type="button" class="btn-item-ctrl del" onclick="deleteItem('${item.id}')"><i class="ph-bold ph-trash"></i></button>
