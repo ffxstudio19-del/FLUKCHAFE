@@ -44,15 +44,15 @@
             --radius-pill: 50px;
         }
 
-      body.light-mode {
-    --bg-base: #f1f5f9;
-    --surface-card: rgba(255, 255, 255, 0.96);
-    --surface-border: #e2e8f0;
-    --surface-hover: #e8edf4;
-    --text-primary: #1e293b;
-    --text-secondary: #64748b;
-    --text-muted: #94a3b8;
-}
+        body.light-mode {
+            --bg-base: #f1f5f9;
+            --surface-card: rgba(255, 255, 255, 0.96);
+            --surface-border: #e2e8f0;
+            --surface-hover: #e8edf4;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+        }
 
         * {
             box-sizing: border-box;
@@ -82,9 +82,9 @@
 
         body.light-mode {
             background-image: 
-                radial-gradient(at 50% 0%, rgba(2, 132, 199, 0.1) 0px, transparent 65%),
-                radial-gradient(at 100% 100%, rgba(56, 189, 248, 0.05) 0px, transparent 50%),
-                radial-gradient(at 50% 50%, rgba(241, 245, 249, 0.85) 0px, transparent 100%);
+                radial-gradient(at 50% 0%, rgba(2, 132, 199, 0.08) 0px, transparent 65%),
+                radial-gradient(at 100% 100%, rgba(56, 189, 248, 0.04) 0px, transparent 50%),
+                radial-gradient(at 50% 50%, rgba(241, 245, 249, 0.95) 0px, transparent 100%);
         }
 
         .main-wrapper {
@@ -107,7 +107,7 @@
             overflow: hidden;
         }
         body.light-mode .glass-panel {
-            box-shadow: 0 15px 35px -10px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(0, 0, 0, 0.03);
         }
 
         .brand-center-header {
@@ -309,7 +309,7 @@
             content: "฿ ";
             -webkit-text-fill-color: #38bdf8;
             font-size: 1.9rem;
-            margin-right: 2px;
+            margin-right: 4px;
         }
 
         .revenue-sub-count {
@@ -350,10 +350,10 @@
         }
         .matrix-tag { font-size: 0.65rem; color: #94a3b8; font-weight: 600; }
         .matrix-digit { font-family: 'Outfit', sans-serif; font-size: 1.05rem; font-weight: 800; margin-top: 2px; }
-        .matrix-digit.cash::before { content: "฿ "; }
-        .matrix-digit.qr::before { content: "฿ "; }
-        .matrix-digit.cost::before { content: "฿ "; }
-        .matrix-digit.profit::before { content: "฿ "; }
+        .matrix-digit.cash::before { content: "฿ "; margin-right: 2px; }
+        .matrix-digit.qr::before { content: "฿ "; margin-right: 2px; }
+        .matrix-digit.cost::before { content: "฿ "; margin-right: 2px; }
+        .matrix-digit.profit::before { content: "฿ "; margin-right: 2px; }
         .matrix-digit.cash { color: #34d399; }
         .matrix-digit.qr { color: #38bdf8; }
         .matrix-digit.cost { color: #f87171; }
@@ -414,7 +414,7 @@
             font-weight: 800;
             margin: 4px 0 6px;
         }
-        .pod-val::before { content: "฿ "; font-size: 0.95rem; }
+        .pod-val::before { content: "฿ "; font-size: 0.95rem; margin-right: 2px; }
 
         .pod-split-chips {
             display: flex;
@@ -432,9 +432,9 @@
             white-space: nowrap;
         }
         .split-chip.cash { color: #34d399; background: rgba(52, 211, 153, 0.12); }
-        .split-chip.cash::before { content: "💵 สด ฿"; }
+        .split-chip.cash::before { content: "💵 สด ฿ "; }
         .split-chip.qr { color: #38bdf8; background: rgba(56, 189, 248, 0.12); }
-        .split-chip.qr::before { content: "📱 โอน ฿"; }
+        .split-chip.qr::before { content: "📱 โอน ฿ "; }
 
         .bestseller-pos-section {
             margin-top: 8px;
@@ -495,7 +495,7 @@
             padding: 1px 6px;
             border-radius: var(--radius-pill);
         }
-        .quick-price::before { content: "฿"; }
+        .quick-price::before { content: "฿ "; margin-right: 2px; }
 
         .order-input-studio { margin-top: 8px; position: relative; }
         .studio-input-bar { display: flex; gap: 6px; }
@@ -664,7 +664,8 @@
             font-size: 0.95rem;
             font-weight: 800;
         }
-        .cluster-total-tag::before { content: "฿"; }
+        .cluster-total-tag::before { content: "฿ "; margin-right: 2px; }
+        .cluster-total-tag::after { content: " บาท"; font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); margin-left: 2px; }
 
         .cluster-item-row {
             display: flex;
@@ -689,13 +690,13 @@
             word-break: break-word;
         }
 
-        /* จัดระเบียบกลุ่มปุ่มและราคาด้านขวาให้มีระยะห่างพอดี ไม่เบียดกัน */
         .cluster-item-right {
             display: flex;
             align-items: center;
             gap: 6px;
             flex-shrink: 0;
         }
+        .cluster-item-right span[style*="Outfit"]::before { content: "฿ "; margin-right: 2px; }
 
         .checkbox-tick-square {
             width: 24px;
@@ -775,6 +776,21 @@
             margin-bottom: 8px;
         }
         .price-unit-header { display: flex; justify-content: space-between; align-items: center; }
+
+        /* แยกกรอบเพิ่มเมนูใหม่ และช่องค้นหาในโหมด Light Mode ให้ดูสะอาดตา ชัดเจน */
+        body.light-mode #pricesView > div:first-child {
+            background: #ffffff !important;
+            border: 1px solid #cbd5e1 !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+        }
+        body.light-mode .price-search-box input {
+            background: #ffffff !important;
+            border: 1px solid #cbd5e1 !important;
+        }
+        body.light-mode .price-edit-unit {
+            background: #ffffff !important;
+            border: 1px solid #e2e8f0 !important;
+        }
 
         .summary-banner-title {
             background: var(--surface-hover);
@@ -2050,7 +2066,7 @@
                                 </div>
                             </div>
                             <div class="cluster-item-right">
-                                <span style="font-family:'Outfit',sans-serif; font-weight:700; font-size:0.88rem; margin-right:2px;">฿${itPrice.toLocaleString()}</span>
+                                <span style="font-family:'Outfit',sans-serif; font-weight:700; font-size:0.88rem; margin-right:2px;">${itPrice.toLocaleString()}</span>
                                 <button type="button" class="pay-switch-badge ${item.paymentMethod === 'promptpay' ? 'qr' : 'cash'}" onclick="togglePayMethod('${item.id}')">${item.paymentMethod === 'promptpay' ? '📱 สแกน' : '💵 สด'}</button>
                                 <button type="button" class="btn-item-ctrl" onclick="openEditModal('${item.id}')"><i class="ph-bold ph-pencil-simple"></i></button>
                                 <button type="button" class="btn-item-ctrl del" onclick="deleteItem('${item.id}')"><i class="ph-bold ph-trash"></i></button>
