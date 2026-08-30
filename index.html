@@ -44,15 +44,15 @@
             --radius-pill: 50px;
         }
 
-        body.light-mode {
-            --bg-base: #f8fafc;
-            --surface-card: rgba(255, 255, 255, 0.94);
-            --surface-border: #cbd5e1;
-            --surface-hover: #f1f5f9;
-            --text-primary: #0f172a;
-            --text-secondary: #475569;
-            --text-muted: #94a3b8;
-        }
+      body.light-mode {
+    --bg-base: #f1f5f9;
+    --surface-card: rgba(255, 255, 255, 0.96);
+    --surface-border: #e2e8f0;
+    --surface-hover: #e8edf4;
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    --text-muted: #94a3b8;
+}
 
         * {
             box-sizing: border-box;
@@ -670,7 +670,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 7px 0;
+            padding: 9px 0;
             border-bottom: 1px solid var(--surface-border);
         }
         .cluster-item-row:last-child { border-bottom: none; }
@@ -680,7 +680,23 @@
             align-items: center;
             gap: 8px;
             flex: 1;
+            min-width: 0;
         }
+
+        .item-name-heading { 
+            font-size: 0.85rem; 
+            font-weight: 600; 
+            word-break: break-word;
+        }
+
+        /* จัดระเบียบกลุ่มปุ่มและราคาด้านขวาให้มีระยะห่างพอดี ไม่เบียดกัน */
+        .cluster-item-right {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
         .checkbox-tick-square {
             width: 24px;
             height: 24px;
@@ -694,6 +710,7 @@
             color: transparent;
             cursor: pointer;
             background: var(--surface-card);
+            flex-shrink: 0;
         }
         .row-completed .checkbox-tick-square {
             background: var(--success-color) !important;
@@ -702,15 +719,13 @@
         }
         .row-completed .item-name-heading { text-decoration: line-through; color: var(--text-muted) !important; }
 
-        .item-name-heading { font-size: 0.88rem; font-weight: 600; }
         .pay-switch-badge {
-            padding: 3px 8px;
+            padding: 4px 8px;
             border-radius: 8px;
             font-size: 0.65rem;
             font-weight: 600;
             border: none;
             cursor: pointer;
-            margin-right: 4px;
         }
         .pay-switch-badge.qr { background: rgba(56, 189, 248, 0.18); color: #38bdf8; }
         .pay-switch-badge.cash { background: rgba(16, 185, 129, 0.18); color: #10b981; }
@@ -720,10 +735,12 @@
             color: var(--brand-accent);
             border: 1px solid var(--surface-border);
             border-radius: 8px;
-            padding: 4px 6px;
-            font-size: 0.7rem;
+            padding: 5px 7px;
+            font-size: 0.75rem;
             cursor: pointer;
-            margin-right: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .btn-item-ctrl.del { background: rgba(244, 63, 94, 0.15); color: var(--danger-color); border: none; }
 
@@ -1268,7 +1285,7 @@
     let customFilterType = 'month';
     let isProfitShown = false;
     let isBackdateActive = false;
-    let isSubmittingOrder = false; // ป้องกันการกดเบิ้ล
+    let isSubmittingOrder = false;
     let isSyncing = false;
 
     if (localStorage.getItem('flukchafe_light_mode') === 'true') {
@@ -1563,7 +1580,6 @@
         }
     }
 
-    // ปรับความเร็วซิงค์อัตโนมัติเหลือทุกๆ 6 วินาที (ซิงค์ไว ไม่หน่วง)
     setInterval(() => syncData(false), 6000);
     syncData(true);
     renderUI();
@@ -1818,7 +1834,7 @@
         });
 
         quickInput.value = '';
-        quickInput.blur(); // ซ่อนคีย์บอร์ดมือถืออัตโนมัติทันที
+        quickInput.blur();
         suggestBox.style.display = 'none';
         
         saveLocalBackup();
@@ -2033,8 +2049,8 @@
                                     <div style="font-size:0.68rem; color:var(--text-secondary);">(@${item.unitPrice} บ.)</div>
                                 </div>
                             </div>
-                            <div style="display:flex; align-items:center;">
-                                <span style="font-family:'Outfit',sans-serif; font-weight:700; font-size:0.9rem; margin-right:6px;">฿${itPrice.toLocaleString()}</span>
+                            <div class="cluster-item-right">
+                                <span style="font-family:'Outfit',sans-serif; font-weight:700; font-size:0.88rem; margin-right:2px;">฿${itPrice.toLocaleString()}</span>
                                 <button type="button" class="pay-switch-badge ${item.paymentMethod === 'promptpay' ? 'qr' : 'cash'}" onclick="togglePayMethod('${item.id}')">${item.paymentMethod === 'promptpay' ? '📱 สแกน' : '💵 สด'}</button>
                                 <button type="button" class="btn-item-ctrl" onclick="openEditModal('${item.id}')"><i class="ph-bold ph-pencil-simple"></i></button>
                                 <button type="button" class="btn-item-ctrl del" onclick="deleteItem('${item.id}')"><i class="ph-bold ph-trash"></i></button>
