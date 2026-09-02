@@ -1443,6 +1443,7 @@
     function normalizeTimeStr(raw) {
         if (!raw) return "00:00:00";
         let str = String(raw).trim();
+        if (str.startsWith("'")) str = str.substring(1).trim();
         if (str.includes('T')) str = str.split('T')[1].split('.')[0];
         let parts = str.split(':');
         if (parts.length >= 2) {
@@ -1467,7 +1468,9 @@
     function formatThaiDateTime(rawDate, rawTime) {
         let cleanTime = "00:00";
         if (rawTime) {
-            let parts = String(rawTime).trim().split(':');
+            let str = String(rawTime).trim();
+            if (str.startsWith("'")) str = str.substring(1).trim();
+            let parts = str.split(':');
             if (parts.length >= 2) cleanTime = `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}`;
         }
         let normD = normalizeDateStr(rawDate);
@@ -1589,6 +1592,10 @@
                     if (serverIds.has(String(id).trim())) localPendingSales.delete(id);
                 }
                 
+                // สร้าง Map ตรวจจับข้อมูลปัจจุบันในเครื่องเพื่อคงเวลาเดิมไว้ ไม่ให้ถูกเวลาจากชีตเขียนทับ
+                const existingMap = new Map();
+                sales.forEach(it => existingMap.set(String(it.id).trim(), it));
+
                 const unconfirmed = Array.from(localPendingSales.values());
                 const combined = [...unconfirmed, ...serverSales];
                 const seen = new Set();
@@ -1597,6 +1604,13 @@
                     const itId = String(item.id).trim();
                     if (seen.has(itId)) return false;
                     seen.add(itId);
+
+                    // ถ้ารายการนี้มีเวลาเดิมที่ถูกต้องอยู่ในเครื่องอยู่แล้ว ให้ยึดเวลาเดิมไว้
+                    if (existingMap.has(itId)) {
+                        const localItem = existingMap.get(itId);
+                        item.date = localItem.date || item.date;
+                        item.time = localItem.time || item.time;
+                    }
                     return true;
                 });
                 
