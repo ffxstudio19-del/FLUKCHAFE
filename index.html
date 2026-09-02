@@ -776,7 +776,6 @@
         }
         .price-unit-header { display: flex; justify-content: space-between; align-items: center; }
 
-        /* ปรับแต่งแยกกรอบ "เพิ่มเมนูใหม่" และ "ช่องค้นหาเมนู" ในแท็บตั้งราคา สำหรับโหมดเช้า (Light Mode) ให้ดูสะอาดตา ชัดเจน ไม่กลืนกัน */
         body.light-mode #pricesView > div:first-child {
             background: #ffffff !important;
             border: 1px solid #cbd5e1 !important;
@@ -1562,31 +1561,47 @@
         if (isSyncing) return;
         isSyncing = true;
         try {
-            const res = await fetch(SCRIPT_URL + '?action=get_all');
+            const cacheBuster = '&_t=' + Date.now();
+            const res = await fetch(SCRIPT_URL + '?action=get_all' + cacheBuster, { cache: 'no-store' });
             const data = await res.json();
+            
             if (data.status === 'success') {
                 const serverSales = data.sales || [];
                 const serverIds = new Set(serverSales.map(s => String(s.id)));
+                
+                // ตรวจสอบว่ามีออเดอร์ใหม่จากเครื่องอื่นหรือไม่
+                const currentLocalIds = new Set(sales.map(s => String(s.id)));
+                const hasNewExternalOrder = serverSales.some(s => !currentLocalIds.has(String(s.id)) && !localPendingSales.has(String(s.id)));
+
                 for (let [id] of localPendingSales.entries()) {
                     if (serverIds.has(String(id))) localPendingSales.delete(id);
                 }
+                
                 const unconfirmed = Array.from(localPendingSales.values());
                 const combined = [...unconfirmed, ...serverSales];
                 const seen = new Set();
+                
                 sales = combined.filter(item => {
                     const itId = String(item.id);
                     if (seen.has(itId)) return false;
                     seen.add(itId);
                     return true;
                 });
+                
                 expenses = data.expenses || [];
                 historySummary = data.historySummary || [];
                 priceBook = Object.assign({}, MASTER_PRICES, data.prices || {});
                 recipeBook = Object.assign({}, MASTER_RECIPES, data.recipes || {});
+                
                 saveLocalBackup();
                 renderUI();
+                
+                if (hasNewExternalOrder && !manual) {
+                    playSound('order');
+                }
+                
                 if (activeTab === 'prices') renderPriceSettingList();
-                document.getElementById('syncStatus').innerText = 'ซิงค์สำเร็จ';
+                document.getElementById('syncStatus').innerText = 'พร้อมใช้งาน (อัปเดตแล้ว)';
             }
         } catch (e) {
             document.getElementById('syncStatus').innerText = 'พร้อมใช้งาน (ออฟไลน์)';
@@ -1595,7 +1610,8 @@
         }
     }
 
-    setInterval(() => syncData(false), 6000);
+    // ซิงค์ทุก 4 วินาทีเพื่อความสดใหม่ของยอดขาย
+    setInterval(() => syncData(false), 4000);
     syncData(true);
     renderUI();
 
@@ -1669,7 +1685,7 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain' },
                 body: JSON.stringify({ action: 'update_status', id: id, status: item.status })
-            }).catch(e => {});
+            }).then(() => syncData(true)).catch(e => {});
         }
     }
 
@@ -1683,7 +1699,7 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain' },
                 body: JSON.stringify({ action: 'update_payment', id: id, paymentMethod: item.paymentMethod })
-            }).catch(e => {});
+            }).then(() => syncData(true)).catch(e => {});
         }
     }
 
@@ -1864,10 +1880,11 @@
             });
             const data = await res.json();
             if (data.status === 'success') {
-                document.getElementById('syncStatus').innerText = 'ซิงค์สำเร็จ';
+                document.getElementById('syncStatus').innerText = 'บันทึกสำเร็จ';
+                syncData(true);
             }
         } catch (err) {
-            document.getElementById('syncStatus').innerText = 'บันทึกในเครื่องแล้ว (ออฟไลน์)';
+            document.getElementById('syncStatus').innerText = 'บันทึกในเครื่องแล้ว (รอส่งซ้ำ)';
         } finally {
             isSubmittingOrder = false;
             if (submitBtn) submitBtn.disabled = false;
@@ -1892,7 +1909,7 @@
             method: 'POST',
             headers: { 'Content-Type': 'text/plain' },
             body: JSON.stringify({ action: 'add_expense', id: newId, name: name, cost: cost })
-        }).catch(e => {});
+        }).then(() => syncData(true)).catch(e => {});
     }
 
     async function deleteItem(id) {
@@ -1904,7 +1921,7 @@
             method: 'POST',
             headers: { 'Content-Type': 'text/plain' },
             body: JSON.stringify({ action: 'delete_sale', id: id })
-        }).catch(e => {});
+        }).then(() => syncData(true)).catch(e => {});
     }
 
     async function deleteExpense(id) {
@@ -1915,7 +1932,7 @@
             method: 'POST',
             headers: { 'Content-Type': 'text/plain' },
             body: JSON.stringify({ action: 'delete_expense', id: id })
-        }).catch(e => {});
+        }).then(() => syncData(true)).catch(e => {});
     }
 
     function openEditModal(id) {
@@ -1946,7 +1963,7 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain' },
                 body: JSON.stringify({ action: 'edit_sale', id, name, category, unitPrice, qty, totalPrice: unitPrice * qty })
-            }).catch(e => {});
+            }).then(() => syncData(true)).catch(e => {});
         }
         closeEditModal();
     }
