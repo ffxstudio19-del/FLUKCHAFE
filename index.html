@@ -1558,7 +1558,7 @@
     }
 
     async function syncData(manual = false) {
-        if (isSyncing) return;
+        if (isSyncing && !manual) return;
         isSyncing = true;
         try {
             const cacheBuster = '&_t=' + Date.now();
@@ -1567,14 +1567,13 @@
             
             if (data.status === 'success') {
                 const serverSales = data.sales || [];
-                const serverIds = new Set(serverSales.map(s => String(s.id)));
+                const serverIds = new Set(serverSales.map(s => String(s.id).trim()));
                 
-                // ตรวจสอบว่ามีออเดอร์ใหม่จากเครื่องอื่นหรือไม่
-                const currentLocalIds = new Set(sales.map(s => String(s.id)));
-                const hasNewExternalOrder = serverSales.some(s => !currentLocalIds.has(String(s.id)) && !localPendingSales.has(String(s.id)));
+                const currentLocalIds = new Set(sales.map(s => String(s.id).trim()));
+                const hasNewExternalOrder = serverSales.some(s => !currentLocalIds.has(String(s.id).trim()) && !localPendingSales.has(String(s.id).trim()));
 
                 for (let [id] of localPendingSales.entries()) {
-                    if (serverIds.has(String(id))) localPendingSales.delete(id);
+                    if (serverIds.has(String(id).trim())) localPendingSales.delete(id);
                 }
                 
                 const unconfirmed = Array.from(localPendingSales.values());
@@ -1582,7 +1581,7 @@
                 const seen = new Set();
                 
                 sales = combined.filter(item => {
-                    const itId = String(item.id);
+                    const itId = String(item.id).trim();
                     if (seen.has(itId)) return false;
                     seen.add(itId);
                     return true;
@@ -1610,7 +1609,6 @@
         }
     }
 
-    // ซิงค์ทุก 4 วินาทีเพื่อความสดใหม่ของยอดขาย
     setInterval(() => syncData(false), 4000);
     syncData(true);
     renderUI();
@@ -1675,31 +1673,35 @@
 
     async function fastToggle(event, id) {
         if (event) event.stopPropagation();
-        const item = sales.find(s => String(s.id) === String(id));
+        const item = sales.find(s => String(s.id).trim() === String(id).trim());
         if (item) {
             item.status = item.status === 'done' ? 'pending' : 'done';
+            if (localPendingSales.has(item.id)) localPendingSales.set(item.id, item);
             if (item.status === 'done') playSound('done');
             saveLocalBackup();
             renderUI();
+            
             fetch(SCRIPT_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain' },
                 body: JSON.stringify({ action: 'update_status', id: id, status: item.status })
-            }).then(() => syncData(true)).catch(e => {});
+            }).then(() => setTimeout(() => syncData(true), 500)).catch(e => {});
         }
     }
 
     async function togglePayMethod(id) {
-        const item = sales.find(s => String(s.id) === String(id));
+        const item = sales.find(s => String(s.id).trim() === String(id).trim());
         if (item) {
             item.paymentMethod = item.paymentMethod === 'cash' ? 'promptpay' : 'cash';
+            if (localPendingSales.has(item.id)) localPendingSales.set(item.id, item);
             saveLocalBackup();
             renderUI();
+            
             fetch(SCRIPT_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain' },
                 body: JSON.stringify({ action: 'update_payment', id: id, paymentMethod: item.paymentMethod })
-            }).then(() => syncData(true)).catch(e => {});
+            }).then(() => setTimeout(() => syncData(true), 500)).catch(e => {});
         }
     }
 
@@ -1881,7 +1883,7 @@
             const data = await res.json();
             if (data.status === 'success') {
                 document.getElementById('syncStatus').innerText = 'บันทึกสำเร็จ';
-                syncData(true);
+                setTimeout(() => syncData(true), 500);
             }
         } catch (err) {
             document.getElementById('syncStatus').innerText = 'บันทึกในเครื่องแล้ว (รอส่งซ้ำ)';
@@ -1909,34 +1911,34 @@
             method: 'POST',
             headers: { 'Content-Type': 'text/plain' },
             body: JSON.stringify({ action: 'add_expense', id: newId, name: name, cost: cost })
-        }).then(() => syncData(true)).catch(e => {});
+        }).then(() => setTimeout(() => syncData(true), 500)).catch(e => {});
     }
 
     async function deleteItem(id) {
         if (!confirm('ยืนยันการลบออเดอร์นี้?')) return;
         localPendingSales.delete(id);
-        sales = sales.filter(s => String(s.id) !== String(id));
+        sales = sales.filter(s => String(s.id).trim() !== String(id).trim());
         saveLocalBackup(); renderUI(); playSound('delete');
         fetch(SCRIPT_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain' },
             body: JSON.stringify({ action: 'delete_sale', id: id })
-        }).then(() => syncData(true)).catch(e => {});
+        }).then(() => setTimeout(() => syncData(true), 500)).catch(e => {});
     }
 
     async function deleteExpense(id) {
         if (!confirm('ยืนยันการลบรายการต้นทุนนี้?')) return;
-        expenses = expenses.filter(e => String(e.id) !== String(id));
+        expenses = expenses.filter(e => String(e.id).trim() !== String(id).trim());
         saveLocalBackup(); renderUI(); playSound('delete');
         fetch(SCRIPT_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain' },
             body: JSON.stringify({ action: 'delete_expense', id: id })
-        }).then(() => syncData(true)).catch(e => {});
+        }).then(() => setTimeout(() => syncData(true), 500)).catch(e => {});
     }
 
     function openEditModal(id) {
-        const item = sales.find(s => String(s.id) === String(id));
+        const item = sales.find(s => String(s.id).trim() === String(id).trim());
         if (!item) return;
         editItemId.value = item.id;
         editItemName.value = item.name;
@@ -1954,7 +1956,7 @@
         const unitPrice = parseFloat(editItemUnitPrice.value);
         const qty = parseInt(editItemQty.value);
         if (!name || isNaN(unitPrice) || isNaN(qty)) return alert('กรอกข้อมูลให้ถูกต้อง');
-        const item = sales.find(s => String(s.id) === String(id));
+        const item = sales.find(s => String(s.id).trim() === String(id).trim());
         if (item) {
             item.name = name; item.category = category; item.unitPrice = unitPrice; item.qty = qty; item.totalPrice = unitPrice * qty;
             if (localPendingSales.has(id)) localPendingSales.set(id, item);
@@ -1963,7 +1965,7 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain' },
                 body: JSON.stringify({ action: 'edit_sale', id, name, category, unitPrice, qty, totalPrice: unitPrice * qty })
-            }).then(() => syncData(true)).catch(e => {});
+            }).then(() => setTimeout(() => syncData(true), 500)).catch(e => {});
         }
         closeEditModal();
     }
@@ -2132,12 +2134,15 @@
         } else if (currentFilter === 'all') {
             currentHeaderTitle = "ยอดขายทั้งหมด";
             if (historySummary.length > 0) {
+                const activeMonthSet = new Set(sales.map(s => normalizeDateStr(s.date).substring(0, 7)));
                 historySummary.forEach(h => {
-                    displayTotalSales += Number(h.sales) || 0;
-                    displayTotalCash += Number(h.cash) || 0;
-                    displayTotalQr += Number(h.qr) || 0;
-                    displayTotalCost += Number(h.cost) || 0;
-                    displayTotalPieces += Number(h.totalQty) || 0;
+                    if (!activeMonthSet.has(h.month)) {
+                        displayTotalSales += Number(h.sales) || 0;
+                        displayTotalCash += Number(h.cash) || 0;
+                        displayTotalQr += Number(h.qr) || 0;
+                        displayTotalCost += Number(h.cost) || 0;
+                        displayTotalPieces += Number(h.totalQty) || 0;
+                    }
                 });
             }
         }
