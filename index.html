@@ -1366,17 +1366,39 @@
     const THAI_MONTHS_SHORT = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
     const THAI_MONTHS_FULL = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
 
+    function getBangkokDateParts() {
+        const d = new Date();
+        const parts = new Intl.DateTimeFormat('en-CA', { 
+            timeZone: 'Asia/Bangkok', 
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false 
+        }).formatToParts(d);
+        const map = {};
+        parts.forEach(p => map[p.type] = p.value);
+        return map;
+    }
+
+    function getBangkokDateStr() {
+        const p = getBangkokDateParts();
+        return `${p.year}-${p.month}-${p.day}`;
+    }
+
+    function getBangkokTimeStr() {
+        const p = getBangkokDateParts();
+        return `${p.hour}:${p.minute}:${p.second}`;
+    }
+
     function initThaiMonthSelector() {
         selectThaiMonth.innerHTML = THAI_MONTHS_FULL.map((m, idx) => `<option value="${String(idx + 1).padStart(2, '0')}">${m}</option>`).join('');
-        const curYear = new Date().getFullYear();
+        const p = getBangkokDateParts();
+        const curYear = parseInt(p.year, 10);
         let yearOpts = '';
         for (let y = curYear - 2; y <= curYear + 3; y++) {
             yearOpts += `<option value="${y}">พ.ศ. ${y + 543}</option>`;
         }
         selectThaiYear.innerHTML = yearOpts;
-        const now = new Date();
-        selectThaiMonth.value = String(now.getMonth() + 1).padStart(2, '0');
-        selectThaiYear.value = String(now.getFullYear());
+        selectThaiMonth.value = p.month;
+        selectThaiYear.value = String(curYear);
     }
     initThaiMonthSelector();
 
@@ -1429,25 +1451,16 @@
         return str;
     }
 
-    function getBangkokDateStr() {
-        const d = new Date();
-        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    }
-
-    function getBangkokTimeStr() {
-        const d = new Date();
-        return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`;
-    }
-
     function getWeekRangeBKK() {
-        const now = new Date();
-        const curDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        const dayOfWeek = curDate.getDay() === 0 ? 7 : curDate.getDay();
+        const todayStr = getBangkokDateStr();
+        const [y, m, d] = todayStr.split('-').map(Number);
+        const curDate = new Date(Date.UTC(y, m - 1, d));
+        const dayOfWeek = curDate.getUTCDay() === 0 ? 7 : curDate.getUTCDay();
         const monday = new Date(curDate);
-        monday.setDate(curDate.getDate() - dayOfWeek + 1);
+        monday.setUTCDate(curDate.getUTCDate() - dayOfWeek + 1);
         const sunday = new Date(monday);
-        sunday.setDate(monday.getDate() + 6);
-        const fmt = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        sunday.setUTCDate(monday.getUTCDate() + 6);
+        const fmt = d => `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;
         return { start: fmt(monday), end: fmt(sunday) };
     }
 
@@ -1623,8 +1636,7 @@
         }
     }
 
-    function showRecipe(menuName, category) {
-        if (category !== 'เครื่องดื่ม') return;
+    function showRecipe(menuName) {
         recipeModalMenuName.value = menuName;
         recipeModalTitle.innerText = `📖 สูตรชง: ${menuName}`;
         const recipeText = findRecipeText(menuName) || "ยังไม่มีการบันทึกสูตรชงสำหรับเมนูนี้";
@@ -1773,14 +1785,19 @@
     function parseSingleOrder(rawText) {
         let text = String(rawText).trim().replace(/\s+/g, ' ');
         if (!text) return null;
+        
+        let exactPrice = findPrice(text);
+        if (exactPrice > 0) return { name: text, unitPrice: exactPrice, qty: 1 };
+
         let name = text; let qty = 1;
         const multiMatch = text.match(/^(.+?)\s*[*xX]\s*(\d+)$/);
         if (multiMatch) {
             name = multiMatch[1].trim();
-            qty = Math.max(1, parseInt(multiMatch[2]) || 1);
+            qty = Math.max(1, parseInt(multiMatch[2], 10) || 1);
             let unitP = findPrice(name);
             return { name, unitPrice: unitP > 0 ? unitP : 0, qty };
         }
+
         const parts = text.split(' ');
         if (parts.length >= 2) {
             const lastPart = parts[parts.length - 1];
@@ -1791,8 +1808,7 @@
                 if (price > 0) return { name: possibleName, unitPrice: price, qty: qtyNum };
             }
         }
-        let exactPrice = findPrice(text);
-        if (exactPrice > 0) return { name: text, unitPrice: exactPrice, qty: 1 };
+
         let workingParts = [...parts]; let calculatedQty = 1;
         const lastWord = workingParts[workingParts.length - 1];
         const maybeQty = parseInt(lastWord, 10);
@@ -1954,7 +1970,7 @@
         const name = editItemName.value.trim();
         const category = editItemCategory.value;
         const unitPrice = parseFloat(editItemUnitPrice.value);
-        const qty = parseInt(editItemQty.value);
+        const qty = parseInt(editItemQty.value, 10);
         if (!name || isNaN(unitPrice) || isNaN(qty)) return alert('กรอกข้อมูลให้ถูกต้อง');
         const item = sales.find(s => String(s.id).trim() === String(id).trim());
         if (item) {
@@ -2070,15 +2086,15 @@
                     </div>
                     <div>${b.items.map(item => {
                         const itPrice = Number(item.totalPrice) > 0 ? Number(item.totalPrice) : (Number(item.unitPrice||0) * Number(item.qty||1));
-                        const isDrink = item.category === 'เครื่องดื่ม';
+                        const hasRecipe = Boolean(findRecipeText(item.name));
                         return `
                         <div class="cluster-item-row ${item.status === 'done' ? 'row-completed' : ''}">
                             <div class="cluster-item-left">
                                 <div class="checkbox-tick-square" onclick="fastToggle(event, '${item.id}')">${item.status === 'done' ? '✓' : ''}</div>
                                 <div>
-                                    <div class="item-name-heading" ${isDrink ? `onclick="showRecipe('${item.name}', '${item.category}')" style="cursor:pointer;"` : ''}>
+                                    <div class="item-name-heading" ${hasRecipe ? `onclick="showRecipe('${item.name}')" style="cursor:pointer;"` : ''}>
                                         ${item.name} <b style="color:var(--brand-accent);">x${item.qty}</b>
-                                        ${isDrink ? '<span style="font-size:0.6rem; color:var(--brand-accent); margin-left:2px; font-weight:600;">[สูตร]</span>' : ''}
+                                        ${hasRecipe ? '<span style="font-size:0.6rem; color:var(--brand-accent); margin-left:2px; font-weight:600;">[สูตร]</span>' : ''}
                                     </div>
                                     <div style="font-size:0.68rem; color:var(--text-secondary);">(@${item.unitPrice} บ.)</div>
                                 </div>
@@ -2123,7 +2139,7 @@
         } else if (currentFilter === 'custom') {
             if (customFilterType === 'date' && selectDateInput.value) {
                 const p = selectDateInput.value.split('-');
-                currentHeaderTitle = `ยอดขายวันที่ ${parseInt(p[2])} ${THAI_MONTHS_SHORT[parseInt(p[1])-1]}`;
+                currentHeaderTitle = `ยอดขายวันที่ ${parseInt(p[2], 10)} ${THAI_MONTHS_SHORT[parseInt(p[1], 10)-1]}`;
             } else if (customFilterType === 'month' && selectThaiMonth.value && selectThaiYear.value) {
                 const mIndex = parseInt(selectThaiMonth.value, 10) - 1;
                 const yThai = parseInt(selectThaiYear.value, 10) + 543;
