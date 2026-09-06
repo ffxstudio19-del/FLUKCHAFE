@@ -1573,7 +1573,6 @@
         }).join('');
     }
 
-    // ระบบ Background Sync แบบไร้รอยต่อ (ไม่เรนเดอร์หน้าจอใหม่ถ้าข้อมูลเดิมไม่มีการเปลี่ยน)
     async function syncData(manual = false) {
         if (isSyncing && !manual) return;
         isSyncing = true;
@@ -1613,7 +1612,6 @@
                     return true;
                 });
 
-                // ตรวจสอบ Signature ข้อมูล หากตรงกับเดิม จะไม่ Render DOM ให้กระตุก
                 const currentSig = `${newMergedSales.length}-${(data.expenses||[]).length}-${(data.historySummary||[]).length}`;
                 sales = newMergedSales;
                 expenses = data.expenses || [];
@@ -2044,7 +2042,6 @@
         };
     }
 
-    // ฟังก์ชันคำนวณและวาดหน้าจอ (Render UI) ฉบับรวมยอด Archive สมบูรณ์
     function renderUI() {
         const { sales: displaySales, expenses: displayExpenses } = getFilteredData();
         let totalS = 0, totalC = 0, totalCashSum = 0, totalQrSum = 0, totalPieces = 0;
@@ -2058,44 +2055,172 @@
         };
         const menuGrouped = { 'เครื่องดื่ม': {}, 'ของทอด/ทานเล่น': {}, 'ขนมปังปิ้ง': {}, 'อาหาร/กะเพรา': {} };
 
-        if (!displaySales.length) {
-            itemList.innerHTML = '<div class="empty-placeholder">ยังไม่มีรายการขายในช่วงนี้</div>';
-        } else {
-            displaySales.forEach(item => {
-                const unitP = Number(item.unitPrice) || 0;
-                const qty = Number(item.qty) || 1;
-                const price = Number(item.totalPrice) > 0 ? Number(item.totalPrice) : (unitP * qty);
-                const isQR = item.paymentMethod === 'promptpay';
-                totalS += price; 
-                totalPieces += qty;
-                if (isQR) totalQrSum += price; else totalCashSum += price;
+        displaySales.forEach(item => {
+            const unitP = Number(item.unitPrice) || 0;
+            const qty = Number(item.qty) || 1;
+            const price = Number(item.totalPrice) > 0 ? Number(item.totalPrice) : (unitP * qty);
+            const isQR = item.paymentMethod === 'promptpay';
+            totalS += price; 
+            totalPieces += qty;
+            if (isQR) totalQrSum += price; else totalCashSum += price;
 
-                let cat = item.category;
-                const rawC = String(cat || '');
-                if (rawC.includes('ทอด') || rawC.includes('เล่น') || rawC.includes('เฟรน') || rawC.includes('ไก่') || rawC.includes('ชีส') || rawC.includes('ไส้กรอก')) {
-                    cat = 'ของทอด/ทานเล่น';
-                } else if (rawC.includes('ปัง') || rawC.includes('โทสต์') || rawC.includes('เนย')) {
-                    cat = 'ขนมปังปิ้ง';
-                } else if (rawC.includes('อาหาร') || rawC.includes('ข้าว') || rawC.includes('กะเพรา') || rawC.includes('กระเพรา')) {
-                    cat = 'อาหาร/กะเพรา';
-                } else if (rawC.includes('เครื่องดื่ม') || rawC.includes('ชา') || rawC.includes('กาแฟ') || rawC.includes('โกโก้')) {
-                    cat = 'เครื่องดื่ม';
-                } else {
-                    cat = detectCategory(item.name);
+            let cat = item.category;
+            const rawC = String(cat || '');
+            if (rawC.includes('ทอด') || rawC.includes('เล่น') || rawC.includes('เฟรน') || rawC.includes('ไก่') || rawC.includes('ชีส') || rawC.includes('ไส้กรอก')) {
+                cat = 'ของทอด/ทานเล่น';
+            } else if (rawC.includes('ปัง') || rawC.includes('โทสต์') || rawC.includes('เนย')) {
+                cat = 'ขนมปังปิ้ง';
+            } else if (rawC.includes('อาหาร') || rawC.includes('ข้าว') || rawC.includes('กะเพรา') || rawC.includes('กระเพรา')) {
+                cat = 'อาหาร/กะเพรา';
+            } else if (rawC.includes('เครื่องดื่ม') || rawC.includes('ชา') || rawC.includes('กาแฟ') || rawC.includes('โกโก้')) {
+                cat = 'เครื่องดื่ม';
+            } else {
+                cat = detectCategory(item.name);
+            }
+
+            if (!catStats[cat]) cat = 'เครื่องดื่ม';
+
+            catStats[cat].sum += price;
+            catStats[cat].count += qty;
+            if (isQR) catStats[cat].qr += price; else catStats[cat].cash += price;
+
+            if (!menuGrouped[cat]) menuGrouped[cat] = {};
+            if (!menuGrouped[cat][item.name]) menuGrouped[cat][item.name] = { qty: 0, sum: 0 };
+            menuGrouped[cat][item.name].qty += qty;
+            menuGrouped[cat][item.name].sum += price;
+        });
+
+        let displayTotalSales = totalS;
+        let displayTotalCash = totalCashSum;
+        let displayTotalQr = totalQrSum;
+        let displayTotalCost = totalC;
+        let displayTotalPieces = totalPieces;
+        let isHistoricalMonthSelected = false;
+
+        let currentHeaderTitle = "ยอดขายวันนี้";
+        if (currentFilter === 'today') {
+            currentHeaderTitle = "ยอดขายวันนี้";
+        } else if (currentFilter === 'week') {
+            currentHeaderTitle = "ยอดขายอาทิตย์นี้";
+        } else if (currentFilter === 'custom') {
+            if (customFilterType === 'date' && selectDateInput.value) {
+                const p = selectDateInput.value.split('-');
+                currentHeaderTitle = `ยอดขายวันที่ ${parseInt(p[2], 10)} ${THAI_MONTHS_SHORT[parseInt(p[1], 10)-1]}`;
+            } else if (customFilterType === 'month' && selectThaiMonth.value && selectThaiYear.value) {
+                const mIndex = parseInt(selectThaiMonth.value, 10) - 1;
+                const yThai = parseInt(selectThaiYear.value, 10) + 543;
+                currentHeaderTitle = `ยอดขายเดือน ${THAI_MONTHS_FULL[mIndex]} ${yThai}`;
+
+                const targetM = `${selectThaiYear.value}-${String(selectThaiMonth.value).padStart(2, '0')}`;
+                const matchedSummary = historySummary.find(h => String(h.month).trim() === targetM);
+
+                // หากเดือนที่เลือกไม่มีใน sales ปัจจุบันแต่มีใน historySummary ให้ดึงข้อมูลสรุปมาแสดงทันที
+                if (matchedSummary && displaySales.length === 0) {
+                    isHistoricalMonthSelected = true;
+                    displayTotalSales = Number(matchedSummary.sales) || 0;
+                    displayTotalCash = Number(matchedSummary.cash) || 0;
+                    displayTotalQr = Number(matchedSummary.qr) || 0;
+                    displayTotalCost = Number(matchedSummary.cost) || 0;
+                    displayTotalPieces = Number(matchedSummary.totalQty) || 0;
+
+                    catStats['เครื่องดื่ม'].sum = Number(matchedSummary.drinkSum) || 0;
+                    catStats['เครื่องดื่ม'].count = Number(matchedSummary.drinkQty) || 0;
+                    catStats['เครื่องดื่ม'].cash = Number(matchedSummary.drinkCash) || 0;
+                    catStats['เครื่องดื่ม'].qr = Number(matchedSummary.drinkQR) || 0;
+
+                    catStats['ของทอด/ทานเล่น'].sum = Number(matchedSummary.snackSum) || 0;
+                    catStats['ของทอด/ทานเล่น'].count = Number(matchedSummary.snackQty) || 0;
+                    catStats['ของทอด/ทานเล่น'].cash = Number(matchedSummary.snackCash) || 0;
+                    catStats['ของทอด/ทานเล่น'].qr = Number(matchedSummary.snackQR) || 0;
+
+                    catStats['ขนมปังปิ้ง'].sum = Number(matchedSummary.breadSum) || 0;
+                    catStats['ขนมปังปิ้ง'].count = Number(matchedSummary.breadQty) || 0;
+                    catStats['ขนมปังปิ้ง'].cash = Number(matchedSummary.breadCash) || 0;
+                    catStats['ขนมปังปิ้ง'].qr = Number(matchedSummary.breadQR) || 0;
+
+                    catStats['อาหาร/กะเพรา'].sum = Number(matchedSummary.foodSum) || 0;
+                    catStats['อาหาร/กะเพรา'].count = Number(matchedSummary.foodQty) || 0;
+                    catStats['อาหาร/กะเพรา'].cash = Number(matchedSummary.foodCash) || 0;
+                    catStats['อาหาร/กะเพรา'].qr = Number(matchedSummary.foodQR) || 0;
                 }
+            } else {
+                currentHeaderTitle = "ยอดขายประจำเดือน";
+            }
+        } else if (currentFilter === 'all') {
+            currentHeaderTitle = "ยอดขายทั้งหมด";
+            if (historySummary.length > 0) {
+                const activeMonthSet = new Set(sales.map(s => normalizeDateStr(s.date).substring(0, 7)));
+                historySummary.forEach(h => {
+                    if (!activeMonthSet.has(h.month)) {
+                        displayTotalSales += Number(h.sales) || 0;
+                        displayTotalCash += Number(h.cash) || 0;
+                        displayTotalQr += Number(h.qr) || 0;
+                        displayTotalCost += Number(h.cost) || 0;
+                        displayTotalPieces += Number(h.totalQty) || 0;
 
-                if (!catStats[cat]) cat = 'เครื่องดื่ม';
+                        catStats['เครื่องดื่ม'].sum += Number(h.drinkSum) || 0;
+                        catStats['เครื่องดื่ม'].count += Number(h.drinkQty) || 0;
+                        catStats['เครื่องดื่ม'].cash += Number(h.drinkCash) || 0;
+                        catStats['เครื่องดื่ม'].qr += Number(h.drinkQR) || 0;
 
-                catStats[cat].sum += price;
-                catStats[cat].count += qty;
-                if (isQR) catStats[cat].qr += price; else catStats[cat].cash += price;
+                        catStats['ของทอด/ทานเล่น'].sum += Number(h.snackSum) || 0;
+                        catStats['ของทอด/ทานเล่น'].count += Number(h.snackQty) || 0;
+                        catStats['ของทอด/ทานเล่น'].cash += Number(h.snackCash) || 0;
+                        catStats['ของทอด/ทานเล่น'].qr += Number(h.snackQR) || 0;
 
-                if (!menuGrouped[cat]) menuGrouped[cat] = {};
-                if (!menuGrouped[cat][item.name]) menuGrouped[cat][item.name] = { qty: 0, sum: 0 };
-                menuGrouped[cat][item.name].qty += qty;
-                menuGrouped[cat][item.name].sum += price;
-            });
+                        catStats['ขนมปังปิ้ง'].sum += Number(h.breadSum) || 0;
+                        catStats['ขนมปังปิ้ง'].count += Number(h.breadQty) || 0;
+                        catStats['ขนมปังปิ้ง'].cash += Number(h.breadCash) || 0;
+                        catStats['ขนมปังปิ้ง'].qr += Number(h.breadQR) || 0;
 
+                        catStats['อาหาร/กะเพรา'].sum += Number(h.foodSum) || 0;
+                        catStats['อาหาร/กะเพรา'].count += Number(h.foodQty) || 0;
+                        catStats['อาหาร/กะเพรา'].cash += Number(h.foodCash) || 0;
+                        catStats['อาหาร/กะเพรา'].qr += Number(h.foodQR) || 0;
+                    }
+                });
+            }
+        }
+
+        revenueTitleLabel.innerText = currentHeaderTitle;
+        totalSales.innerText = displayTotalSales.toLocaleString();
+        
+        let subText = `ยอดขายรวม • ${displayTotalPieces} ชิ้น`;
+        if (isHistoricalMonthSelected) {
+            subText += ` (สรุปยอดจาก Archive ประจำเดือน)`;
+        } else {
+            subText += ` (${currentFilter === 'all' ? 'สะสมทั้งหมด' : displaySales.length + ' รายการ'})`;
+        }
+        totalSalesSub.innerText = subText;
+        
+        totalCash.innerText = displayTotalCash.toLocaleString();
+        totalQr.innerText = displayTotalQr.toLocaleString();
+        totalCost.innerText = displayTotalCost.toLocaleString();
+        totalProfit.innerText = (displayTotalSales - displayTotalCost).toLocaleString();
+
+        document.getElementById('catDrinkSum').innerText = catStats['เครื่องดื่ม'].sum.toLocaleString();
+        document.getElementById('catDrinkCount').innerText = `${catStats['เครื่องดื่ม'].count} แก้ว`;
+        document.getElementById('catDrinkPay').innerHTML = `<span class="split-chip cash">${catStats['เครื่องดื่ม'].cash.toLocaleString()}</span><span class="split-chip qr">${catStats['เครื่องดื่ม'].qr.toLocaleString()}</span>`;
+
+        document.getElementById('catSnackSum').innerText = catStats['ของทอด/ทานเล่น'].sum.toLocaleString();
+        document.getElementById('catSnackCount').innerText = `${catStats['ของทอด/ทานเล่น'].count} ชุด`;
+        document.getElementById('catSnackPay').innerHTML = `<span class="split-chip cash">${catStats['ของทอด/ทานเล่น'].cash.toLocaleString()}</span><span class="split-chip qr">${catStats['ของทอด/ทานเล่น'].qr.toLocaleString()}</span>`;
+
+        document.getElementById('catBreadSum').innerText = catStats['ขนมปังปิ้ง'].sum.toLocaleString();
+        document.getElementById('catBreadCount').innerText = `${catStats['ขนมปังปิ้ง'].count} ชิ้น`;
+        document.getElementById('catBreadPay').innerHTML = `<span class="split-chip cash">${catStats['ขนมปังปิ้ง'].cash.toLocaleString()}</span><span class="split-chip qr">${catStats['ขนมปังปิ้ง'].qr.toLocaleString()}</span>`;
+
+        document.getElementById('catFoodSum').innerText = catStats['อาหาร/กะเพรา'].sum.toLocaleString();
+        document.getElementById('catFoodCount').innerText = `${catStats['อาหาร/กะเพรา'].count} จาน`;
+        document.getElementById('catFoodPay').innerHTML = `<span class="split-chip cash">${catStats['อาหาร/กะเพรา'].cash.toLocaleString()}</span><span class="split-chip qr">${catStats['อาหาร/กะเพรา'].qr.toLocaleString()}</span>`;
+
+        if (!displaySales.length) {
+            if (isHistoricalMonthSelected) {
+                itemList.innerHTML = '<div class="empty-placeholder">📁 ข้อมูลออเดอร์ของเดือนนี้ถูกจัดเก็บเข้า Archive เรียบร้อยแล้ว (ดูยอดสรุปได้ที่การ์ดด้านบน)</div>';
+            } else {
+                itemList.innerHTML = '<div class="empty-placeholder">ยังไม่มีรายการขายในช่วงนี้</div>';
+            }
+        } else {
             const sorted = displaySales.slice().sort((a, b) => {
                 const dateA = normalizeDateStr(a.date); const dateB = normalizeDateStr(b.date);
                 if (dateA !== dateB) return dateB.localeCompare(dateA);
@@ -2173,91 +2298,8 @@
             </div>
         `).join('') || '<div class="empty-placeholder">ไม่มีรายการต้นทุน</div>';
 
-        let displayTotalSales = totalS;
-        let displayTotalCash = totalCashSum;
-        let displayTotalQr = totalQrSum;
-        let displayTotalCost = totalC;
-        let displayTotalPieces = totalPieces;
-
-        let currentHeaderTitle = "ยอดขายวันนี้";
-        if (currentFilter === 'today') {
-            currentHeaderTitle = "ยอดขายวันนี้";
-        } else if (currentFilter === 'week') {
-            currentHeaderTitle = "ยอดขายอาทิตย์นี้";
-        } else if (currentFilter === 'custom') {
-            if (customFilterType === 'date' && selectDateInput.value) {
-                const p = selectDateInput.value.split('-');
-                currentHeaderTitle = `ยอดขายวันที่ ${parseInt(p[2], 10)} ${THAI_MONTHS_SHORT[parseInt(p[1], 10)-1]}`;
-            } else if (customFilterType === 'month' && selectThaiMonth.value && selectThaiYear.value) {
-                const mIndex = parseInt(selectThaiMonth.value, 10) - 1;
-                const yThai = parseInt(selectThaiYear.value, 10) + 543;
-                currentHeaderTitle = `ยอดขายเดือน ${THAI_MONTHS_FULL[mIndex]} ${yThai}`;
-            } else {
-                currentHeaderTitle = "ยอดขายประจำเดือน";
-            }
-        } else if (currentFilter === 'all') {
-            currentHeaderTitle = "ยอดขายทั้งหมด";
-            if (historySummary.length > 0) {
-                const activeMonthSet = new Set(sales.map(s => normalizeDateStr(s.date).substring(0, 7)));
-                historySummary.forEach(h => {
-                    if (!activeMonthSet.has(h.month)) {
-                        displayTotalSales += Number(h.sales) || 0;
-                        displayTotalCash += Number(h.cash) || 0;
-                        displayTotalQr += Number(h.qr) || 0;
-                        displayTotalCost += Number(h.cost) || 0;
-                        displayTotalPieces += Number(h.totalQty) || 0;
-
-                        // ดึงยอดแยกหมวดหมู่และยอดสด/โอนจากเดือนเก่ามารวมลง 4 กล่อง
-                        catStats['เครื่องดื่ม'].sum += Number(h.drinkSum) || 0;
-                        catStats['เครื่องดื่ม'].count += Number(h.drinkQty) || 0;
-                        catStats['เครื่องดื่ม'].cash += Number(h.drinkCash) || 0;
-                        catStats['เครื่องดื่ม'].qr += Number(h.drinkQR) || 0;
-
-                        catStats['ของทอด/ทานเล่น'].sum += Number(h.snackSum) || 0;
-                        catStats['ของทอด/ทานเล่น'].count += Number(h.snackQty) || 0;
-                        catStats['ของทอด/ทานเล่น'].cash += Number(h.snackCash) || 0;
-                        catStats['ของทอด/ทานเล่น'].qr += Number(h.snackQR) || 0;
-
-                        catStats['ขนมปังปิ้ง'].sum += Number(h.breadSum) || 0;
-                        catStats['ขนมปังปิ้ง'].count += Number(h.breadQty) || 0;
-                        catStats['ขนมปังปิ้ง'].cash += Number(h.breadCash) || 0;
-                        catStats['ขนมปังปิ้ง'].qr += Number(h.breadQR) || 0;
-
-                        catStats['อาหาร/กะเพรา'].sum += Number(h.foodSum) || 0;
-                        catStats['อาหาร/กะเพรา'].count += Number(h.foodQty) || 0;
-                        catStats['อาหาร/กะเพรา'].cash += Number(h.foodCash) || 0;
-                        catStats['อาหาร/กะเพรา'].qr += Number(h.foodQR) || 0;
-                    }
-                });
-            }
-        }
-
-        revenueTitleLabel.innerText = currentHeaderTitle;
-        totalSales.innerText = displayTotalSales.toLocaleString();
-        totalSalesSub.innerText = `ยอดขายรวม • ${displayTotalPieces} ชิ้น (${currentFilter === 'all' ? 'สะสมทั้งหมด' : displaySales.length + ' รายการ'})`;
-        totalCash.innerText = displayTotalCash.toLocaleString();
-        totalQr.innerText = displayTotalQr.toLocaleString();
-        totalCost.innerText = displayTotalCost.toLocaleString();
-        totalProfit.innerText = (displayTotalSales - displayTotalCost).toLocaleString();
-
-        document.getElementById('catDrinkSum').innerText = catStats['เครื่องดื่ม'].sum.toLocaleString();
-        document.getElementById('catDrinkCount').innerText = `${catStats['เครื่องดื่ม'].count} แก้ว`;
-        document.getElementById('catDrinkPay').innerHTML = `<span class="split-chip cash">${catStats['เครื่องดื่ม'].cash.toLocaleString()}</span><span class="split-chip qr">${catStats['เครื่องดื่ม'].qr.toLocaleString()}</span>`;
-
-        document.getElementById('catSnackSum').innerText = catStats['ของทอด/ทานเล่น'].sum.toLocaleString();
-        document.getElementById('catSnackCount').innerText = `${catStats['ของทอด/ทานเล่น'].count} ชุด`;
-        document.getElementById('catSnackPay').innerHTML = `<span class="split-chip cash">${catStats['ของทอด/ทานเล่น'].cash.toLocaleString()}</span><span class="split-chip qr">${catStats['ของทอด/ทานเล่น'].qr.toLocaleString()}</span>`;
-
-        document.getElementById('catBreadSum').innerText = catStats['ขนมปังปิ้ง'].sum.toLocaleString();
-        document.getElementById('catBreadCount').innerText = `${catStats['ขนมปังปิ้ง'].count} ชิ้น`;
-        document.getElementById('catBreadPay').innerHTML = `<span class="split-chip cash">${catStats['ขนมปังปิ้ง'].cash.toLocaleString()}</span><span class="split-chip qr">${catStats['ขนมปังปิ้ง'].qr.toLocaleString()}</span>`;
-
-        document.getElementById('catFoodSum').innerText = catStats['อาหาร/กะเพรา'].sum.toLocaleString();
-        document.getElementById('catFoodCount').innerText = `${catStats['อาหาร/กะเพรา'].count} จาน`;
-        document.getElementById('catFoodPay').innerHTML = `<span class="split-chip cash">${catStats['อาหาร/กะเพรา'].cash.toLocaleString()}</span><span class="split-chip qr">${catStats['อาหาร/กะเพรา'].qr.toLocaleString()}</span>`;
-
         let summaryHtml = '';
-        if (currentFilter === 'all' && historySummary.length > 0) {
+        if ((currentFilter === 'all' || isHistoricalMonthSelected) && historySummary.length > 0) {
             summaryHtml += `<div class="summary-banner-title">📊 สรุปผลประกอบการรายเดือนย้อนหลัง</div>`;
             historySummary.forEach(h => {
                 summaryHtml += `
