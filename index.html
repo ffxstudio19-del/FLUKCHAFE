@@ -77,7 +77,7 @@
             min-height: 100vh;
             padding: 10px 8px 30px;
             color: var(--text-primary);
-            transition: all 0.3s ease;
+            transition: background-color 0.3s ease;
         }
 
         body.light-mode {
@@ -472,7 +472,7 @@
             gap: 2px;
             cursor: pointer;
             box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-            transition: all 0.15s;
+            transition: transform 0.15s;
         }
         .quick-order-btn:active { transform: scale(0.92); }
 
@@ -878,7 +878,7 @@
 <div class="main-wrapper">
     <div class="glass-panel">
         
-        <!-- Compact Header Zone -->
+        <!-- Header -->
         <div class="brand-center-header">
             <div class="logo-avatar-wrap">
                 <img src="logo.png" alt="FLUK CHAFE" class="brand-logo-img" id="mainShopLogo" onerror="handleLogoFallback()">
@@ -902,7 +902,7 @@
             </div>
         </div>
 
-        <!-- Time Filter Bar -->
+        <!-- Filter -->
         <div class="filter-segmented">
             <button type="button" class="filter-chip active" onclick="setTimeFilter('today', this)">☀️ วันนี้</button>
             <button type="button" class="filter-chip" onclick="setTimeFilter('week', this)">📅 อาทิตย์นี้</button>
@@ -910,7 +910,6 @@
             <button type="button" class="filter-chip" onclick="setTimeFilter('all', this)">📋 ทั้งหมด</button>
         </div>
 
-        <!-- Custom Filter -->
         <div class="custom-filter-box" id="customFilterBox">
             <div class="custom-filter-type-selector">
                 <button type="button" class="btn-custom-sub active" id="btnSubMonth" onclick="switchCustomSubMode('month')">🗓️ ประจำเดือน</button>
@@ -964,7 +963,7 @@
             </div>
         </div>
 
-        <!-- Category Stat Pods (Compact 2x2) -->
+        <!-- 4 Category Stat Pods -->
         <div class="category-pods-grid">
             <div class="stat-pod drink-theme">
                 <div class="pod-top-row">
@@ -1015,7 +1014,7 @@
             </div>
         </div>
 
-        <!-- DYNAMIC BEST SELLER POS GRID -->
+        <!-- Dynamic POS Grid -->
         <div class="bestseller-pos-section">
             <div class="pos-section-header">
                 <span><i class="ph-bold ph-flame" style="color:#f59e0b;"></i> 🔥 เมนูยอดฮิต ขายดีล่าสุด</span>
@@ -1024,10 +1023,10 @@
             <div class="bestseller-grid" id="dynamicBestsellerGrid"></div>
         </div>
 
-        <!-- Order Input Studio Form -->
+        <!-- Order Input -->
         <form id="quickForm" class="order-input-studio" onsubmit="return handleAdd(event)">
             <div class="studio-input-bar">
-                <input type="text" id="quickInput" placeholder="เช่น ชาไทย เย็น 2, โกโก้ เย็น" autocomplete="off" autofocus oninput="handleSearchSuggest(this.value)">
+                <input type="text" id="quickInput" placeholder="เช่น ชาไทย เย็น 2, โกโก้ เย็น" autocomplete="off" autofocus oninput="debounceSearchSuggest(this.value)">
                 <button type="submit" class="btn-studio-submit" id="btnSubmitOrder">รับออเดอร์</button>
             </div>
             <div id="suggestBox" class="live-suggest-box"></div>
@@ -1053,7 +1052,7 @@
             <button type="button" class="workspace-tab-btn" id="tabPrices" onclick="switchTab('prices')">⚙️ ตั้งราคา</button>
         </div>
 
-        <!-- Views -->
+        <!-- Tab Views -->
         <div class="scrollable-feed" id="historyView"><div id="itemList"></div></div>
         <div class="scrollable-feed" id="summaryView" style="display: none;"><div id="menuSummaryList"></div></div>
 
@@ -1080,7 +1079,7 @@
             </div>
 
             <div class="price-search-box" style="margin-bottom:10px;">
-                <input type="text" id="priceSearchInput" placeholder="🔍 ค้นหาเมนูเพื่อแก้ไขราคา/สูตร..." oninput="renderPriceSettingList()" style="width:100%; padding:8px 12px; border:1px solid var(--surface-border); border-radius:10px; background:var(--surface-hover); color:var(--text-primary); outline:none; font-size:0.82rem;">
+                <input type="text" id="priceSearchInput" placeholder="🔍 ค้นหาเมนูเพื่อแก้ไขราคา/สูตร..." oninput="debouncePriceSearch()" style="width:100%; padding:8px 12px; border:1px solid var(--surface-border); border-radius:10px; background:var(--surface-hover); color:var(--text-primary); outline:none; font-size:0.82rem;">
             </div>
             <div id="priceSettingList"></div>
 
@@ -1301,6 +1300,7 @@
     let isBackdateActive = false;
     let isSubmittingOrder = false;
     let isSyncing = false;
+    let lastDataSignature = '';
 
     if (localStorage.getItem('flukchafe_light_mode') === 'true') {
         document.body.classList.add('light-mode');
@@ -1452,7 +1452,6 @@
         return str;
     }
 
-    // คำนวณช่วงวันจันทร์-อาทิตย์ของสัปดาห์ปัจจุบัน (ป้องกันปัญหา Timezone ข้ามวัน)
     function getWeekRangeBKK() {
         const todayStr = getBangkokDateStr();
         const [y, m, d] = todayStr.split('-').map(Number);
@@ -1574,6 +1573,7 @@
         }).join('');
     }
 
+    // ระบบ Background Sync แบบไร้รอยต่อ (ไม่เรนเดอร์หน้าจอใหม่ถ้าข้อมูลเดิมไม่มีการเปลี่ยน)
     async function syncData(manual = false) {
         if (isSyncing && !manual) return;
         isSyncing = true;
@@ -1600,7 +1600,7 @@
                 const combined = [...unconfirmed, ...serverSales];
                 const seen = new Set();
                 
-                sales = combined.filter(item => {
+                const newMergedSales = combined.filter(item => {
                     const itId = String(item.id).trim();
                     if (seen.has(itId)) return false;
                     seen.add(itId);
@@ -1612,20 +1612,27 @@
                     }
                     return true;
                 });
-                
+
+                // ตรวจสอบ Signature ข้อมูล หากตรงกับเดิม จะไม่ Render DOM ให้กระตุก
+                const currentSig = `${newMergedSales.length}-${(data.expenses||[]).length}-${(data.historySummary||[]).length}`;
+                sales = newMergedSales;
                 expenses = data.expenses || [];
                 historySummary = data.historySummary || [];
                 priceBook = Object.assign({}, MASTER_PRICES, data.prices || {});
                 recipeBook = Object.assign({}, MASTER_RECIPES, data.recipes || {});
                 
                 saveLocalBackup();
-                renderUI();
+
+                if (manual || currentSig !== lastDataSignature) {
+                    lastDataSignature = currentSig;
+                    renderUI();
+                    if (activeTab === 'prices') renderPriceSettingList();
+                }
                 
                 if (hasNewExternalOrder && !manual) {
                     playSound('order');
                 }
                 
-                if (activeTab === 'prices') renderPriceSettingList();
                 document.getElementById('syncStatus').innerText = 'พร้อมใช้งาน (อัปเดตแล้ว)';
             }
         } catch (e) {
@@ -1644,6 +1651,7 @@
             localStorage.removeItem('flukchafe_sales_cache');
             localStorage.removeItem('flukchafe_summary_cache');
             sales = []; historySummary = []; localPendingSales.clear();
+            lastDataSignature = '';
             renderUI(); syncData(true);
             alert('ล้างแคชเรียบร้อยแล้ว');
         }
@@ -1742,6 +1750,12 @@
         btnToggleBackdate.classList.toggle('active', isBackdateActive);
     }
 
+    let suggestDebounceTimer = null;
+    function debounceSearchSuggest(val) {
+        clearTimeout(suggestDebounceTimer);
+        suggestDebounceTimer = setTimeout(() => handleSearchSuggest(val), 120);
+    }
+
     function handleSearchSuggest(val) {
         const query = val.trim().toLowerCase().replace(/\s+/g, '');
         if (!query) { suggestBox.style.display = 'none'; return; }
@@ -1782,7 +1796,6 @@
         renderUI(); 
     }
 
-    // จัดหมวดหมู่อัตโนมัติ ครอบคลุมทุกการสะกด
     function detectCategory(name) {
         const n = String(name || '').toLowerCase();
         if (n.includes('ปัง') || n.includes('โทสต์') || n.includes('เนยนม') || n.includes('เนยน้ำตาล') || n.includes('แยม') || n.includes('ปิ้ง')) return 'ขนมปังปิ้ง';
@@ -2000,7 +2013,6 @@
         closeEditModal();
     }
 
-    // กรองข้อมูลรายการขายตามช่วงเวลาที่กด
     function getFilteredData() {
         const todayStr = getBangkokDateStr();
         const weekRange = getWeekRangeBKK();
@@ -2032,7 +2044,7 @@
         };
     }
 
-    // ฟังก์ชันเรนเดอร์ UI หลัก รวมยอด 4 กล่องครบ 100% ทุกเงื่อนไข
+    // ฟังก์ชันคำนวณและวาดหน้าจอ (Render UI) ฉบับรวมยอด Archive สมบูรณ์
     function renderUI() {
         const { sales: displaySales, expenses: displayExpenses } = getFilteredData();
         let totalS = 0, totalC = 0, totalCashSum = 0, totalQrSum = 0, totalPieces = 0;
@@ -2046,7 +2058,6 @@
         };
         const menuGrouped = { 'เครื่องดื่ม': {}, 'ของทอด/ทานเล่น': {}, 'ขนมปังปิ้ง': {}, 'อาหาร/กะเพรา': {} };
 
-        itemList.innerHTML = '';
         if (!displaySales.length) {
             itemList.innerHTML = '<div class="empty-placeholder">ยังไม่มีรายการขายในช่วงนี้</div>';
         } else {
@@ -2059,16 +2070,15 @@
                 totalPieces += qty;
                 if (isQR) totalQrSum += price; else totalCashSum += price;
 
-                // ตรวจจับหมวดหมู่ให้เข้า 4 กล่องอย่างแม่นยำ
                 let cat = item.category;
                 const rawC = String(cat || '');
-                if (rawC.includes('ทอด') || rawC.includes('เล่น')) {
+                if (rawC.includes('ทอด') || rawC.includes('เล่น') || rawC.includes('เฟรน') || rawC.includes('ไก่') || rawC.includes('ชีส') || rawC.includes('ไส้กรอก')) {
                     cat = 'ของทอด/ทานเล่น';
-                } else if (rawC.includes('ปัง')) {
+                } else if (rawC.includes('ปัง') || rawC.includes('โทสต์') || rawC.includes('เนย')) {
                     cat = 'ขนมปังปิ้ง';
                 } else if (rawC.includes('อาหาร') || rawC.includes('ข้าว') || rawC.includes('กะเพรา') || rawC.includes('กระเพรา')) {
                     cat = 'อาหาร/กะเพรา';
-                } else if (rawC.includes('เครื่องดื่ม') || rawC.includes('ชา') || rawC.includes('กาแฟ')) {
+                } else if (rawC.includes('เครื่องดื่ม') || rawC.includes('ชา') || rawC.includes('กาแฟ') || rawC.includes('โกโก้')) {
                     cat = 'เครื่องดื่ม';
                 } else {
                     cat = detectCategory(item.name);
@@ -2106,6 +2116,7 @@
             });
             if (currBatch) batches.push(currBatch);
 
+            let allCardsHtml = '';
             batches.forEach(b => {
                 let bTotal = 0, bQty = 0;
                 b.items.forEach(it => { 
@@ -2114,39 +2125,39 @@
                     bQty += q; 
                 });
 
-                const card = document.createElement('div');
-                card.className = 'order-cluster-card';
-                card.innerHTML = `
-                    <div class="cluster-header">
-                        <div class="cluster-time-badge"><i class="ph-bold ph-clock"></i> ${b.timeKey} (${bQty} ชิ้น)</div>
-                        <div class="cluster-total-tag">${bTotal.toLocaleString()}</div>
-                    </div>
-                    <div>${b.items.map(item => {
-                        const itPrice = Number(item.totalPrice) > 0 ? Number(item.totalPrice) : (Number(item.unitPrice||0) * Number(item.qty||1));
-                        const hasRecipe = Boolean(findRecipeText(item.name));
-                        return `
-                        <div class="cluster-item-row ${item.status === 'done' ? 'row-completed' : ''}">
-                            <div class="cluster-item-left">
-                                <div class="checkbox-tick-square" onclick="fastToggle(event, '${item.id}')">${item.status === 'done' ? '✓' : ''}</div>
-                                <div>
-                                    <div class="item-name-heading" ${hasRecipe ? `onclick="showRecipe('${item.name}')" style="cursor:pointer;"` : ''}>
-                                        ${item.name} <b style="color:var(--brand-accent);">x${item.qty}</b>
-                                        ${hasRecipe ? '<span style="font-size:0.6rem; color:var(--brand-accent); margin-left:2px; font-weight:600;">[สูตร]</span>' : ''}
+                allCardsHtml += `
+                    <div class="order-cluster-card">
+                        <div class="cluster-header">
+                            <div class="cluster-time-badge"><i class="ph-bold ph-clock"></i> ${b.timeKey} (${bQty} ชิ้น)</div>
+                            <div class="cluster-total-tag">${bTotal.toLocaleString()}</div>
+                        </div>
+                        <div>${b.items.map(item => {
+                            const itPrice = Number(item.totalPrice) > 0 ? Number(item.totalPrice) : (Number(item.unitPrice||0) * Number(item.qty||1));
+                            const hasRecipe = Boolean(findRecipeText(item.name));
+                            return `
+                            <div class="cluster-item-row ${item.status === 'done' ? 'row-completed' : ''}">
+                                <div class="cluster-item-left">
+                                    <div class="checkbox-tick-square" onclick="fastToggle(event, '${item.id}')">${item.status === 'done' ? '✓' : ''}</div>
+                                    <div>
+                                        <div class="item-name-heading" ${hasRecipe ? `onclick="showRecipe('${item.name}')" style="cursor:pointer;"` : ''}>
+                                            ${item.name} <b style="color:var(--brand-accent);">x${item.qty}</b>
+                                            ${hasRecipe ? '<span style="font-size:0.6rem; color:var(--brand-accent); margin-left:2px; font-weight:600;">[สูตร]</span>' : ''}
+                                        </div>
+                                        <div style="font-size:0.68rem; color:var(--text-secondary);">(@${item.unitPrice} บ.)</div>
                                     </div>
-                                    <div style="font-size:0.68rem; color:var(--text-secondary);">(@${item.unitPrice} บ.)</div>
+                                </div>
+                                <div class="cluster-item-right">
+                                    <span style="font-family:'Outfit',sans-serif; font-weight:700; font-size:0.88rem; margin-right:3px;">${itPrice.toLocaleString()}</span>
+                                    <button type="button" class="pay-switch-badge ${item.paymentMethod === 'promptpay' ? 'qr' : 'cash'}" onclick="togglePayMethod('${item.id}')">${item.paymentMethod === 'promptpay' ? '📱 สแกน' : '💵 สด'}</button>
+                                    <button type="button" class="btn-item-ctrl" onclick="openEditModal('${item.id}')"><i class="ph-bold ph-pencil-simple"></i></button>
+                                    <button type="button" class="btn-item-ctrl del" onclick="deleteItem('${item.id}')"><i class="ph-bold ph-trash"></i></button>
                                 </div>
                             </div>
-                            <div class="cluster-item-right">
-                                <span style="font-family:'Outfit',sans-serif; font-weight:700; font-size:0.88rem; margin-right:3px;">${itPrice.toLocaleString()}</span>
-                                <button type="button" class="pay-switch-badge ${item.paymentMethod === 'promptpay' ? 'qr' : 'cash'}" onclick="togglePayMethod('${item.id}')">${item.paymentMethod === 'promptpay' ? '📱 สแกน' : '💵 สด'}</button>
-                                <button type="button" class="btn-item-ctrl" onclick="openEditModal('${item.id}')"><i class="ph-bold ph-pencil-simple"></i></button>
-                                <button type="button" class="btn-item-ctrl del" onclick="deleteItem('${item.id}')"><i class="ph-bold ph-trash"></i></button>
-                            </div>
-                        </div>
-                    `;}).join('')}</div>
+                        `;}).join('')}</div>
+                    </div>
                 `;
-                itemList.appendChild(card);
             });
+            itemList.innerHTML = allCardsHtml;
         }
 
         expenseList.innerHTML = displayExpenses.map(item => `
@@ -2196,15 +2207,26 @@
                         displayTotalCost += Number(h.cost) || 0;
                         displayTotalPieces += Number(h.totalQty) || 0;
 
-                        // รวมตัวเลขย้อนหลังเข้า 4 กล่องหมวดหมู่ด้วย
+                        // ดึงยอดแยกหมวดหมู่และยอดสด/โอนจากเดือนเก่ามารวมลง 4 กล่อง
                         catStats['เครื่องดื่ม'].sum += Number(h.drinkSum) || 0;
                         catStats['เครื่องดื่ม'].count += Number(h.drinkQty) || 0;
+                        catStats['เครื่องดื่ม'].cash += Number(h.drinkCash) || 0;
+                        catStats['เครื่องดื่ม'].qr += Number(h.drinkQR) || 0;
+
                         catStats['ของทอด/ทานเล่น'].sum += Number(h.snackSum) || 0;
                         catStats['ของทอด/ทานเล่น'].count += Number(h.snackQty) || 0;
+                        catStats['ของทอด/ทานเล่น'].cash += Number(h.snackCash) || 0;
+                        catStats['ของทอด/ทานเล่น'].qr += Number(h.snackQR) || 0;
+
                         catStats['ขนมปังปิ้ง'].sum += Number(h.breadSum) || 0;
                         catStats['ขนมปังปิ้ง'].count += Number(h.breadQty) || 0;
+                        catStats['ขนมปังปิ้ง'].cash += Number(h.breadCash) || 0;
+                        catStats['ขนมปังปิ้ง'].qr += Number(h.breadQR) || 0;
+
                         catStats['อาหาร/กะเพรา'].sum += Number(h.foodSum) || 0;
                         catStats['อาหาร/กะเพรา'].count += Number(h.foodQty) || 0;
+                        catStats['อาหาร/กะเพรา'].cash += Number(h.foodCash) || 0;
+                        catStats['อาหาร/กะเพรา'].qr += Number(h.foodQR) || 0;
                     }
                 });
             }
@@ -2258,6 +2280,12 @@
 
         menuSummaryList.innerHTML = summaryHtml || '<div class="empty-placeholder">ไม่มีข้อมูลสรุป</div>';
         renderDynamicBestSellers();
+    }
+
+    let priceSearchTimer = null;
+    function debouncePriceSearch() {
+        clearTimeout(priceSearchTimer);
+        priceSearchTimer = setTimeout(() => renderPriceSettingList(), 150);
     }
 
     function renderPriceSettingList() {
@@ -2412,10 +2440,9 @@
         const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
         const blob = new Blob([bom, content], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('link');
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = filename;
-        a.click();
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        link.click();
     }
 </script>
 </body>
