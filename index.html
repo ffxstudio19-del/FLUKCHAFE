@@ -2112,10 +2112,13 @@
                 currentHeaderTitle = `ยอดขายเดือน ${THAI_MONTHS_FULL[mIndex]} ${yThai}`;
 
                 const targetM = `${selectThaiYear.value}-${String(selectThaiMonth.value).padStart(2, '0')}`;
-                const matchedSummary = historySummary.find(h => String(h.month).trim() === targetM);
+                const matchedSummary = historySummary.find(h => {
+    const cleanHMonth = String(h.month || '').trim().substring(0, 7);
+    return cleanHMonth === targetM;
+});
 
-                // หากเดือนที่เลือกไม่มีใน sales ปัจจุบันแต่มีใน historySummary ให้ดึงข้อมูลสรุปมาแสดงทันที
-                if (matchedSummary && displaySales.length === 0) {
+// ดึงข้อมูล Archive มาแสดงทันทีเมื่อพบประวัติสรุปรายเดือน
+if (matchedSummary && (displaySales.length === 0 || displayTotalSales === 0)) {
                     isHistoricalMonthSelected = true;
                     displayTotalSales = Number(matchedSummary.sales) || 0;
                     displayTotalCash = Number(matchedSummary.cash) || 0;
