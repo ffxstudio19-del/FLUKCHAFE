@@ -1452,16 +1452,17 @@
         return str;
     }
 
+    // คำนวณช่วงวันจันทร์-อาทิตย์ของสัปดาห์ปัจจุบัน (ป้องกันปัญหา Timezone ข้ามวัน)
     function getWeekRangeBKK() {
         const todayStr = getBangkokDateStr();
         const [y, m, d] = todayStr.split('-').map(Number);
-        const curDate = new Date(Date.UTC(y, m - 1, d));
+        const curDate = new Date(Date.UTC(y, m - 1, d, 12, 0, 0));
         const dayOfWeek = curDate.getUTCDay() === 0 ? 7 : curDate.getUTCDay();
         const monday = new Date(curDate);
         monday.setUTCDate(curDate.getUTCDate() - dayOfWeek + 1);
         const sunday = new Date(monday);
         sunday.setUTCDate(monday.getUTCDate() + 6);
-        const fmt = d => `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;
+        const fmt = dt => `${dt.getUTCFullYear()}-${String(dt.getUTCMonth()+1).padStart(2,'0')}-${String(dt.getUTCDate()).padStart(2,'0')}`;
         return { start: fmt(monday), end: fmt(sunday) };
     }
 
@@ -1592,7 +1593,6 @@
                     if (serverIds.has(String(id).trim())) localPendingSales.delete(id);
                 }
                 
-                // สร้าง Map ตรวจจับข้อมูลปัจจุบันในเครื่องเพื่อคงเวลาเดิมไว้ ไม่ให้ถูกเวลาจากชีตเขียนทับ
                 const existingMap = new Map();
                 sales.forEach(it => existingMap.set(String(it.id).trim(), it));
 
@@ -1605,7 +1605,6 @@
                     if (seen.has(itId)) return false;
                     seen.add(itId);
 
-                    // ถ้ารายการนี้มีเวลาเดิมที่ถูกต้องอยู่ในเครื่องอยู่แล้ว ให้ยึดเวลาเดิมไว้
                     if (existingMap.has(itId)) {
                         const localItem = existingMap.get(itId);
                         item.date = localItem.date || item.date;
@@ -1783,11 +1782,12 @@
         renderUI(); 
     }
 
+    // จัดหมวดหมู่อัตโนมัติ ครอบคลุมทุกการสะกด
     function detectCategory(name) {
-        const n = String(name).toLowerCase();
+        const n = String(name || '').toLowerCase();
         if (n.includes('ปัง') || n.includes('โทสต์') || n.includes('เนยนม') || n.includes('เนยน้ำตาล') || n.includes('แยม') || n.includes('ปิ้ง')) return 'ขนมปังปิ้ง';
-        if (n.includes('เฟรน') || n.includes('ฟราย') || n.includes('ชีส') || n.includes('ทอด') || n.includes('ไส้กรอก') || n.includes('ป๊อบ') || n.includes('นักเก็ต') || n.includes('ลูกชิ้น')) return 'ของทอด/ทานเล่น';
-        if (n.includes('กะเพรา') || n.includes('กระเพรา') || n.includes('ข้าว') || n.includes('หมูปิ้ง') || n.includes('ไข่ดาว') || n.includes('ไข่เจียว') || n.includes('มาม่า')) return 'อาหาร/กะเพรา';
+        if (n.includes('เฟรน') || n.includes('ฟราย') || n.includes('ชีส') || n.includes('ทอด') || n.includes('ไส้กรอก') || n.includes('ป๊อบ') || n.includes('นักเก็ต') || n.includes('ลูกชิ้น') || n.includes('เล่น')) return 'ของทอด/ทานเล่น';
+        if (n.includes('กะเพรา') || n.includes('กระเพรา') || n.includes('ข้าว') || n.includes('หมูปิ้ง') || n.includes('ไข่ดาว') || n.includes('ไข่เจียว') || n.includes('มาม่า') || n.includes('อาหาร')) return 'อาหาร/กะเพรา';
         return 'เครื่องดื่ม';
     }
 
@@ -2000,26 +2000,39 @@
         closeEditModal();
     }
 
+    // กรองข้อมูลรายการขายตามช่วงเวลาที่กด
     function getFilteredData() {
         const todayStr = getBangkokDateStr();
         const weekRange = getWeekRangeBKK();
         let filterFn = () => true;
+
         if (currentFilter === 'today') {
             filterFn = it => normalizeDateStr(it.date) === todayStr;
         } else if (currentFilter === 'week') {
-            filterFn = it => { const d = normalizeDateStr(it.date); return d >= weekRange.start && d <= weekRange.end; };
+            filterFn = it => {
+                const d = normalizeDateStr(it.date);
+                if (!d) return false;
+                return d >= weekRange.start && d <= weekRange.end;
+            };
         } else if (currentFilter === 'custom') {
             if (customFilterType === 'date' && selectDateInput.value) {
                 const targetD = normalizeDateStr(selectDateInput.value);
                 filterFn = it => normalizeDateStr(it.date) === targetD;
             } else if (customFilterType === 'month' && selectThaiMonth.value && selectThaiYear.value) {
-                const targetM = `${selectThaiYear.value}-${selectThaiMonth.value}`;
+                const targetM = `${selectThaiYear.value}-${String(selectThaiMonth.value).padStart(2, '0')}`;
                 filterFn = it => normalizeDateStr(it.date).substring(0, 7) === targetM;
             }
+        } else if (currentFilter === 'all') {
+            filterFn = () => true;
         }
-        return { sales: sales.filter(filterFn), expenses: expenses.filter(filterFn) };
+
+        return { 
+            sales: sales.filter(filterFn), 
+            expenses: expenses.filter(filterFn) 
+        };
     }
 
+    // ฟังก์ชันเรนเดอร์ UI หลัก รวมยอด 4 กล่องครบ 100% ทุกเงื่อนไข
     function renderUI() {
         const { sales: displaySales, expenses: displayExpenses } = getFilteredData();
         let totalS = 0, totalC = 0, totalCashSum = 0, totalQrSum = 0, totalPieces = 0;
@@ -2042,22 +2055,32 @@
                 const qty = Number(item.qty) || 1;
                 const price = Number(item.totalPrice) > 0 ? Number(item.totalPrice) : (unitP * qty);
                 const isQR = item.paymentMethod === 'promptpay';
-                totalS += price; totalPieces += qty;
+                totalS += price; 
+                totalPieces += qty;
                 if (isQR) totalQrSum += price; else totalCashSum += price;
 
+                // ตรวจจับหมวดหมู่ให้เข้า 4 กล่องอย่างแม่นยำ
                 let cat = item.category;
-                if (!catStats[cat]) {
-                    const rawC = String(cat || '');
-                    if (rawC.includes('ทอด') || rawC.includes('เล่น')) cat = 'ของทอด/ทานเล่น';
-                    else if (rawC.includes('ปัง')) cat = 'ขนมปังปิ้ง';
-                    else if (rawC.includes('อาหาร') || rawC.includes('ข้าว') || rawC.includes('กะเพรา')) cat = 'อาหาร/กะเพรา';
-                    else cat = detectCategory(item.name);
+                const rawC = String(cat || '');
+                if (rawC.includes('ทอด') || rawC.includes('เล่น')) {
+                    cat = 'ของทอด/ทานเล่น';
+                } else if (rawC.includes('ปัง')) {
+                    cat = 'ขนมปังปิ้ง';
+                } else if (rawC.includes('อาหาร') || rawC.includes('ข้าว') || rawC.includes('กะเพรา') || rawC.includes('กระเพรา')) {
+                    cat = 'อาหาร/กะเพรา';
+                } else if (rawC.includes('เครื่องดื่ม') || rawC.includes('ชา') || rawC.includes('กาแฟ')) {
+                    cat = 'เครื่องดื่ม';
+                } else {
+                    cat = detectCategory(item.name);
                 }
+
+                if (!catStats[cat]) cat = 'เครื่องดื่ม';
 
                 catStats[cat].sum += price;
                 catStats[cat].count += qty;
                 if (isQR) catStats[cat].qr += price; else catStats[cat].cash += price;
 
+                if (!menuGrouped[cat]) menuGrouped[cat] = {};
                 if (!menuGrouped[cat][item.name]) menuGrouped[cat][item.name] = { qty: 0, sum: 0 };
                 menuGrouped[cat][item.name].qty += qty;
                 menuGrouped[cat][item.name].sum += price;
@@ -2172,6 +2195,16 @@
                         displayTotalQr += Number(h.qr) || 0;
                         displayTotalCost += Number(h.cost) || 0;
                         displayTotalPieces += Number(h.totalQty) || 0;
+
+                        // รวมตัวเลขย้อนหลังเข้า 4 กล่องหมวดหมู่ด้วย
+                        catStats['เครื่องดื่ม'].sum += Number(h.drinkSum) || 0;
+                        catStats['เครื่องดื่ม'].count += Number(h.drinkQty) || 0;
+                        catStats['ของทอด/ทานเล่น'].sum += Number(h.snackSum) || 0;
+                        catStats['ของทอด/ทานเล่น'].count += Number(h.snackQty) || 0;
+                        catStats['ขนมปังปิ้ง'].sum += Number(h.breadSum) || 0;
+                        catStats['ขนมปังปิ้ง'].count += Number(h.breadQty) || 0;
+                        catStats['อาหาร/กะเพรา'].sum += Number(h.foodSum) || 0;
+                        catStats['อาหาร/กะเพรา'].count += Number(h.foodQty) || 0;
                     }
                 });
             }
@@ -2378,10 +2411,11 @@
     function downloadBlob(content, filename) {
         const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
         const blob = new Blob([bom, content], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = filename;
-        link.click();
+        const link = document.createElement('link');
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        a.click();
     }
 </script>
 </body>
