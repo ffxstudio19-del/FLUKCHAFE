@@ -1605,6 +1605,8 @@
                         const localItem = existingMap.get(itId);
                         item.date = localItem.date || item.date;
                         item.time = localItem.time || item.time;
+                        item.paymentMethod = localItem.paymentMethod || item.paymentMethod;
+                        item.status = localItem.status || item.status;
                     }
                     return true;
                 });
@@ -1746,7 +1748,7 @@
         if (item) {
             item.paymentMethod = item.paymentMethod === 'cash' ? 'promptpay' : 'cash';
             if (localPendingSales.has(item.id)) localPendingSales.set(item.id, item);
-            saveLocalBackup();
+            saveLocalBackup(); // บันทึกแคชทันที ป้องกันค่าเด้งกลับ
             renderUI();
             
             fetch(SCRIPT_URL, {
