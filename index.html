@@ -1639,10 +1639,10 @@ const newMergedSales = combined.filter(item => {
         }
     }
 
-    // ซิงค์ทุก 12 วินาทีเมื่อผู้ใช้เปิดจออยู่
-    setInterval(() => {
-        if (!document.hidden) syncData(false);
-    }, 12000);
+   // ซิงค์ทุก 5 วินาทีเมื่อผู้ใช้เปิดจออยู่
+setInterval(() => {
+    if (!document.hidden) syncData(false);
+}, 5000);
 
     document.addEventListener('visibilitychange', () => {
         if (!document.hidden) syncData(false);
