@@ -104,7 +104,7 @@
             padding: 14px;
             box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.15);
             position: relative;
-            overflow: hidden;
+            overflow: visible;
         }
         body.light-mode .glass-panel {
             box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(0, 0, 0, 0.03);
@@ -521,7 +521,7 @@
             cursor: pointer;
             white-space: nowrap;
         }
-        .btn-studio-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+        .btn-studio-submit:active { transform: scale(0.96); }
 
         .backdate-toggle-bar {
             display: flex;
@@ -561,22 +561,26 @@
 
         .live-suggest-box {
             position: absolute;
-            top: 52px;
+            top: 50px;
             left: 0;
-            right: 110px;
-            background: var(--surface-card);
+            right: 100px;
+            background: rgba(15, 23, 42, 0.98);
             backdrop-filter: var(--glass-blur);
             -webkit-backdrop-filter: var(--glass-blur);
             border: 1.5px solid var(--brand-accent);
             border-radius: 14px;
-            max-height: 180px;
+            max-height: 200px;
             overflow-y: auto;
-            z-index: 1000;
+            z-index: 5000;
             display: none;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.6);
+        }
+        body.light-mode .live-suggest-box {
+            background: rgba(255, 255, 255, 0.98);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.15);
         }
         .suggest-row {
-            padding: 8px 14px;
+            padding: 9px 14px;
             border-bottom: 1px solid var(--surface-border);
             font-size: 0.85rem;
             font-weight: 600;
@@ -584,9 +588,8 @@
             justify-content: space-between;
             align-items: center;
             cursor: pointer;
-            transition: background 0.1s;
         }
-        .suggest-row:hover { background: rgba(56, 189, 248, 0.15); color: var(--brand-accent); }
+        .suggest-row:hover, .suggest-row:active { background: rgba(56, 189, 248, 0.2); color: var(--brand-accent); }
         .suggest-row span:last-child {
             font-family: 'Outfit', sans-serif;
             font-weight: 800;
@@ -606,6 +609,8 @@
             padding: 4px;
             border-radius: 14px;
             border: 1px solid var(--surface-border);
+            position: relative;
+            z-index: 10;
         }
         .workspace-tab-btn {
             padding: 8px 2px;
@@ -633,6 +638,8 @@
             overflow-y: auto;
             padding-right: 2px;
             margin-top: 10px;
+            position: relative;
+            z-index: 5;
         }
         .scrollable-feed::-webkit-scrollbar { width: 4px; }
         .scrollable-feed::-webkit-scrollbar-thumb { background: var(--surface-border); border-radius: 10px; }
@@ -777,20 +784,6 @@
         }
         .price-unit-header { display: flex; justify-content: space-between; align-items: center; }
 
-        body.light-mode #pricesView > div:first-child {
-            background: #ffffff !important;
-            border: 1px solid #cbd5e1 !important;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
-        }
-        body.light-mode .price-search-box input {
-            background: #ffffff !important;
-            border: 1px solid #cbd5e1 !important;
-        }
-        body.light-mode .price-edit-unit {
-            background: #ffffff !important;
-            border: 1px solid #e2e8f0 !important;
-        }
-
         .summary-banner-title {
             background: var(--surface-hover);
             padding: 6px 10px;
@@ -845,7 +838,7 @@
             top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(3, 7, 18, 0.75);
             backdrop-filter: blur(10px);
-            z-index: 2000;
+            z-index: 9000;
             display: none;
             align-items: center;
             justify-content: center;
@@ -1105,7 +1098,7 @@
     </div>
 </div>
 
-<!-- Recipe Modal -->
+<!-- Modals -->
 <div class="glass-modal-backdrop" id="recipeModal" onclick="closeRecipeModal(event)">
     <div class="modal-body-card" onclick="event.stopPropagation()">
         <div style="font-size:1.1rem; font-weight:700; color:var(--brand-accent); margin-bottom:10px;" id="recipeModalTitle">📖 สูตรชงเครื่องดื่ม</div>
@@ -1127,7 +1120,6 @@
     </div>
 </div>
 
-<!-- Edit Modal -->
 <div class="glass-modal-backdrop" id="editModal">
     <div class="modal-body-card">
         <div style="font-size:1.05rem; font-weight:700; color:var(--brand-accent); margin-bottom:10px;">✏️ แก้ไขออเดอร์</div>
@@ -1162,7 +1154,6 @@
     </div>
 </div>
 
-<!-- Price Edit Modal -->
 <div class="glass-modal-backdrop" id="priceEditModal">
     <div class="modal-body-card">
         <div style="font-size:1.1rem; font-weight:700; color:var(--brand-accent); margin-bottom:12px;">⚙️ แก้ไขราคาและสูตรชง</div>
@@ -1303,7 +1294,6 @@
     let customFilterType = 'month';
     let isProfitShown = false;
     let isBackdateActive = false;
-    let isSubmittingOrder = false;
     let isSyncing = false;
     let lastDataSignature = '';
 
@@ -1624,7 +1614,6 @@
                 expenses = data.expenses || [];
                 historySummary = data.historySummary || [];
                 
-                // ป้องกัน priceBook และ recipeBook เสียหายเมื่อเซิร์ฟเวอร์ส่งค่าว่าง
                 if (data.prices && Object.keys(data.prices).length > 0) {
                     priceBook = Object.assign({}, MASTER_PRICES, data.prices);
                 }
@@ -1653,7 +1642,15 @@
         }
     }
 
-    setInterval(() => syncData(false), 5000);
+    // ซิงค์ทุก 12 วินาทีเมื่อผู้ใช้เปิดจออยู่
+    setInterval(() => {
+        if (!document.hidden) syncData(false);
+    }, 12000);
+
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) syncData(false);
+    });
+
     syncData(true);
     renderUI();
 
@@ -1724,7 +1721,10 @@
     }
 
     async function fastToggle(event, id) {
-        if (event) event.stopPropagation();
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
         const item = sales.find(s => String(s.id).trim() === String(id).trim());
         if (item) {
             item.status = item.status === 'done' ? 'pending' : 'done';
@@ -1737,7 +1737,7 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify({ action: 'update_status', id: id, status: item.status })
-            }).then(() => setTimeout(() => syncData(true), 500)).catch(e => {});
+            }).catch(e => {});
         }
     }
 
@@ -1753,7 +1753,7 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify({ action: 'update_payment', id: id, paymentMethod: item.paymentMethod })
-            }).then(() => setTimeout(() => syncData(true), 500)).catch(e => {});
+            }).catch(e => {});
         }
     }
 
@@ -1772,10 +1772,14 @@
     let suggestDebounceTimer = null;
     function debounceSearchSuggest(val) {
         clearTimeout(suggestDebounceTimer);
-        suggestDebounceTimer = setTimeout(() => handleSearchSuggest(val), 100);
+        suggestDebounceTimer = setTimeout(() => handleSearchSuggest(val), 80);
     }
 
-    function selectSuggestion(name) {
+    function selectSuggestion(e, name) {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
         quickInput.value = name;
         suggestBox.style.display = 'none';
         quickInput.focus();
@@ -1788,7 +1792,6 @@
             return; 
         }
 
-        // ค้นหาทั้งจากฐานข้อมูลราคา และ Fallback เมื่อออฟไลน์
         const sourceData = (priceBook && Object.keys(priceBook).length > 0) ? priceBook : MASTER_PRICES;
         const matched = Object.entries(sourceData).filter(([name]) => 
             name.toLowerCase().replace(/\s+/g, '').includes(query)
@@ -1802,7 +1805,7 @@
         suggestBox.innerHTML = matched.slice(0, 6).map(([name, price]) => {
             const escaped = name.replace(/'/g, "\\'");
             return `
-                <div class="suggest-row" onpointerdown="selectSuggestion('${escaped}')">
+                <div class="suggest-row" onpointerdown="selectSuggestion(event, '${escaped}')">
                     <span>${name}</span>
                     <span>${price}</span>
                 </div>
@@ -1812,8 +1815,10 @@
     }
 
     document.addEventListener('pointerdown', e => {
-        if (!quickInput.contains(e.target) && !suggestBox.contains(e.target)) {
-            suggestBox.style.display = 'none';
+        if (suggestBox.style.display === 'block') {
+            if (!quickInput.contains(e.target) && !suggestBox.contains(e.target)) {
+                suggestBox.style.display = 'none';
+            }
         }
     });
 
@@ -1897,17 +1902,12 @@
 
     async function handleAdd(e) {
         if (e) e.preventDefault();
-        if (isSubmittingOrder) return false;
         
         const rawVal = quickInput.value.trim();
         if (!rawVal) return false;
         
         const segments = rawVal.split(/[,，\n+]/).map(s => s.trim()).filter(s => s.length > 0);
         if (!segments.length) return false;
-
-        isSubmittingOrder = true;
-        const submitBtn = document.getElementById('btnSubmitOrder');
-        if (submitBtn) submitBtn.disabled = true;
 
         let parsedItems = [];
         for (let seg of segments) {
@@ -1918,11 +1918,7 @@
             parsedItems.push({ name, unitPrice, qty });
         }
         
-        if (!parsedItems.length) {
-            isSubmittingOrder = false;
-            if (submitBtn) submitBtn.disabled = false;
-            return false;
-        }
+        if (!parsedItems.length) return false;
 
         let recordDate = getBangkokDateStr();
         let recordTime = getBangkokTimeStr();
@@ -1952,31 +1948,28 @@
             newItemsToPost.push(newItem);
         });
 
+        // เคลียร์ค่า + เล่นเสียง + พร้อมรับออเดอร์ทันทีใน 0 วินาที
         quickInput.value = '';
         suggestBox.style.display = 'none';
-        
         saveLocalBackup();
         renderUI();
         playSound('order');
+        quickInput.focus();
 
-        try {
-            const res = await fetch(SCRIPT_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ action: 'add_sale', items: newItemsToPost })
-            });
-            const data = await res.json();
+        // ส่งข้อมูลไปเซิร์ฟเวอร์แบบ Background Task
+        fetch(SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ action: 'add_sale', items: newItemsToPost })
+        }).then(res => res.json()).then(data => {
             if (data && data.status === 'success') {
                 document.getElementById('syncStatus').innerText = 'บันทึกสำเร็จ';
-                setTimeout(() => syncData(true), 500);
+                newItemsToPost.forEach(item => localPendingSales.delete(item.id));
+                saveLocalBackup();
             }
-        } catch (err) {
+        }).catch(err => {
             document.getElementById('syncStatus').innerText = 'บันทึกในเครื่องแล้ว (รอส่งซ้ำ)';
-        } finally {
-            // คืนสถานะพร้อมกดและปลดล็อกทันที
-            isSubmittingOrder = false;
-            if (submitBtn) submitBtn.disabled = false;
-        }
+        });
 
         return false;
     }
@@ -1996,7 +1989,7 @@
             method: 'POST',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify({ action: 'add_expense', id: newId, name: name, cost: cost })
-        }).then(() => setTimeout(() => syncData(true), 500)).catch(e => {});
+        }).catch(e => {});
     }
 
     async function deleteItem(id) {
@@ -2008,7 +2001,7 @@
             method: 'POST',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify({ action: 'delete_sale', id: id })
-        }).then(() => setTimeout(() => syncData(true), 500)).catch(e => {});
+        }).catch(e => {});
     }
 
     async function deleteExpense(id) {
@@ -2019,7 +2012,7 @@
             method: 'POST',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify({ action: 'delete_expense', id: id })
-        }).then(() => setTimeout(() => syncData(true), 500)).catch(e => {});
+        }).catch(e => {});
     }
 
     function openEditModal(id) {
@@ -2050,7 +2043,7 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify({ action: 'edit_sale', id, name, category, unitPrice, qty, totalPrice: unitPrice * qty })
-            }).then(() => setTimeout(() => syncData(true), 500)).catch(e => {});
+            }).catch(e => {});
         }
         closeEditModal();
     }
