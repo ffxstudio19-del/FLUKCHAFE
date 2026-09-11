@@ -559,7 +559,7 @@
             font-size: 0.75rem;
         }
 
-        .live-suggest-box {
+       .live-suggest-box {
             position: absolute;
             top: 50px;
             left: 0;
@@ -569,8 +569,10 @@
             -webkit-backdrop-filter: var(--glass-blur);
             border: 1.5px solid var(--brand-accent);
             border-radius: 14px;
-            max-height: 200px;
+            max-height: 250px;
             overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            touch-action: pan-y;
             z-index: 5000;
             display: none;
             box-shadow: 0 12px 35px rgba(0,0,0,0.6);
@@ -1774,7 +1776,6 @@ setInterval(() => {
 
     function selectSuggestion(e, name) {
         if (e) {
-            e.preventDefault();
             e.stopPropagation();
         }
         quickInput.value = name;
@@ -1799,10 +1800,10 @@ setInterval(() => {
             return; 
         }
 
-        suggestBox.innerHTML = matched.slice(0, 6).map(([name, price]) => {
+        suggestBox.innerHTML = matched.slice(0, 15).map(([name, price]) => {
             const escaped = name.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
             return `
-                <div class="suggest-row" onpointerdown="selectSuggestion(event, '${escaped}')">
+                <div class="suggest-row" onclick="selectSuggestion(event, '${escaped}')">
                     <span>${name}</span>
                     <span>${price}</span>
                 </div>
@@ -1811,7 +1812,7 @@ setInterval(() => {
         suggestBox.style.display = 'block';
     }
 
-    document.addEventListener('pointerdown', e => {
+    document.addEventListener('click', e => {
         if (suggestBox.style.display === 'block') {
             if (!quickInput.contains(e.target) && !suggestBox.contains(e.target)) {
                 suggestBox.style.display = 'none';
