@@ -566,6 +566,7 @@
             right: 110px;
             background: var(--surface-card);
             backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
             border: 1.5px solid var(--brand-accent);
             border-radius: 14px;
             max-height: 180px;
@@ -1026,7 +1027,7 @@
         <!-- Order Input -->
         <form id="quickForm" class="order-input-studio" onsubmit="return handleAdd(event)">
             <div class="studio-input-bar">
-                <input type="text" id="quickInput" placeholder="เช่น ชาไทย เย็น 2, โกโก้ เย็น" autocomplete="off" autofocus oninput="debounceSearchSuggest(this.value)">
+                <input type="text" id="quickInput" placeholder="เช่น ชาไทย เย็น 2, โกโก้ เย็น" autocomplete="off" oninput="debounceSearchSuggest(this.value)">
                 <button type="submit" class="btn-studio-submit" id="btnSubmitOrder">รับออเดอร์</button>
             </div>
             <div id="suggestBox" class="live-suggest-box"></div>
@@ -1291,6 +1292,10 @@
         if (cachedExp) expenses = JSON.parse(cachedExp);
         const cachedSummary = localStorage.getItem('flukchafe_summary_cache');
         if (cachedSummary) historySummary = JSON.parse(cachedSummary);
+        const cachedPrices = localStorage.getItem('flukchafe_prices_cache');
+        if (cachedPrices) priceBook = Object.assign({}, MASTER_PRICES, JSON.parse(cachedPrices));
+        const cachedRecipes = localStorage.getItem('flukchafe_recipes_cache');
+        if (cachedRecipes) recipeBook = Object.assign({}, MASTER_RECIPES, JSON.parse(cachedRecipes));
     } catch(e) {}
 
     let activeTab = 'history';
@@ -1412,6 +1417,8 @@
             localStorage.setItem('flukchafe_sales_cache', JSON.stringify(sales));
             localStorage.setItem('flukchafe_exp_cache', JSON.stringify(expenses));
             localStorage.setItem('flukchafe_summary_cache', JSON.stringify(historySummary));
+            localStorage.setItem('flukchafe_prices_cache', JSON.stringify(priceBook));
+            localStorage.setItem('flukchafe_recipes_cache', JSON.stringify(recipeBook));
         } catch(e) {}
     }
 
@@ -1616,8 +1623,14 @@
                 sales = newMergedSales;
                 expenses = data.expenses || [];
                 historySummary = data.historySummary || [];
-                priceBook = Object.assign({}, MASTER_PRICES, data.prices || {});
-                recipeBook = Object.assign({}, MASTER_RECIPES, data.recipes || {});
+                
+                // ป้องกัน priceBook และ recipeBook เสียหายเมื่อเซิร์ฟเวอร์ส่งค่าว่าง
+                if (data.prices && Object.keys(data.prices).length > 0) {
+                    priceBook = Object.assign({}, MASTER_PRICES, data.prices);
+                }
+                if (data.recipes && Object.keys(data.recipes).length > 0) {
+                    recipeBook = Object.assign({}, MASTER_RECIPES, data.recipes);
+                }
                 
                 saveLocalBackup();
 
@@ -1640,7 +1653,7 @@
         }
     }
 
-    setInterval(() => syncData(false), 4000);
+    setInterval(() => syncData(false), 5000);
     syncData(true);
     renderUI();
 
@@ -1648,6 +1661,10 @@
         if (confirm('คุณต้องการล้างแคชข้อมูลค้างในเครื่องเพื่อรีเซ็ตหน้าจอใช่หรือไม่?')) {
             localStorage.removeItem('flukchafe_sales_cache');
             localStorage.removeItem('flukchafe_summary_cache');
+            localStorage.removeItem('flukchafe_prices_cache');
+            localStorage.removeItem('flukchafe_recipes_cache');
+            priceBook = Object.assign({}, MASTER_PRICES);
+            recipeBook = Object.assign({}, MASTER_RECIPES);
             sales = []; historySummary = []; localPendingSales.clear();
             lastDataSignature = '';
             renderUI(); syncData(true);
@@ -1684,6 +1701,7 @@
 
         recipeBook[menuName] = newRecipe;
         recipeModalBody.innerText = newRecipe;
+        saveLocalBackup();
         cancelEditRecipeMode();
         closeRecipeModal();
         playSound('order');
@@ -1700,7 +1718,10 @@
         }).catch(e => {});
     }
 
-    function closeRecipeModal() { recipeModal.style.display = 'none'; }
+    function closeRecipeModal(event) { 
+        if (event && event.target !== event.currentTarget) return;
+        recipeModal.style.display = 'none'; 
+    }
 
     async function fastToggle(event, id) {
         if (event) event.stopPropagation();
@@ -1751,25 +1772,49 @@
     let suggestDebounceTimer = null;
     function debounceSearchSuggest(val) {
         clearTimeout(suggestDebounceTimer);
-        suggestDebounceTimer = setTimeout(() => handleSearchSuggest(val), 120);
+        suggestDebounceTimer = setTimeout(() => handleSearchSuggest(val), 100);
+    }
+
+    function selectSuggestion(name) {
+        quickInput.value = name;
+        suggestBox.style.display = 'none';
+        quickInput.focus();
     }
 
     function handleSearchSuggest(val) {
-        const query = val.trim().toLowerCase().replace(/\s+/g, '');
-        if (!query) { suggestBox.style.display = 'none'; return; }
-        const matched = Object.entries(priceBook).filter(([name]) => name.toLowerCase().replace(/\s+/g, '').includes(query));
-        if (!matched.length) { suggestBox.style.display = 'none'; return; }
-        suggestBox.innerHTML = matched.slice(0, 6).map(([name, price]) => `
-            <div class="suggest-row" onclick="quickInput.value='${name}'; suggestBox.style.display='none'; quickInput.focus();">
-                <span>${name}</span>
-                <span>${price}</span>
-            </div>
-        `).join('');
+        const query = (val || '').trim().toLowerCase().replace(/\s+/g, '');
+        if (!query) { 
+            suggestBox.style.display = 'none'; 
+            return; 
+        }
+
+        // ค้นหาทั้งจากฐานข้อมูลราคา และ Fallback เมื่อออฟไลน์
+        const sourceData = (priceBook && Object.keys(priceBook).length > 0) ? priceBook : MASTER_PRICES;
+        const matched = Object.entries(sourceData).filter(([name]) => 
+            name.toLowerCase().replace(/\s+/g, '').includes(query)
+        );
+
+        if (!matched.length) { 
+            suggestBox.style.display = 'none'; 
+            return; 
+        }
+
+        suggestBox.innerHTML = matched.slice(0, 6).map(([name, price]) => {
+            const escaped = name.replace(/'/g, "\\'");
+            return `
+                <div class="suggest-row" onpointerdown="selectSuggestion('${escaped}')">
+                    <span>${name}</span>
+                    <span>${price}</span>
+                </div>
+            `;
+        }).join('');
         suggestBox.style.display = 'block';
     }
 
-    document.addEventListener('click', e => {
-        if (!quickInput.contains(e.target) && !suggestBox.contains(e.target)) suggestBox.style.display = 'none';
+    document.addEventListener('pointerdown', e => {
+        if (!quickInput.contains(e.target) && !suggestBox.contains(e.target)) {
+            suggestBox.style.display = 'none';
+        }
     });
 
     function setTimeFilter(filter, btn) {
@@ -1908,7 +1953,6 @@
         });
 
         quickInput.value = '';
-        quickInput.blur();
         suggestBox.style.display = 'none';
         
         saveLocalBackup();
@@ -1922,16 +1966,16 @@
                 body: JSON.stringify({ action: 'add_sale', items: newItemsToPost })
             });
             const data = await res.json();
-            if (data.status === 'success') {
+            if (data && data.status === 'success') {
                 document.getElementById('syncStatus').innerText = 'บันทึกสำเร็จ';
                 setTimeout(() => syncData(true), 500);
             }
         } catch (err) {
             document.getElementById('syncStatus').innerText = 'บันทึกในเครื่องแล้ว (รอส่งซ้ำ)';
         } finally {
+            // คืนสถานะพร้อมกดและปลดล็อกทันที
             isSubmittingOrder = false;
             if (submitBtn) submitBtn.disabled = false;
-            quickInput.focus();
         }
 
         return false;
@@ -2113,12 +2157,11 @@
 
                 const targetM = `${selectThaiYear.value}-${String(selectThaiMonth.value).padStart(2, '0')}`;
                 const matchedSummary = historySummary.find(h => {
-    const cleanHMonth = String(h.month || '').trim().substring(0, 7);
-    return cleanHMonth === targetM;
-});
+                    const cleanHMonth = String(h.month || '').trim().substring(0, 7);
+                    return cleanHMonth === targetM;
+                });
 
-// ดึงข้อมูล Archive มาแสดงทันทีเมื่อพบประวัติสรุปรายเดือน
-if (matchedSummary && (displaySales.length === 0 || displayTotalSales === 0)) {
+                if (matchedSummary && (displaySales.length === 0 || displayTotalSales === 0)) {
                     isHistoricalMonthSelected = true;
                     displayTotalSales = Number(matchedSummary.sales) || 0;
                     displayTotalCash = Number(matchedSummary.cash) || 0;
@@ -2395,6 +2438,7 @@ if (matchedSummary && (displaySales.length === 0 || displayTotalSales === 0)) {
             delete recipeBook[newName];
         }
 
+        saveLocalBackup();
         closePriceModal();
         renderPriceSettingList();
         renderDynamicBestSellers();
@@ -2430,6 +2474,7 @@ if (matchedSummary && (displaySales.length === 0 || displayTotalSales === 0)) {
 
         priceBook[name] = price;
         if (isDrinkItem(name) && recipe) recipeBook[name] = recipe; else delete recipeBook[name];
+        saveLocalBackup();
         renderPriceSettingList(); renderDynamicBestSellers(); playSound('order');
         document.getElementById('newMenuName').value = '';
         document.getElementById('newMenuPrice').value = '';
@@ -2446,6 +2491,7 @@ if (matchedSummary && (displaySales.length === 0 || displayTotalSales === 0)) {
     async function deletePrice(name) {
         if (!confirm(`ยืนยันการลบเมนู "${name}"?`)) return;
         delete priceBook[name]; delete recipeBook[name];
+        saveLocalBackup();
         renderPriceSettingList(); renderDynamicBestSellers(); playSound('delete');
         fetch(SCRIPT_URL, {
             method: 'POST',
