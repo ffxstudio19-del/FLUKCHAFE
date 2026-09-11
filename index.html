@@ -900,7 +900,7 @@
         <div class="filter-segmented">
             <button type="button" class="filter-chip active" onclick="setTimeFilter('today', this)">☀️ วันนี้</button>
             <button type="button" class="filter-chip" onclick="setTimeFilter('week', this)">📅 อาทิตย์นี้</button>
-            <button type="button" class="filter-chip" onclick="setTimeFilter('custom', this)">🗓️ เดือนนี้</button>
+            <button type="button" class="filter-chip" onclick="setTimeFilter('custom', this)">🗓️ เลือกเอง</button>
             <button type="button" class="filter-chip" onclick="setTimeFilter('all', this)">📋 ทั้งหมด</button>
         </div>
 
@@ -1559,7 +1559,7 @@
         dynamicBestsellerGrid.innerHTML = top8.map(name => {
             const price = findPrice(name);
             const icon = getMenuIcon(name);
-            const safeName = name.replace(/'/g, "\\'");
+            const safeName = name.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
             return `
                 <button type="button" class="quick-order-btn" onclick="quickOrderPreset('${safeName}')">
                     <span class="quick-icon">${icon}</span>
@@ -1748,7 +1748,7 @@
         if (item) {
             item.paymentMethod = item.paymentMethod === 'cash' ? 'promptpay' : 'cash';
             if (localPendingSales.has(item.id)) localPendingSales.set(item.id, item);
-            saveLocalBackup(); // บันทึกแคชทันที ป้องกันค่าเด้งกลับ
+            saveLocalBackup();
             renderUI();
             
             fetch(SCRIPT_URL, {
@@ -1805,7 +1805,7 @@
         }
 
         suggestBox.innerHTML = matched.slice(0, 6).map(([name, price]) => {
-            const escaped = name.replace(/'/g, "\\'");
+            const escaped = name.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
             return `
                 <div class="suggest-row" onpointerdown="selectSuggestion(event, '${escaped}')">
                     <span>${name}</span>
@@ -1896,7 +1896,7 @@
         while (workingParts.length > 0) {
             let partialName = workingParts.join(' ');
             let p = findPrice(partialName);
-            if (p > 0) return { name: text, unitPrice: p, qty: calculatedQty };
+            if (p > 0) return { name: partialName, unitPrice: p, qty: calculatedQty };
             workingParts.pop();
         }
         return { name: text, unitPrice: 0, qty: qty };
@@ -1950,7 +1950,6 @@
             newItemsToPost.push(newItem);
         });
 
-        // เคลียร์ค่า + เล่นเสียง + พร้อมรับออเดอร์ทันทีใน 0 วินาที
         quickInput.value = '';
         suggestBox.style.display = 'none';
         saveLocalBackup();
@@ -1958,7 +1957,6 @@
         playSound('order');
         quickInput.focus();
 
-        // ส่งข้อมูลไปเซิร์ฟเวอร์แบบ Background Task
         fetch(SCRIPT_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -2192,7 +2190,8 @@
             if (historySummary.length > 0) {
                 const activeMonthSet = new Set(sales.map(s => normalizeDateStr(s.date).substring(0, 7)));
                 historySummary.forEach(h => {
-                    if (!activeMonthSet.has(h.month)) {
+                    const cleanHMonth = String(h.month || '').trim().substring(0, 7);
+                    if (!activeMonthSet.has(cleanHMonth)) {
                         displayTotalSales += Number(h.sales) || 0;
                         displayTotalCash += Number(h.cash) || 0;
                         displayTotalQr += Number(h.qr) || 0;
@@ -2300,12 +2299,13 @@
                         <div>${b.items.map(item => {
                             const itPrice = Number(item.totalPrice) > 0 ? Number(item.totalPrice) : (Number(item.unitPrice||0) * Number(item.qty||1));
                             const hasRecipe = Boolean(findRecipeText(item.name));
+                            const safeName = item.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
                             return `
                             <div class="cluster-item-row ${item.status === 'done' ? 'row-completed' : ''}">
                                 <div class="cluster-item-left">
                                     <div class="checkbox-tick-square" onclick="fastToggle(event, '${item.id}')">${item.status === 'done' ? '✓' : ''}</div>
                                     <div>
-                                        <div class="item-name-heading" ${hasRecipe ? `onclick="showRecipe('${item.name}')" style="cursor:pointer;"` : ''}>
+                                        <div class="item-name-heading" ${hasRecipe ? `onclick="showRecipe('${safeName}')" style="cursor:pointer;"` : ''}>
                                             ${item.name} <b style="color:var(--brand-accent);">x${item.qty}</b>
                                             ${hasRecipe ? '<span style="font-size:0.6rem; color:var(--brand-accent); margin-left:2px; font-weight:600;">[สูตร]</span>' : ''}
                                         </div>
@@ -2377,7 +2377,7 @@
         
         priceSettingList.innerHTML = keys.map(name => {
             const price = priceBook[name];
-            const safeName = name.replace(/'/g, "\\'");
+            const safeName = name.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
             const isDrink = isDrinkItem(name);
 
             return `
@@ -2525,10 +2525,14 @@
     function downloadBlob(content, filename) {
         const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
         const blob = new Blob([bom, content], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('link');
-        link.href = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.href = url;
         link.download = filename;
+        document.body.appendChild(link);
         link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(url), 100);
     }
 </script>
 </body>
