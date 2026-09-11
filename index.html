@@ -1589,27 +1589,22 @@
                     if (serverIds.has(String(id).trim())) localPendingSales.delete(id);
                 }
                 
-                const existingMap = new Map();
-                sales.forEach(it => existingMap.set(String(it.id).trim(), it));
+               const unconfirmed = Array.from(localPendingSales.values());
+const combined = [...unconfirmed, ...serverSales];
+const seen = new Set();
 
-                const unconfirmed = Array.from(localPendingSales.values());
-                const combined = [...unconfirmed, ...serverSales];
-                const seen = new Set();
-                
-                const newMergedSales = combined.filter(item => {
-                    const itId = String(item.id).trim();
-                    if (seen.has(itId)) return false;
-                    seen.add(itId);
+const newMergedSales = combined.filter(item => {
+    const itId = String(item.id).trim();
+    if (seen.has(itId)) return false;
+    seen.add(itId);
 
-                    if (existingMap.has(itId)) {
-                        const localItem = existingMap.get(itId);
-                        item.date = localItem.date || item.date;
-                        item.time = localItem.time || item.time;
-                        item.paymentMethod = localItem.paymentMethod || item.paymentMethod;
-                        item.status = localItem.status || item.status;
-                    }
-                    return true;
-                });
+    if (localPendingSales.has(itId)) {
+        const pendingItem = localPendingSales.get(itId);
+        item.status = pendingItem.status || item.status;
+        item.paymentMethod = pendingItem.paymentMethod || item.paymentMethod;
+    }
+    return true;
+});
 
                 const currentSig = `${newMergedSales.length}-${(data.expenses||[]).length}-${(data.historySummary||[]).length}`;
                 sales = newMergedSales;
