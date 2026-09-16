@@ -540,6 +540,11 @@
             font-weight: 600;
             cursor: pointer;
         }
+        .btn-backdate-trigger.active {
+            background: var(--brand-primary);
+            color: #fff;
+            border-color: var(--brand-primary);
+        }
         .backdate-flyout {
             display: none;
             background: rgba(245, 158, 11, 0.08);
@@ -559,7 +564,7 @@
             font-size: 0.75rem;
         }
 
-       .live-suggest-box {
+        .live-suggest-box {
             position: absolute;
             top: 50px;
             left: 0;
@@ -1055,7 +1060,7 @@
         <div class="scrollable-feed" id="expensesView" style="display: none;">
             <div class="input-row-grid">
                 <input type="text" id="newExpenseName" placeholder="รายการซื้อของ เช่น ชา/นม" style="flex:2;">
-                <input type="number" id="newExpenseCost" placeholder="จำนวนเงิน" style="flex:1;">
+                <input type="number" id="newExpenseCost" placeholder="จำนวนเงิน" min="1" style="flex:1;">
                 <button type="button" class="btn-solid-action" style="background:var(--danger-color);" onclick="addExpense()">บันทึก</button>
             </div>
             <div id="expenseList"></div>
@@ -1066,7 +1071,7 @@
                 <div style="font-size:0.82rem; font-weight:700; color:var(--brand-accent); margin-bottom:8px;">➕ เพิ่มเมนูใหม่</div>
                 <div class="input-row-grid" style="margin-bottom:6px;">
                     <input type="text" id="newMenuName" placeholder="ชื่อเมนู" style="flex:2;" oninput="toggleRecipeInputVisibility(this.value)">
-                    <input type="number" id="newMenuPrice" placeholder="ราคา" style="flex:1;">
+                    <input type="number" id="newMenuPrice" placeholder="ราคา" min="1" style="flex:1;">
                 </div>
                 <div class="input-row-grid" id="newMenuRecipeContainer" style="margin-bottom:8px; display:none;">
                     <textarea id="newMenuRecipe" placeholder="สูตรชงเครื่องดื่ม..." rows="2"></textarea>
@@ -1089,7 +1094,7 @@
         <!-- Footer Dock -->
         <div class="system-footer-dock">
             <div class="status-pill-beacon">
-                <span class="pulsing-dot"></span>
+                <span class="pulsing-dot" id="syncBeaconDot"></span>
                 <span id="syncStatus">พร้อมใช้งาน</span>
             </div>
             <button type="button" class="btn-dock-sync" onclick="syncData(true)">
@@ -1122,8 +1127,8 @@
     </div>
 </div>
 
-<div class="glass-modal-backdrop" id="editModal">
-    <div class="modal-body-card">
+<div class="glass-modal-backdrop" id="editModal" onclick="closeEditModal(event)">
+    <div class="modal-body-card" onclick="event.stopPropagation()">
         <div style="font-size:1.05rem; font-weight:700; color:var(--brand-accent); margin-bottom:10px;">✏️ แก้ไขออเดอร์</div>
         <input type="hidden" id="editItemId">
         <div style="margin-bottom:8px;">
@@ -1142,7 +1147,7 @@
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:14px;">
             <div>
                 <label style="font-size:0.7rem; color:var(--text-secondary);">ราคา/หน่วย:</label>
-                <input type="number" id="editItemUnitPrice" style="width:100%; padding:8px; border:1px solid var(--surface-border); border-radius:10px; background:var(--surface-hover); color:var(--text-primary); outline:none; font-size:0.85rem;">
+                <input type="number" id="editItemUnitPrice" min="0" style="width:100%; padding:8px; border:1px solid var(--surface-border); border-radius:10px; background:var(--surface-hover); color:var(--text-primary); outline:none; font-size:0.85rem;">
             </div>
             <div>
                 <label style="font-size:0.7rem; color:var(--text-secondary);">จำนวน:</label>
@@ -1150,14 +1155,14 @@
             </div>
         </div>
         <div style="display: flex; gap: 6px;">
-            <button type="button" style="flex:1; padding: 10px; border-radius: 10px; background: var(--surface-hover); border: 1px solid var(--surface-border); color:var(--text-secondary); font-weight:600; font-size:0.8rem;" onclick="closeEditModal()">ยกเลิก</button>
+            <button type="button" style="flex:1; padding: 10px; border-radius: 10px; background: var(--surface-hover); border: 1px solid var(--surface-border); color:var(--text-secondary); font-weight:600; font-size:0.8rem; cursor:pointer;" onclick="closeEditModal()">ยกเลิก</button>
             <button type="button" class="btn-solid-action" style="flex:1;" onclick="saveEditedItem()">บันทึก</button>
         </div>
     </div>
 </div>
 
-<div class="glass-modal-backdrop" id="priceEditModal">
-    <div class="modal-body-card">
+<div class="glass-modal-backdrop" id="priceEditModal" onclick="closePriceModal(event)">
+    <div class="modal-body-card" onclick="event.stopPropagation()">
         <div style="font-size:1.1rem; font-weight:700; color:var(--brand-accent); margin-bottom:12px;">⚙️ แก้ไขราคาและสูตรชง</div>
         <input type="hidden" id="modalOldName">
         
@@ -1168,7 +1173,7 @@
 
         <div style="margin-bottom:10px;">
             <label style="font-size:0.72rem; color:var(--text-secondary); margin-bottom:4px; display:block;">ราคาขาย (บาท):</label>
-            <input type="number" id="modalEditPrice" style="width:100%; padding:10px; border:1px solid var(--surface-border); border-radius:10px; background:var(--surface-hover); color:var(--text-primary); outline:none; font-size:0.9rem; font-family:'Outfit',sans-serif; font-weight:700;">
+            <input type="number" id="modalEditPrice" min="1" style="width:100%; padding:10px; border:1px solid var(--surface-border); border-radius:10px; background:var(--surface-hover); color:var(--text-primary); outline:none; font-size:0.9rem; font-family:'Outfit',sans-serif; font-weight:700;">
         </div>
 
         <div id="modalRecipeContainer" style="margin-bottom:14px; display:none;">
@@ -1185,6 +1190,16 @@
 
 <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwuVtheTjpEPp33z7VswY70n-C22KfgvnmfzD7yUiyDr4VN_1XFT0zKCd4KMj4ctOMiYA/exec";
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
 
     function handleLogoFallback() {
         document.getElementById('mainShopLogo').style.display = 'none';
@@ -1279,6 +1294,11 @@
     let recipeBook = Object.assign({}, MASTER_RECIPES);
 
     try {
+        const cachedPending = localStorage.getItem('flukchafe_pending_sales');
+        if (cachedPending) {
+            const arr = JSON.parse(cachedPending);
+            arr.forEach(it => localPendingSales.set(it.id, it));
+        }
         const cachedSales = localStorage.getItem('flukchafe_sales_cache');
         if (cachedSales) sales = JSON.parse(cachedSales);
         const cachedExp = localStorage.getItem('flukchafe_exp_cache');
@@ -1411,6 +1431,7 @@
             localStorage.setItem('flukchafe_summary_cache', JSON.stringify(historySummary));
             localStorage.setItem('flukchafe_prices_cache', JSON.stringify(priceBook));
             localStorage.setItem('flukchafe_recipes_cache', JSON.stringify(recipeBook));
+            localStorage.setItem('flukchafe_pending_sales', JSON.stringify(Array.from(localPendingSales.values())));
         } catch(e) {}
     }
 
@@ -1561,20 +1582,40 @@
         dynamicBestsellerGrid.innerHTML = top8.map(name => {
             const price = findPrice(name);
             const icon = getMenuIcon(name);
-            const safeName = name.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+            const safeParam = encodeURIComponent(name);
             return `
-                <button type="button" class="quick-order-btn" onclick="quickOrderPreset('${safeName}')">
+                <button type="button" class="quick-order-btn" onclick="quickOrderPreset('${safeParam}')">
                     <span class="quick-icon">${icon}</span>
-                    <span class="quick-name" title="${name}">${name}</span>
+                    <span class="quick-name" title="${escapeHtml(name)}">${escapeHtml(name)}</span>
                     <span class="quick-price">${price}</span>
                 </button>
             `;
         }).join('');
     }
 
+    async function retryPendingSales() {
+        if (localPendingSales.size === 0) return;
+        const items = Array.from(localPendingSales.values());
+        try {
+            const res = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ action: 'add_sale', items: items })
+            });
+            const data = await res.json();
+            if (data && data.status === 'success') {
+                items.forEach(it => localPendingSales.delete(it.id));
+                saveLocalBackup();
+            }
+        } catch(e) {}
+    }
+
     async function syncData(manual = false) {
         if (isSyncing && !manual) return;
         isSyncing = true;
+        
+        await retryPendingSales();
+
         try {
             const cacheBuster = '&_t=' + Date.now();
             const res = await fetch(SCRIPT_URL + '?action=get_all' + cacheBuster, { cache: 'no-store' });
@@ -1591,22 +1632,22 @@
                     if (serverIds.has(String(id).trim())) localPendingSales.delete(id);
                 }
                 
-               const unconfirmed = Array.from(localPendingSales.values());
-const combined = [...unconfirmed, ...serverSales];
-const seen = new Set();
+                const unconfirmed = Array.from(localPendingSales.values());
+                const combined = [...unconfirmed, ...serverSales];
+                const seen = new Set();
 
-const newMergedSales = combined.filter(item => {
-    const itId = String(item.id).trim();
-    if (seen.has(itId)) return false;
-    seen.add(itId);
+                const newMergedSales = combined.filter(item => {
+                    const itId = String(item.id).trim();
+                    if (seen.has(itId)) return false;
+                    seen.add(itId);
 
-    if (localPendingSales.has(itId)) {
-        const pendingItem = localPendingSales.get(itId);
-        item.status = pendingItem.status || item.status;
-        item.paymentMethod = pendingItem.paymentMethod || item.paymentMethod;
-    }
-    return true;
-});
+                    if (localPendingSales.has(itId)) {
+                        const pendingItem = localPendingSales.get(itId);
+                        item.status = pendingItem.status || item.status;
+                        item.paymentMethod = pendingItem.paymentMethod || item.paymentMethod;
+                    }
+                    return true;
+                });
 
                 const currentSig = `${newMergedSales.length}-${(data.expenses||[]).length}-${(data.historySummary||[]).length}`;
                 sales = newMergedSales;
@@ -1632,19 +1673,21 @@ const newMergedSales = combined.filter(item => {
                     playSound('order');
                 }
                 
-                document.getElementById('syncStatus').innerText = 'พร้อมใช้งาน (อัปเดตแล้ว)';
+                document.getElementById('syncStatus').innerText = localPendingSales.size > 0 ? `รอเชื่อมต่อ (${localPendingSales.size} รายการ)` : 'พร้อมใช้งาน (อัปเดตแล้ว)';
+                document.getElementById('syncBeaconDot').style.background = 'var(--success-color)';
             }
         } catch (e) {
-            document.getElementById('syncStatus').innerText = 'พร้อมใช้งาน (ออฟไลน์)';
+            document.getElementById('syncStatus').innerText = localPendingSales.size > 0 ? `ออฟไลน์ (ค้าง ${localPendingSales.size} คิว)` : 'พร้อมใช้งาน (ออฟไลน์)';
+            document.getElementById('syncBeaconDot').style.background = 'var(--warning-color)';
         } finally {
             isSyncing = false;
         }
     }
 
-   // ซิงค์ทุก 5 วินาทีเมื่อผู้ใช้เปิดจออยู่
-setInterval(() => {
-    if (!document.hidden) syncData(false);
-}, 5000);
+    // ขยายระยะรอบ Polling เป็น 15 วินาที เพื่อประหยัดโควตาและเสถียรภาพสูงสุด
+    setInterval(() => {
+        if (!document.hidden) syncData(false);
+    }, 15000);
 
     document.addEventListener('visibilitychange', () => {
         if (!document.hidden) syncData(false);
@@ -1659,6 +1702,7 @@ setInterval(() => {
             localStorage.removeItem('flukchafe_summary_cache');
             localStorage.removeItem('flukchafe_prices_cache');
             localStorage.removeItem('flukchafe_recipes_cache');
+            localStorage.removeItem('flukchafe_pending_sales');
             priceBook = Object.assign({}, MASTER_PRICES);
             recipeBook = Object.assign({}, MASTER_RECIPES);
             sales = []; historySummary = []; localPendingSales.clear();
@@ -1775,9 +1819,7 @@ setInterval(() => {
     }
 
     function selectSuggestion(e, name) {
-        if (e) {
-            e.stopPropagation();
-        }
+        if (e) e.stopPropagation();
         quickInput.value = name;
         suggestBox.style.display = 'none';
         quickInput.focus();
@@ -1801,10 +1843,10 @@ setInterval(() => {
         }
 
         suggestBox.innerHTML = matched.slice(0, 15).map(([name, price]) => {
-            const escaped = name.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+            const safeParam = encodeURIComponent(name);
             return `
-                <div class="suggest-row" onclick="selectSuggestion(event, '${escaped}')">
-                    <span>${name}</span>
+                <div class="suggest-row" onclick="selectSuggestion(event, decodeURIComponent('${safeParam}'))">
+                    <span>${escapeHtml(name)}</span>
                     <span>${price}</span>
                 </div>
             `;
@@ -1850,8 +1892,8 @@ setInterval(() => {
         return 'เครื่องดื่ม';
     }
 
-    async function quickOrderPreset(name) {
-        quickInput.value = name;
+    async function quickOrderPreset(encodedName) {
+        quickInput.value = decodeURIComponent(encodedName);
         await handleAdd();
     }
 
@@ -1965,6 +2007,7 @@ setInterval(() => {
             }
         }).catch(err => {
             document.getElementById('syncStatus').innerText = 'บันทึกในเครื่องแล้ว (รอส่งซ้ำ)';
+            document.getElementById('syncBeaconDot').style.background = 'var(--warning-color)';
         });
 
         return false;
@@ -2021,7 +2064,10 @@ setInterval(() => {
         editItemQty.value = item.qty;
         editModal.style.display = 'flex';
     }
-    function closeEditModal() { editModal.style.display = 'none'; }
+    function closeEditModal(event) { 
+        if (event && event.target !== event.currentTarget) return;
+        editModal.style.display = 'none'; 
+    }
 
     async function saveEditedItem() {
         const id = editItemId.value;
@@ -2029,7 +2075,7 @@ setInterval(() => {
         const category = editItemCategory.value;
         const unitPrice = parseFloat(editItemUnitPrice.value);
         const qty = parseInt(editItemQty.value, 10);
-        if (!name || isNaN(unitPrice) || isNaN(qty)) return alert('กรอกข้อมูลให้ถูกต้อง');
+        if (!name || isNaN(unitPrice) || unitPrice < 0 || isNaN(qty) || qty <= 0) return alert('กรอกข้อมูลให้ถูกต้อง');
         const item = sales.find(s => String(s.id).trim() === String(id).trim());
         if (item) {
             item.name = name; item.category = category; item.unitPrice = unitPrice; item.qty = qty; item.totalPrice = unitPrice * qty;
@@ -2289,20 +2335,20 @@ setInterval(() => {
                 allCardsHtml += `
                     <div class="order-cluster-card">
                         <div class="cluster-header">
-                            <div class="cluster-time-badge"><i class="ph-bold ph-clock"></i> ${b.timeKey} (${bQty} ชิ้น)</div>
+                            <div class="cluster-time-badge"><i class="ph-bold ph-clock"></i> ${escapeHtml(b.timeKey)} (${bQty} ชิ้น)</div>
                             <div class="cluster-total-tag">${bTotal.toLocaleString()}</div>
                         </div>
                         <div>${b.items.map(item => {
                             const itPrice = Number(item.totalPrice) > 0 ? Number(item.totalPrice) : (Number(item.unitPrice||0) * Number(item.qty||1));
                             const hasRecipe = Boolean(findRecipeText(item.name));
-                            const safeName = item.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                            const safeName = encodeURIComponent(item.name);
                             return `
                             <div class="cluster-item-row ${item.status === 'done' ? 'row-completed' : ''}">
                                 <div class="cluster-item-left">
-                                    <div class="checkbox-tick-square" onclick="fastToggle(event, '${item.id}')">${item.status === 'done' ? '✓' : ''}</div>
+                                    <div class="checkbox-tick-square" onclick="fastToggle(event, '${escapeHtml(item.id)}')">${item.status === 'done' ? '✓' : ''}</div>
                                     <div>
-                                        <div class="item-name-heading" ${hasRecipe ? `onclick="showRecipe('${safeName}')" style="cursor:pointer;"` : ''}>
-                                            ${item.name} <b style="color:var(--brand-accent);">x${item.qty}</b>
+                                        <div class="item-name-heading" ${hasRecipe ? `onclick="showRecipe(decodeURIComponent('${safeName}'))" style="cursor:pointer;"` : ''}>
+                                            ${escapeHtml(item.name)} <b style="color:var(--brand-accent);">x${item.qty}</b>
                                             ${hasRecipe ? '<span style="font-size:0.6rem; color:var(--brand-accent); margin-left:2px; font-weight:600;">[สูตร]</span>' : ''}
                                         </div>
                                         <div style="font-size:0.68rem; color:var(--text-secondary);">(@${item.unitPrice} บ.)</div>
@@ -2310,9 +2356,9 @@ setInterval(() => {
                                 </div>
                                 <div class="cluster-item-right">
                                     <span style="font-family:'Outfit',sans-serif; font-weight:700; font-size:0.88rem; margin-right:3px;">${itPrice.toLocaleString()}</span>
-                                    <button type="button" class="pay-switch-badge ${item.paymentMethod === 'promptpay' ? 'qr' : 'cash'}" onclick="togglePayMethod('${item.id}')">${item.paymentMethod === 'promptpay' ? '📱 สแกน' : '💵 สด'}</button>
-                                    <button type="button" class="btn-item-ctrl" onclick="openEditModal('${item.id}')"><i class="ph-bold ph-pencil-simple"></i></button>
-                                    <button type="button" class="btn-item-ctrl del" onclick="deleteItem('${item.id}')"><i class="ph-bold ph-trash"></i></button>
+                                    <button type="button" class="pay-switch-badge ${item.paymentMethod === 'promptpay' ? 'qr' : 'cash'}" onclick="togglePayMethod('${escapeHtml(item.id)}')">${item.paymentMethod === 'promptpay' ? '📱 สแกน' : '💵 สด'}</button>
+                                    <button type="button" class="btn-item-ctrl" onclick="openEditModal('${escapeHtml(item.id)}')"><i class="ph-bold ph-pencil-simple"></i></button>
+                                    <button type="button" class="btn-item-ctrl del" onclick="deleteItem('${escapeHtml(item.id)}')"><i class="ph-bold ph-trash"></i></button>
                                 </div>
                             </div>
                         `;}).join('')}</div>
@@ -2325,12 +2371,12 @@ setInterval(() => {
         expenseList.innerHTML = displayExpenses.map(item => `
             <div class="summary-tile-row">
                 <div>
-                    <div style="color:var(--danger-color); font-weight:600; font-size:0.85rem;">💸 ${item.name}</div>
-                    <div style="font-size:0.68rem; color:var(--text-secondary);">${formatThaiDateTime(item.date, item.time)}</div>
+                    <div style="color:var(--danger-color); font-weight:600; font-size:0.85rem;">💸 ${escapeHtml(item.name)}</div>
+                    <div style="font-size:0.68rem; color:var(--text-secondary);">${escapeHtml(formatThaiDateTime(item.date, item.time))}</div>
                 </div>
                 <div style="display:flex; align-items:center; gap:6px;">
                     <span style="font-family:'Outfit',sans-serif; color:var(--danger-color); font-weight:700; font-size:0.85rem;">-฿${(item.cost||0).toLocaleString()}</span>
-                    <button type="button" class="btn-item-ctrl del" onclick="deleteExpense('${item.id}')">ลบ</button>
+                    <button type="button" class="btn-item-ctrl del" onclick="deleteExpense('${escapeHtml(item.id)}')">ลบ</button>
                 </div>
             </div>
         `).join('') || '<div class="empty-placeholder">ไม่มีรายการต้นทุน</div>';
@@ -2341,7 +2387,7 @@ setInterval(() => {
             historySummary.forEach(h => {
                 summaryHtml += `
                     <div class="summary-tile-row" style="font-size:0.8rem;">
-                        <span>🗓️ เดือน ${h.month} (${h.totalQty} ชิ้น)</span>
+                        <span>🗓️ เดือน ${escapeHtml(h.month)} (${h.totalQty} ชิ้น)</span>
                         <span>ยอด <b>฿${h.sales.toLocaleString()}</b> (กำไร ฿${h.profit.toLocaleString()})</span>
                     </div>
                 `;
@@ -2352,8 +2398,8 @@ setInterval(() => {
             const keys = Object.keys(items);
             if (!keys.length) return '';
             return `
-                <div class="summary-banner-title">${cat} (รวม ฿${catStats[cat].sum.toLocaleString()})</div>
-                ${keys.map(name => `<div class="summary-tile-row"><span>${name} (x${items[name].qty})</span><span><b style="font-family:'Outfit',sans-serif;">฿${items[name].sum.toLocaleString()}</b></span></div>`).join('')}
+                <div class="summary-banner-title">${escapeHtml(cat)} (รวม ฿${catStats[cat].sum.toLocaleString()})</div>
+                ${keys.map(name => `<div class="summary-tile-row"><span>${escapeHtml(name)} (x${items[name].qty})</span><span><b style="font-family:'Outfit',sans-serif;">฿${items[name].sum.toLocaleString()}</b></span></div>`).join('')}
             `;
         }).join('');
 
@@ -2373,17 +2419,17 @@ setInterval(() => {
         
         priceSettingList.innerHTML = keys.map(name => {
             const price = priceBook[name];
-            const safeName = name.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+            const safeName = encodeURIComponent(name);
             const isDrink = isDrinkItem(name);
 
             return `
             <div class="price-edit-unit">
                 <div class="price-unit-header">
-                    <span style="font-weight:600; font-size:0.85rem;">📝 ${name} ${isDrink ? '<span style="font-size:0.65rem; color:var(--brand-accent);">[เครื่องดื่ม]</span>' : ''}</span>
+                    <span style="font-weight:600; font-size:0.85rem;">📝 ${escapeHtml(name)} ${isDrink ? '<span style="font-size:0.65rem; color:var(--brand-accent);">[เครื่องดื่ม]</span>' : ''}</span>
                     <div style="display:flex; align-items:center; gap:6px;">
                         <b style="font-family:'Outfit',sans-serif; color:var(--brand-accent); font-size:1rem;">฿${price}</b>
-                        <button type="button" class="btn-solid-action" style="padding:4px 10px; font-size:0.7rem;" onclick="openPriceModal('${safeName}', ${price})">แก้ไข</button>
-                        <button type="button" class="btn-item-ctrl del" onclick="deletePrice('${safeName}')"><i class="ph-bold ph-trash"></i></button>
+                        <button type="button" class="btn-solid-action" style="padding:4px 10px; font-size:0.7rem;" onclick="openPriceModal(decodeURIComponent('${safeName}'), ${price})">แก้ไข</button>
+                        <button type="button" class="btn-item-ctrl del" onclick="deletePrice(decodeURIComponent('${safeName}'))"><i class="ph-bold ph-trash"></i></button>
                     </div>
                 </div>
             </div>
@@ -2405,7 +2451,8 @@ setInterval(() => {
         priceEditModal.style.display = 'flex';
     }
 
-    function closePriceModal() {
+    function closePriceModal(event) {
+        if (event && event.target !== event.currentTarget) return;
         priceEditModal.style.display = 'none';
     }
 
@@ -2499,7 +2546,7 @@ setInterval(() => {
         sales.forEach(s => {
             const uP = Number(s.unitPrice) || 0; const q = Number(s.qty) || 1;
             const tP = Number(s.totalPrice) > 0 ? Number(s.totalPrice) : (uP * q);
-            csv += `"${normalizeDateStr(s.date)}","${normalizeTimeStr(s.time)}","${s.name}","${s.category}","${s.paymentMethod==='promptpay'?'สแกน':'เงินสด'}",${uP},${q},${tP}\n`;
+            csv += `"${normalizeDateStr(s.date)}","${normalizeTimeStr(s.time)}","${s.name.replace(/"/g, '""')}","${s.category}","${s.paymentMethod==='promptpay'?'สแกน':'เงินสด'}",${uP},${q},${tP}\n`;
         });
         downloadBlob(csv, `FLUKCHAFE_Sales_${getBangkokDateStr()}.csv`);
     }
@@ -2507,7 +2554,7 @@ setInterval(() => {
     function exportExpensesToCSV() {
         if (!expenses.length) return alert('ไม่มีข้อมูลต้นทุน');
         let csv = 'วันที่,เวลา,รายการ,จำนวนเงิน\n';
-        expenses.forEach(e => csv += `"${normalizeDateStr(e.date)}","${normalizeTimeStr(e.time)}","${e.name}",${e.cost}\n`);
+        expenses.forEach(e => csv += `"${normalizeDateStr(e.date)}","${normalizeTimeStr(e.time)}","${e.name.replace(/"/g, '""')}",${e.cost}\n`);
         downloadBlob(csv, `FLUKCHAFE_Expenses_${getBangkokDateStr()}.csv`);
     }
 
