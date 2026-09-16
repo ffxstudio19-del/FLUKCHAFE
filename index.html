@@ -540,11 +540,6 @@
             font-weight: 600;
             cursor: pointer;
         }
-        .btn-backdate-trigger.active {
-            background: var(--brand-primary);
-            color: #fff;
-            border-color: var(--brand-primary);
-        }
         .backdate-flyout {
             display: none;
             background: rgba(245, 158, 11, 0.08);
@@ -872,6 +867,15 @@
             margin: 10px 0;
         }
         .empty-placeholder { text-align: center; color: var(--text-muted); padding: 24px 0; font-size: 0.82rem; }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .ph-spin {
+            animation: spin 0.8s linear infinite;
+            display: inline-block;
+        }
     </style>
 </head>
 <body>
@@ -1613,10 +1617,19 @@
     async function syncData(manual = false) {
         if (isSyncing && !manual) return;
         isSyncing = true;
-        
-        await retryPendingSales();
+
+        const syncStatusEl = document.getElementById('syncStatus');
+        const syncDot = document.getElementById('syncBeaconDot');
+        const syncBtn = document.querySelector('.btn-dock-sync');
+        const syncIcon = syncBtn ? syncBtn.querySelector('i') : null;
+
+        if (syncStatusEl) syncStatusEl.innerText = 'กำลังซิงค์ข้อมูล...';
+        if (syncDot) syncDot.style.background = 'var(--brand-accent)';
+        if (syncIcon) syncIcon.classList.add('ph-spin');
 
         try {
+            retryPendingSales();
+
             const cacheBuster = '&_t=' + Date.now();
             const res = await fetch(SCRIPT_URL + '?action=get_all' + cacheBuster, { cache: 'no-store' });
             const data = await res.json();
@@ -1673,18 +1686,30 @@
                     playSound('order');
                 }
                 
-                document.getElementById('syncStatus').innerText = localPendingSales.size > 0 ? `รอเชื่อมต่อ (${localPendingSales.size} รายการ)` : 'พร้อมใช้งาน (อัปเดตแล้ว)';
-                document.getElementById('syncBeaconDot').style.background = 'var(--success-color)';
+                if (syncStatusEl) {
+                    syncStatusEl.innerText = localPendingSales.size > 0 
+                        ? `รอเชื่อมต่อ (${localPendingSales.size} รายการ)` 
+                        : 'พร้อมใช้งาน (อัปเดตแล้ว)';
+                }
+                if (syncDot) syncDot.style.background = 'var(--success-color)';
+                if (manual) playSound('done');
+            } else {
+                throw new Error(data.message || 'Server error');
             }
         } catch (e) {
-            document.getElementById('syncStatus').innerText = localPendingSales.size > 0 ? `ออฟไลน์ (ค้าง ${localPendingSales.size} คิว)` : 'พร้อมใช้งาน (ออฟไลน์)';
-            document.getElementById('syncBeaconDot').style.background = 'var(--warning-color)';
+            if (syncStatusEl) {
+                syncStatusEl.innerText = localPendingSales.size > 0 
+                    ? `ออฟไลน์ (ค้าง ${localPendingSales.size} คิว)` 
+                    : 'พร้อมใช้งาน (ออฟไลน์)';
+            }
+            if (syncDot) syncDot.style.background = 'var(--warning-color)';
         } finally {
             isSyncing = false;
+            if (syncIcon) syncIcon.classList.remove('ph-spin');
         }
     }
 
-    // ขยายระยะรอบ Polling เป็น 15 วินาที เพื่อประหยัดโควตาและเสถียรภาพสูงสุด
+    // ซิงค์ทุก 15 วินาทีเมื่อผู้ใช้เปิดจออยู่
     setInterval(() => {
         if (!document.hidden) syncData(false);
     }, 15000);
