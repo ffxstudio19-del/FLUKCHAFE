@@ -424,13 +424,15 @@
         }
 
         .stat-pod {
+            position: relative;
             background: rgba(15, 23, 42, 0.7);
             border: 1px solid var(--surface-border);
             border-top: 1px solid rgba(255, 255, 255, 0.16);
             border-radius: 20px;
-            padding: 12px 14px;
+            padding: 12px 14px 12px 16px;
             box-shadow: 0 8px 22px rgba(0,0,0,0.3);
             backdrop-filter: blur(12px);
+            overflow: hidden;
             transition: transform 0.22s var(--spring-physics), box-shadow 0.22s ease;
         }
         body.light-mode .stat-pod { background: #ffffff; border-color: #e2e8f0; }
@@ -439,10 +441,20 @@
             box-shadow: 0 12px 28px rgba(0,0,0,0.4);
         }
 
-        .stat-pod.drink-theme { border-left: 4.5px solid #38bdf8; }
-        .stat-pod.snack-theme { border-left: 4.5px solid #fbbf24; }
-        .stat-pod.bread-theme { border-left: 4.5px solid #f472b6; }
-        .stat-pod.food-theme { border-left: 4.5px solid #34d399; }
+        .stat-pod::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 4.5px;
+            border-radius: 20px 0 0 20px;
+        }
+
+        .stat-pod.drink-theme::before { background: #38bdf8; box-shadow: 0 0 10px rgba(56, 189, 248, 0.6); }
+        .stat-pod.snack-theme::before { background: #fbbf24; box-shadow: 0 0 10px rgba(251, 191, 36, 0.6); }
+        .stat-pod.bread-theme::before { background: #f472b6; box-shadow: 0 0 10px rgba(244, 114, 182, 0.6); }
+        .stat-pod.food-theme::before  { background: #34d399; box-shadow: 0 0 10px rgba(52, 211, 153, 0.6); }
 
         .pod-top-row {
             display: flex;
