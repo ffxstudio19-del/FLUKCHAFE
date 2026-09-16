@@ -1322,6 +1322,7 @@
     let isBackdateActive = false;
     let isSyncing = false;
     let lastDataSignature = '';
+    let isSubmittingOrder = false;
 
     if (localStorage.getItem('flukchafe_light_mode') === 'true') {
         document.body.classList.add('light-mode');
@@ -1628,7 +1629,7 @@
         if (syncIcon) syncIcon.classList.add('ph-spin');
 
         try {
-            retryPendingSales();
+            await retryPendingSales();
 
             const cacheBuster = '&_t=' + Date.now();
             const res = await fetch(SCRIPT_URL + '?action=get_all' + cacheBuster, { cache: 'no-store' });
@@ -1967,6 +1968,7 @@
 
     async function handleAdd(e) {
         if (e) e.preventDefault();
+        if (isSubmittingOrder) return false;
         
         const rawVal = quickInput.value.trim();
         if (!rawVal) return false;
@@ -1984,6 +1986,8 @@
         }
         
         if (!parsedItems.length) return false;
+
+        isSubmittingOrder = true;
 
         let recordDate = getBangkokDateStr();
         let recordTime = getBangkokTimeStr();
@@ -2033,6 +2037,8 @@
         }).catch(err => {
             document.getElementById('syncStatus').innerText = 'บันทึกในเครื่องแล้ว (รอส่งซ้ำ)';
             document.getElementById('syncBeaconDot').style.background = 'var(--warning-color)';
+        }).finally(() => {
+            isSubmittingOrder = false;
         });
 
         return false;
