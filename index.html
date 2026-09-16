@@ -17,41 +17,54 @@
     <!-- Google Fonts & Phosphor Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Prompt:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
     <style>
+        @property --angle {
+            syntax: '<angle>';
+            initial-value: 0deg;
+            inherits: false;
+        }
+
         :root {
-            --bg-base: #030712;
-            --surface-card: rgba(15, 23, 42, 0.82);
-            --surface-border: rgba(255, 255, 255, 0.12);
-            --surface-hover: rgba(255, 255, 255, 0.05);
+            --bg-base: #020617;
+            --surface-card: rgba(15, 23, 42, 0.76);
+            --surface-border: rgba(255, 255, 255, 0.1);
+            --surface-border-subtle: rgba(255, 255, 255, 0.05);
+            --surface-hover: rgba(255, 255, 255, 0.06);
             --text-primary: #f8fafc;
             --text-secondary: #94a3b8;
             --text-muted: #64748b;
             
             --brand-primary: #0284c7;
             --brand-accent: #38bdf8;
-            --brand-glow: rgba(56, 189, 248, 0.35);
+            --brand-glow: rgba(56, 189, 248, 0.45);
             
             --success-color: #10b981;
-            --success-glow: rgba(16, 185, 129, 0.3);
+            --success-glow: rgba(16, 185, 129, 0.35);
             --danger-color: #f43f5e;
+            --danger-glow: rgba(244, 63, 94, 0.35);
             --warning-color: #f59e0b;
             
-            --glass-blur: blur(20px);
-            --radius-card: 20px;
-            --radius-pill: 50px;
+            --glass-blur: blur(24px) saturate(200%);
+            --radius-card: 24px;
+            --radius-pill: 999px;
+            --spring-physics: cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         body.light-mode {
-            --bg-base: #f1f5f9;
-            --surface-card: rgba(255, 255, 255, 0.96);
-            --surface-border: #e2e8f0;
-            --surface-hover: #e8edf4;
-            --text-primary: #1e293b;
-            --text-secondary: #64748b;
+            --bg-base: #f0f4f8;
+            --surface-card: rgba(255, 255, 255, 0.94);
+            --surface-border: rgba(0, 0, 0, 0.08);
+            --surface-border-subtle: rgba(0, 0, 0, 0.04);
+            --surface-hover: rgba(0, 0, 0, 0.04);
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
             --text-muted: #94a3b8;
+            --brand-primary: #0284c7;
+            --brand-accent: #0369a1;
+            --brand-glow: rgba(2, 132, 199, 0.25);
         }
 
         * {
@@ -70,21 +83,21 @@
         body {
             background-color: var(--bg-base);
             background-image: 
-                radial-gradient(at 50% 0%, rgba(2, 132, 199, 0.2) 0px, transparent 65%),
-                radial-gradient(at 100% 100%, rgba(56, 189, 248, 0.08) 0px, transparent 50%),
-                radial-gradient(at 50% 50%, rgba(15, 23, 42, 0.85) 0px, transparent 100%);
+                radial-gradient(circle at 10% 0%, rgba(2, 132, 199, 0.32) 0px, transparent 45%),
+                radial-gradient(circle at 90% 100%, rgba(99, 102, 241, 0.26) 0px, transparent 45%),
+                radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.92) 0px, transparent 100%);
             background-attachment: fixed;
             min-height: 100vh;
-            padding: 10px 8px 30px;
+            padding: 14px 10px 36px;
             color: var(--text-primary);
-            transition: background-color 0.3s ease;
+            transition: background-color 0.35s ease;
         }
 
         body.light-mode {
             background-image: 
-                radial-gradient(at 50% 0%, rgba(2, 132, 199, 0.08) 0px, transparent 65%),
-                radial-gradient(at 100% 100%, rgba(56, 189, 248, 0.04) 0px, transparent 50%),
-                radial-gradient(at 50% 50%, rgba(241, 245, 249, 0.95) 0px, transparent 100%);
+                radial-gradient(circle at 10% 0%, rgba(2, 132, 199, 0.14) 0px, transparent 45%),
+                radial-gradient(circle at 90% 100%, rgba(99, 102, 241, 0.1) 0px, transparent 45%),
+                radial-gradient(circle at 50% 50%, rgba(240, 244, 248, 0.98) 0px, transparent 100%);
         }
 
         .main-wrapper {
@@ -92,7 +105,7 @@
             margin: 0 auto;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
         }
 
         .glass-panel {
@@ -100,27 +113,30 @@
             backdrop-filter: var(--glass-blur);
             -webkit-backdrop-filter: var(--glass-blur);
             border: 1px solid var(--surface-border);
+            border-top: 1px solid rgba(255, 255, 255, 0.22);
             border-radius: var(--radius-card);
-            padding: 14px;
-            box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+            padding: 16px;
+            box-shadow: 0 24px 50px -15px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.15);
             position: relative;
             overflow: visible;
         }
         body.light-mode .glass-panel {
-            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(0, 0, 0, 0.03);
+            box-shadow: 0 16px 36px -8px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
+            border-top: 1px solid rgba(255, 255, 255, 0.9);
         }
 
+        /* Top Brand Header */
         .brand-center-header {
             display: flex;
             align-items: center;
             gap: 12px;
             position: relative;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
         }
 
         .top-action-bar {
             display: flex;
-            gap: 6px;
+            gap: 8px;
             margin-left: auto;
         }
 
@@ -128,28 +144,35 @@
             background: var(--surface-hover);
             border: 1px solid var(--surface-border);
             color: var(--text-primary);
-            width: 32px;
-            height: 32px;
+            width: 38px;
+            height: 38px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1rem;
+            font-size: 1.1rem;
             cursor: pointer;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+            transition: transform 0.22s var(--spring-physics), background 0.2s, border-color 0.2s;
         }
-        .icon-btn-pill:active { transform: scale(0.9); }
+        .icon-btn-pill:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: var(--brand-accent);
+        }
+        .icon-btn-pill:active { transform: scale(0.85); }
 
         .logo-avatar-wrap {
             position: relative;
-            width: 44px;
-            height: 44px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
-            padding: 2px;
-            background: linear-gradient(135deg, var(--brand-accent), #0284c7, #6366f1);
-            box-shadow: 0 4px 15px var(--brand-glow);
+            padding: 2.5px;
+            background: linear-gradient(135deg, var(--brand-accent), #0284c7, #818cf8);
+            box-shadow: 0 0 20px var(--brand-glow);
             flex-shrink: 0;
+            transition: transform 0.3s var(--spring-physics);
         }
+        .logo-avatar-wrap:hover { transform: rotate(8deg) scale(1.05); }
 
         .brand-logo-img {
             width: 100%;
@@ -169,7 +192,7 @@
             align-items: center;
             justify-content: center;
             color: #38bdf8;
-            font-size: 1.2rem;
+            font-size: 1.35rem;
         }
 
         .brand-title-group {
@@ -179,177 +202,210 @@
 
         .brand-title-en {
             font-family: 'Outfit', sans-serif;
-            font-size: 1.25rem;
+            font-size: 1.45rem;
             font-weight: 900;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
             line-height: 1.1;
-            background: linear-gradient(135deg, #ffffff 40%, #38bdf8 100%);
+            background: linear-gradient(135deg, #ffffff 30%, #38bdf8 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 2px 12px rgba(56, 189, 248, 0.4));
         }
         body.light-mode .brand-title-en {
-            background: linear-gradient(135deg, #0f172a 40%, #0284c7 100%);
+            background: linear-gradient(135deg, #0f172a 30%, #0284c7 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            filter: none;
         }
 
         .brand-subtitle-th {
-            font-size: 0.72rem;
+            font-size: 0.76rem;
             color: var(--text-secondary);
-            font-weight: 400;
+            font-weight: 600;
+            letter-spacing: 0.5px;
         }
 
+        /* Segmented Filters */
         .filter-segmented {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 4px;
-            background: rgba(0, 0, 0, 0.2);
+            gap: 5px;
+            background: rgba(0, 0, 0, 0.35);
             padding: 4px;
-            border-radius: 14px;
+            border-radius: 16px;
             border: 1px solid var(--surface-border);
             margin-top: 6px;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
         }
         body.light-mode .filter-segmented { background: #e2e8f0; }
 
         .filter-chip {
-            padding: 6px 2px;
+            padding: 8px 2px;
             border: none;
             background: transparent;
-            border-radius: 10px;
-            font-size: 0.72rem;
-            font-weight: 500;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
             color: var(--text-secondary);
             cursor: pointer;
             text-align: center;
             white-space: nowrap;
-            transition: all 0.2s ease;
+            transition: all 0.22s var(--spring-physics);
         }
         .filter-chip.active {
-            background: var(--brand-primary);
+            background: linear-gradient(135deg, var(--brand-primary) 0%, #0369a1 100%);
             color: #ffffff;
-            font-weight: 600;
-            box-shadow: 0 3px 10px var(--brand-glow);
+            font-weight: 700;
+            box-shadow: 0 4px 15px var(--brand-glow);
+            transform: translateY(-1px);
         }
+        .filter-chip:active { transform: scale(0.92); }
 
         .custom-filter-box {
             display: none;
             margin-top: 8px;
             background: var(--surface-hover);
             border: 1px solid var(--surface-border);
-            border-radius: 14px;
-            padding: 10px;
+            border-radius: 16px;
+            padding: 12px;
         }
         .custom-filter-type-selector {
             display: flex;
-            gap: 4px;
+            gap: 6px;
             margin-bottom: 8px;
         }
         .btn-custom-sub {
             flex: 1;
-            padding: 5px;
-            border-radius: 8px;
+            padding: 7px;
+            border-radius: 10px;
             border: 1px solid var(--surface-border);
             background: var(--surface-card);
             color: var(--text-secondary);
-            font-size: 0.7rem;
+            font-size: 0.74rem;
+            font-weight: 600;
             cursor: pointer;
+            transition: transform 0.18s var(--spring-physics);
         }
+        .btn-custom-sub:active { transform: scale(0.94); }
         .btn-custom-sub.active { background: var(--brand-primary); color: #fff; border-color: var(--brand-primary); }
-        .filter-input-group label { display: block; font-size: 0.68rem; color: var(--text-secondary); margin-bottom: 3px; font-weight: 600; }
+        .filter-input-group label { display: block; font-size: 0.72rem; color: var(--text-secondary); margin-bottom: 4px; font-weight: 700; }
         .filter-input-group input, .filter-input-group select {
             width: 100%;
-            padding: 7px;
-            border-radius: 8px;
+            padding: 9px;
+            border-radius: 10px;
             border: 1px solid var(--surface-border);
-            font-size: 0.8rem;
+            font-size: 0.84rem;
             background: var(--surface-card);
             color: var(--text-primary);
+            outline: none;
+        }
+
+        /* Hero Card with Rotating Border Glow */
+        .revenue-glow-wrapper {
+            position: relative;
+            border-radius: 26px;
+            padding: 2.5px;
+            background: conic-gradient(from var(--angle), transparent 50%, #38bdf8, #818cf8, transparent 95%);
+            animation: spin-glow 3.5s linear infinite;
+            box-shadow: 0 16px 45px -10px rgba(2, 132, 199, 0.45);
+            margin-top: 10px;
+        }
+
+        @keyframes spin-glow {
+            to { --angle: 360deg; }
         }
 
         .revenue-hero-card {
-            background: linear-gradient(145deg, rgba(2, 132, 199, 0.2) 0%, rgba(15, 23, 42, 0.88) 100%);
-            border: 1.2px solid rgba(56, 189, 248, 0.3);
-            border-radius: 20px;
-            padding: 14px;
+            background: linear-gradient(145deg, rgba(2, 132, 199, 0.28) 0%, rgba(15, 23, 42, 0.96) 100%);
+            border-radius: 24px;
+            padding: 18px;
             text-align: center;
             position: relative;
-            box-shadow: 0 10px 30px -6px rgba(2, 132, 199, 0.25);
-            margin-top: 8px;
             color: #ffffff;
+            backdrop-filter: var(--glass-blur);
         }
         body.light-mode .revenue-hero-card {
-            background: linear-gradient(145deg, #090d16 0%, #0f172a 70%);
-            border: 1px solid #334155;
+            background: linear-gradient(145deg, #090d16 0%, #0f172a 85%);
         }
 
         .revenue-label {
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            font-weight: 700;
+            letter-spacing: 2px;
+            font-weight: 800;
             color: var(--brand-accent);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 5px;
+            gap: 6px;
         }
 
         .revenue-display-amount {
             font-family: 'Outfit', sans-serif;
-            font-size: 2.3rem;
+            font-size: 2.8rem;
             font-weight: 900;
             letter-spacing: -0.5px;
             line-height: 1.1;
-            margin: 4px 0;
+            margin: 6px 0;
             background: linear-gradient(135deg, #ffffff 30%, #38bdf8 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 4px 14px rgba(56, 189, 248, 0.4));
         }
         .revenue-display-amount::before {
             content: "฿ ";
             -webkit-text-fill-color: #38bdf8;
-            font-size: 1.9rem;
+            font-size: 2.2rem;
             margin-right: 4px;
         }
 
         .revenue-sub-count {
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             color: #94a3b8;
+            font-weight: 600;
         }
 
         .btn-expand-profit {
             background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             color: #ffffff;
             border-radius: var(--radius-pill);
-            padding: 5px 14px;
-            font-size: 0.72rem;
-            font-weight: 600;
-            margin-top: 8px;
+            padding: 7px 18px;
+            font-size: 0.76rem;
+            font-weight: 700;
+            margin-top: 10px;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
+            transition: transform 0.22s var(--spring-physics), background 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
+        .btn-expand-profit:hover {
+            background: rgba(255, 255, 255, 0.16);
+            box-shadow: 0 0 16px var(--brand-glow);
+        }
+        .btn-expand-profit:active { transform: scale(0.9); }
 
         .profit-matrix-grid {
             display: none;
             grid-template-columns: 1fr 1fr;
             gap: 8px;
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px dashed rgba(255, 255, 255, 0.2);
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 1px dashed rgba(255, 255, 255, 0.25);
         }
 
         .matrix-cell {
-            background: rgba(0, 0, 0, 0.35);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 12px;
-            padding: 8px;
+            background: rgba(0, 0, 0, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            border-radius: 16px;
+            padding: 10px 12px;
             text-align: left;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
         }
-        .matrix-tag { font-size: 0.65rem; color: #94a3b8; font-weight: 600; }
-        .matrix-digit { font-family: 'Outfit', sans-serif; font-size: 1.05rem; font-weight: 800; margin-top: 2px; }
+        .matrix-tag { font-size: 0.7rem; color: #94a3b8; font-weight: 700; }
+        .matrix-digit { font-family: 'Outfit', sans-serif; font-size: 1.2rem; font-weight: 800; margin-top: 2px; }
         .matrix-digit.cash::before { content: "฿ "; margin-right: 3px; }
         .matrix-digit.qr::before { content: "฿ "; margin-right: 3px; }
         .matrix-digit.cost::before { content: "฿ "; margin-right: 3px; }
@@ -359,26 +415,34 @@
         .matrix-digit.cost { color: #f87171; }
         .matrix-digit.profit { color: #4ade80; }
 
+        /* Category Stat Pods */
         .category-pods-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
-            margin-top: 8px;
+            gap: 10px;
+            margin-top: 10px;
         }
 
         .stat-pod {
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 16px;
-            padding: 10px 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid var(--surface-border);
+            border-top: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 20px;
+            padding: 12px 14px;
+            box-shadow: 0 8px 22px rgba(0,0,0,0.3);
+            backdrop-filter: blur(12px);
+            transition: transform 0.22s var(--spring-physics), box-shadow 0.22s ease;
         }
         body.light-mode .stat-pod { background: #ffffff; border-color: #e2e8f0; }
+        .stat-pod:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.4);
+        }
 
-        .stat-pod.drink-theme { border-left: 3.5px solid #38bdf8; }
-        .stat-pod.snack-theme { border-left: 3.5px solid #fbbf24; }
-        .stat-pod.bread-theme { border-left: 3.5px solid #f472b6; }
-        .stat-pod.food-theme { border-left: 3.5px solid #34d399; }
+        .stat-pod.drink-theme { border-left: 4.5px solid #38bdf8; }
+        .stat-pod.snack-theme { border-left: 4.5px solid #fbbf24; }
+        .stat-pod.bread-theme { border-left: 4.5px solid #f472b6; }
+        .stat-pod.food-theme { border-left: 4.5px solid #34d399; }
 
         .pod-top-row {
             display: flex;
@@ -387,7 +451,7 @@
         }
 
         .pod-title {
-            font-size: 0.68rem;
+            font-size: 0.74rem;
             font-weight: 700;
             color: var(--text-primary);
             white-space: nowrap;
@@ -396,59 +460,60 @@
         }
 
         .pod-count-badge {
-            font-size: 0.6rem;
-            font-weight: 700;
-            padding: 2px 5px;
+            font-size: 0.66rem;
+            font-weight: 800;
+            padding: 2px 7px;
             border-radius: var(--radius-pill);
-            background: rgba(255, 255, 255, 0.08);
             white-space: nowrap;
         }
-        .drink-theme .pod-count-badge { color: #38bdf8; background: rgba(56, 189, 248, 0.12); }
-        .snack-theme .pod-count-badge { color: #fbbf24; background: rgba(251, 191, 36, 0.12); }
-        .bread-theme .pod-count-badge { color: #f472b6; background: rgba(244, 114, 182, 0.12); }
-        .food-theme .pod-count-badge { color: #34d399; background: rgba(52, 211, 153, 0.12); }
+        .drink-theme .pod-count-badge { color: #38bdf8; background: rgba(56, 189, 248, 0.18); }
+        .snack-theme .pod-count-badge { color: #fbbf24; background: rgba(251, 191, 36, 0.18); }
+        .bread-theme .pod-count-badge { color: #f472b6; background: rgba(244, 114, 182, 0.18); }
+        .food-theme .pod-count-badge { color: #34d399; background: rgba(52, 211, 153, 0.18); }
 
         .pod-val {
             font-family: 'Outfit', sans-serif;
-            font-size: 1.15rem;
-            font-weight: 800;
-            margin: 4px 0 6px;
+            font-size: 1.35rem;
+            font-weight: 900;
+            margin: 6px 0 8px;
+            letter-spacing: -0.3px;
         }
-        .pod-val::before { content: "฿ "; font-size: 0.95rem; margin-right: 3px; }
+        .pod-val::before { content: "฿ "; font-size: 1.05rem; margin-right: 3px; }
 
         .pod-split-chips {
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 4px;
-            padding-top: 6px;
-            border-top: 1px dashed rgba(255, 255, 255, 0.1);
+            padding-top: 7px;
+            border-top: 1px dashed rgba(255, 255, 255, 0.12);
         }
         .split-chip {
-            font-size: 0.58rem;
+            font-size: 0.64rem;
             font-weight: 700;
-            padding: 1px 4px;
-            border-radius: 6px;
+            padding: 2px 6px;
+            border-radius: 7px;
             white-space: nowrap;
         }
-        .split-chip.cash { color: #34d399; background: rgba(52, 211, 153, 0.12); }
+        .split-chip.cash { color: #34d399; background: rgba(52, 211, 153, 0.16); }
         .split-chip.cash::before { content: "💵 สด ฿ "; }
-        .split-chip.qr { color: #38bdf8; background: rgba(56, 189, 248, 0.12); }
+        .split-chip.qr { color: #38bdf8; background: rgba(56, 189, 248, 0.16); }
         .split-chip.qr::before { content: "📱 โอน ฿ "; }
 
+        /* Bestseller POS Grid */
         .bestseller-pos-section {
-            margin-top: 8px;
-            background: linear-gradient(135deg, rgba(2, 132, 199, 0.06) 0%, var(--surface-hover) 100%);
-            border: 1px solid rgba(56, 189, 248, 0.2);
-            border-radius: 18px;
-            padding: 10px;
+            margin-top: 10px;
+            background: linear-gradient(135deg, rgba(2, 132, 199, 0.12) 0%, var(--surface-hover) 100%);
+            border: 1px solid rgba(56, 189, 248, 0.28);
+            border-radius: 22px;
+            padding: 12px;
         }
 
         .pos-section-header {
-            font-size: 0.78rem;
+            font-size: 0.82rem;
             font-weight: 800;
             color: #38bdf8;
-            margin-bottom: 8px;
+            margin-bottom: 9px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -462,23 +527,27 @@
 
         .quick-order-btn {
             background: var(--surface-card);
-            border: 1px solid rgba(56, 189, 248, 0.25);
-            border-radius: 12px;
-            padding: 7px 2px;
+            border: 1px solid rgba(56, 189, 248, 0.22);
+            border-radius: 16px;
+            padding: 9px 3px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 2px;
+            gap: 3px;
             cursor: pointer;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-            transition: transform 0.15s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: transform 0.2s var(--spring-physics), border-color 0.2s, box-shadow 0.2s;
         }
-        .quick-order-btn:active { transform: scale(0.92); }
+        .quick-order-btn:hover {
+            border-color: var(--brand-accent);
+            box-shadow: 0 0 12px var(--brand-glow);
+        }
+        .quick-order-btn:active { transform: scale(0.88); }
 
-        .quick-icon { font-size: 1.1rem; line-height: 1; }
+        .quick-icon { font-size: 1.35rem; line-height: 1; }
         .quick-name {
-            font-size: 0.68rem;
+            font-size: 0.7rem;
             font-weight: 700;
             color: var(--text-primary);
             white-space: nowrap;
@@ -488,191 +557,214 @@
         }
         .quick-price {
             font-family: 'Outfit', sans-serif;
-            font-size: 0.7rem;
+            font-size: 0.74rem;
             font-weight: 800;
             color: #38bdf8;
-            background: rgba(56, 189, 248, 0.15);
-            padding: 1px 6px;
+            background: rgba(56, 189, 248, 0.18);
+            padding: 1.5px 8px;
             border-radius: var(--radius-pill);
         }
         .quick-price::before { content: "฿ "; margin-right: 3px; }
 
+        /* Order Input Studio */
         .order-input-studio { margin-top: 8px; position: relative; }
-        .studio-input-bar { display: flex; gap: 6px; }
+        .studio-input-bar { display: flex; gap: 8px; }
         .studio-input-bar input {
             flex: 1;
-            padding: 11px 14px;
-            font-size: 0.95rem;
+            padding: 13px 18px;
+            font-size: 0.96rem;
             font-weight: 600;
-            border: 2px solid rgba(56, 189, 248, 0.3);
-            border-radius: 14px;
+            border: 2px solid rgba(56, 189, 248, 0.35);
+            border-radius: 18px;
             background: var(--surface-card);
             color: var(--text-primary);
             outline: none;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.25);
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
+        .studio-input-bar input:focus {
+            border-color: var(--brand-accent);
+            box-shadow: 0 0 20px var(--brand-glow), inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
         .btn-studio-submit {
             background: linear-gradient(135deg, var(--brand-primary) 0%, #0369a1 100%);
             border: none;
             color: #fff;
-            padding: 0 18px;
-            font-size: 0.9rem;
-            font-weight: 700;
-            border-radius: 14px;
+            padding: 0 22px;
+            font-size: 0.94rem;
+            font-weight: 800;
+            border-radius: 18px;
             cursor: pointer;
             white-space: nowrap;
+            box-shadow: 0 4px 18px var(--brand-glow);
+            transition: transform 0.22s var(--spring-physics), box-shadow 0.2s;
         }
-        .btn-studio-submit:active { transform: scale(0.96); }
+        .btn-studio-submit:hover { box-shadow: 0 0 25px var(--brand-glow); }
+        .btn-studio-submit:active { transform: scale(0.9); }
 
         .backdate-toggle-bar {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-top: 6px;
-            padding: 0 2px;
+            margin-top: 8px;
+            padding: 0 4px;
         }
         .btn-backdate-trigger {
             background: var(--surface-hover);
             border: 1px solid var(--surface-border);
             color: var(--text-secondary);
-            padding: 4px 10px;
-            border-radius: 8px;
-            font-size: 0.68rem;
+            padding: 5px 14px;
+            border-radius: 10px;
+            font-size: 0.72rem;
             font-weight: 600;
             cursor: pointer;
+            transition: transform 0.18s var(--spring-physics);
         }
+        .btn-backdate-trigger:active { transform: scale(0.92); }
+        .btn-backdate-trigger.active { background: #f59e0b; color: #fff; border-color: #f59e0b; }
+
         .backdate-flyout {
             display: none;
             background: rgba(245, 158, 11, 0.08);
             border: 1px dashed rgba(245, 158, 11, 0.4);
-            border-radius: 12px;
-            padding: 8px;
-            margin-top: 6px;
+            border-radius: 16px;
+            padding: 10px;
+            margin-top: 8px;
         }
         .flyout-grid { display: flex; gap: 6px; }
         .flyout-grid input {
             flex: 1;
-            padding: 6px;
-            border-radius: 8px;
-            border: 1px solid rgba(245, 158, 11, 0.3);
+            padding: 9px;
+            border-radius: 10px;
+            border: 1px solid rgba(245, 158, 11, 0.35);
             background: var(--surface-card);
             color: var(--text-primary);
-            font-size: 0.75rem;
+            font-size: 0.8rem;
         }
 
         .live-suggest-box {
             position: absolute;
-            top: 50px;
+            top: 56px;
             left: 0;
-            right: 100px;
+            right: 120px;
             background: rgba(15, 23, 42, 0.98);
             backdrop-filter: var(--glass-blur);
             -webkit-backdrop-filter: var(--glass-blur);
             border: 1.5px solid var(--brand-accent);
-            border-radius: 14px;
-            max-height: 250px;
+            border-radius: 18px;
+            max-height: 260px;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
             touch-action: pan-y;
             z-index: 5000;
             display: none;
-            box-shadow: 0 12px 35px rgba(0,0,0,0.6);
+            box-shadow: 0 20px 45px rgba(0,0,0,0.7);
         }
         body.light-mode .live-suggest-box {
             background: rgba(255, 255, 255, 0.98);
-            box-shadow: 0 12px 35px rgba(0,0,0,0.15);
+            box-shadow: 0 18px 40px rgba(0,0,0,0.16);
         }
         .suggest-row {
-            padding: 9px 14px;
+            padding: 11px 16px;
             border-bottom: 1px solid var(--surface-border);
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             font-weight: 600;
             display: flex;
             justify-content: space-between;
             align-items: center;
             cursor: pointer;
+            transition: background 0.15s;
         }
-        .suggest-row:hover, .suggest-row:active { background: rgba(56, 189, 248, 0.2); color: var(--brand-accent); }
+        .suggest-row:hover, .suggest-row:active { background: rgba(56, 189, 248, 0.22); color: var(--brand-accent); }
         .suggest-row span:last-child {
             font-family: 'Outfit', sans-serif;
             font-weight: 800;
             color: var(--brand-accent);
-            background: rgba(56, 189, 248, 0.12);
-            padding: 2px 10px;
+            background: rgba(56, 189, 248, 0.14);
+            padding: 2px 11px;
             border-radius: var(--radius-pill);
         }
         .suggest-row span:last-child::after { content: " ฿"; }
 
+        /* Workspace Tabs */
         .workspace-tabs {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 4px;
-            margin-top: 10px;
-            background: rgba(0, 0, 0, 0.2);
-            padding: 4px;
-            border-radius: 14px;
+            gap: 6px;
+            margin-top: 14px;
+            background: rgba(0, 0, 0, 0.35);
+            padding: 5px;
+            border-radius: 16px;
             border: 1px solid var(--surface-border);
             position: relative;
             z-index: 10;
         }
         .workspace-tab-btn {
-            padding: 8px 2px;
+            padding: 10px 2px;
             border: none;
             background: transparent;
-            border-radius: 10px;
-            font-size: 0.72rem;
+            border-radius: 12px;
+            font-size: 0.76rem;
             font-weight: 600;
             color: var(--text-secondary);
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 3px;
+            gap: 4px;
+            transition: all 0.22s var(--spring-physics);
         }
         .workspace-tab-btn.active {
             background: var(--brand-primary);
             color: #ffffff;
-            font-weight: 700;
-            box-shadow: 0 4px 12px var(--brand-glow);
+            font-weight: 800;
+            box-shadow: 0 4px 16px var(--brand-glow);
+            transform: translateY(-1px);
         }
+        .workspace-tab-btn:active { transform: scale(0.92); }
 
         .scrollable-feed {
-            max-height: 380px;
+            max-height: 420px;
             overflow-y: auto;
-            padding-right: 2px;
-            margin-top: 10px;
+            padding-right: 3px;
+            margin-top: 12px;
             position: relative;
             z-index: 5;
         }
-        .scrollable-feed::-webkit-scrollbar { width: 4px; }
+        .scrollable-feed::-webkit-scrollbar { width: 5px; }
         .scrollable-feed::-webkit-scrollbar-thumb { background: var(--surface-border); border-radius: 10px; }
 
+        /* Order Cards Feed */
         .order-cluster-card {
             background: var(--surface-hover);
             border: 1px solid var(--surface-border);
-            border-radius: 16px;
-            padding: 12px;
-            margin-bottom: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 20px;
+            padding: 14px;
+            margin-bottom: 12px;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.18);
         }
         .cluster-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding-bottom: 8px;
+            padding-bottom: 9px;
             border-bottom: 1px dashed var(--surface-border);
-            margin-bottom: 8px;
+            margin-bottom: 9px;
         }
         .cluster-time-badge {
-            font-size: 0.7rem;
-            font-weight: 600;
+            font-size: 0.74rem;
+            font-weight: 700;
             color: var(--brand-accent);
-            background: rgba(56, 189, 248, 0.12);
-            padding: 3px 8px;
+            background: rgba(56, 189, 248, 0.15);
+            padding: 4px 10px;
             border-radius: var(--radius-pill);
         }
         .cluster-total-tag {
             font-family: 'Outfit', sans-serif;
-            font-size: 0.95rem;
-            font-weight: 800;
+            font-size: 1.05rem;
+            font-weight: 900;
         }
         .cluster-total-tag::before { content: "฿ "; margin-right: 3px; }
 
@@ -680,21 +772,21 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 9px 0;
-            border-bottom: 1px solid var(--surface-border);
+            padding: 10px 0;
+            border-bottom: 1px solid var(--surface-border-subtle);
         }
         .cluster-item-row:last-child { border-bottom: none; }
 
         .cluster-item-left {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             flex: 1;
             min-width: 0;
         }
 
         .item-name-heading { 
-            font-size: 0.85rem; 
+            font-size: 0.9rem; 
             font-weight: 600; 
             word-break: break-word;
         }
@@ -702,64 +794,71 @@
         .cluster-item-right {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 7px;
             flex-shrink: 0;
         }
         .cluster-item-right span[style*="Outfit"]::before { content: "฿ "; margin-right: 3px; }
 
         .checkbox-tick-square {
-            width: 24px;
-            height: 24px;
-            border-radius: 8px;
+            width: 28px;
+            height: 28px;
+            border-radius: 10px;
             border: 2px solid var(--surface-border);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.85rem;
-            font-weight: 800;
+            font-size: 0.95rem;
+            font-weight: 900;
             color: transparent;
             cursor: pointer;
             background: var(--surface-card);
             flex-shrink: 0;
+            transition: transform 0.18s var(--spring-physics), background 0.2s, border-color 0.2s;
         }
+        .checkbox-tick-square:active { transform: scale(0.82); }
         .row-completed .checkbox-tick-square {
             background: var(--success-color) !important;
             border-color: var(--success-color) !important;
             color: #ffffff !important;
+            box-shadow: 0 0 12px var(--success-glow);
         }
         .row-completed .item-name-heading { text-decoration: line-through; color: var(--text-muted) !important; }
 
         .pay-switch-badge {
-            padding: 4px 8px;
-            border-radius: 8px;
-            font-size: 0.65rem;
-            font-weight: 600;
+            padding: 5px 10px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 800;
             border: none;
             cursor: pointer;
+            transition: transform 0.18s var(--spring-physics);
         }
-        .pay-switch-badge.qr { background: rgba(56, 189, 248, 0.18); color: #38bdf8; }
-        .pay-switch-badge.cash { background: rgba(16, 185, 129, 0.18); color: #10b981; }
+        .pay-switch-badge:active { transform: scale(0.88); }
+        .pay-switch-badge.qr { background: rgba(56, 189, 248, 0.22); color: #38bdf8; }
+        .pay-switch-badge.cash { background: rgba(16, 185, 129, 0.22); color: #10b981; }
 
         .btn-item-ctrl {
             background: var(--surface-card);
             color: var(--brand-accent);
             border: 1px solid var(--surface-border);
-            border-radius: 8px;
-            padding: 5px 7px;
-            font-size: 0.75rem;
+            border-radius: 10px;
+            padding: 7px 9px;
+            font-size: 0.82rem;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: transform 0.18s var(--spring-physics);
         }
-        .btn-item-ctrl.del { background: rgba(244, 63, 94, 0.15); color: var(--danger-color); border: none; }
+        .btn-item-ctrl:active { transform: scale(0.85); }
+        .btn-item-ctrl.del { background: rgba(244, 63, 94, 0.18); color: var(--danger-color); border: none; }
 
-        .input-row-grid { display: flex; gap: 6px; margin-bottom: 6px; }
+        .input-row-grid { display: flex; gap: 8px; margin-bottom: 8px; }
         .input-row-grid input, .input-row-grid textarea {
-            padding: 9px;
+            padding: 11px;
             border: 1px solid var(--surface-border);
-            border-radius: 10px;
-            font-size: 0.82rem;
+            border-radius: 14px;
+            font-size: 0.86rem;
             outline: none;
             width: 100%;
             background: var(--surface-hover);
@@ -769,104 +868,134 @@
             background: var(--brand-primary);
             color: #fff;
             border: none;
-            padding: 9px 14px;
-            border-radius: 10px;
-            font-weight: 600;
+            padding: 11px 18px;
+            border-radius: 14px;
+            font-weight: 800;
             cursor: pointer;
             white-space: nowrap;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
+            box-shadow: 0 4px 14px var(--brand-glow);
+            transition: transform 0.2s var(--spring-physics), box-shadow 0.2s;
         }
+        .btn-solid-action:active { transform: scale(0.92); }
 
         .price-edit-unit {
             background: var(--surface-hover);
             border: 1px solid var(--surface-border);
-            border-radius: 14px;
-            padding: 10px;
-            margin-bottom: 8px;
+            border-radius: 18px;
+            padding: 13px;
+            margin-bottom: 9px;
         }
         .price-unit-header { display: flex; justify-content: space-between; align-items: center; }
 
         .summary-banner-title {
             background: var(--surface-hover);
-            padding: 6px 10px;
-            font-size: 0.78rem;
-            font-weight: 600;
-            color: var(--text-secondary);
-            border-radius: 10px;
-            margin: 8px 0 4px;
+            padding: 8px 14px;
+            font-size: 0.82rem;
+            font-weight: 800;
+            color: var(--brand-accent);
+            border-radius: 12px;
+            margin: 10px 0 6px;
         }
         .summary-tile-row {
             display: flex;
             justify-content: space-between;
-            padding: 7px 10px;
-            border-bottom: 1px solid var(--surface-border);
-            font-size: 0.85rem;
+            padding: 9px 14px;
+            border-bottom: 1px solid var(--surface-border-subtle);
+            font-size: 0.9rem;
             align-items: center;
         }
 
+        /* Footer System Dock & Liquid Beacon */
         .system-footer-dock {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-top: 10px;
-            padding-top: 8px;
+            margin-top: 14px;
+            padding-top: 12px;
             border-top: 1px solid var(--surface-border);
         }
         .status-pill-beacon {
             display: inline-flex;
             align-items: center;
-            gap: 5px;
-            font-size: 0.7rem;
+            gap: 8px;
+            font-size: 0.74rem;
+            font-weight: 700;
             color: var(--text-secondary);
-            padding: 4px 10px;
+            padding: 6px 14px;
             border-radius: var(--radius-pill);
             background: var(--surface-hover);
             border: 1px solid var(--surface-border);
         }
-        .pulsing-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success-color); }
+        .pulsing-dot { 
+            width: 8px; 
+            height: 8px; 
+            border-radius: 50%; 
+            background: var(--success-color); 
+            box-shadow: 0 0 10px var(--success-color); 
+            position: relative;
+        }
+        .pulsing-dot::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            border: 1.5px solid var(--success-color);
+            animation: radar-pulse 2s infinite ease-out;
+        }
+        @keyframes radar-pulse {
+            0% { transform: scale(0.8); opacity: 1; }
+            100% { transform: scale(2.2); opacity: 0; }
+        }
+
         .btn-dock-sync {
             background: var(--brand-primary);
             color: #ffffff;
             border: none;
-            padding: 6px 14px;
-            border-radius: 10px;
-            font-size: 0.72rem;
-            font-weight: 600;
+            padding: 8px 18px;
+            border-radius: 14px;
+            font-size: 0.78rem;
+            font-weight: 800;
             cursor: pointer;
+            box-shadow: 0 4px 14px var(--brand-glow);
+            transition: transform 0.18s var(--spring-physics);
         }
+        .btn-dock-sync:active { transform: scale(0.9); }
 
+        /* Modal Card Backdrop */
         .glass-modal-backdrop {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(3, 7, 18, 0.75);
-            backdrop-filter: blur(10px);
+            background: rgba(2, 6, 23, 0.85);
+            backdrop-filter: blur(16px);
             z-index: 9000;
             display: none;
             align-items: center;
             justify-content: center;
-            padding: 12px;
+            padding: 14px;
         }
         .modal-body-card {
             background: var(--surface-card);
             border: 1px solid var(--surface-border);
-            border-radius: 20px;
-            padding: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 26px;
+            padding: 20px;
             width: 100%;
-            max-width: 380px;
-            box-shadow: 0 25px 50px -10px rgba(0, 0, 0, 0.6);
+            max-width: 390px;
+            box-shadow: 0 30px 60px -10px rgba(0, 0, 0, 0.8);
             color: var(--text-primary);
         }
         .recipe-preview-box {
             background: var(--surface-hover);
             border: 1px solid var(--surface-border);
-            border-radius: 12px;
-            padding: 12px;
-            font-size: 0.85rem;
+            border-radius: 16px;
+            padding: 16px;
+            font-size: 0.9rem;
             white-space: pre-line;
-            line-height: 1.5;
-            margin: 10px 0;
+            line-height: 1.6;
+            margin: 12px 0;
         }
-        .empty-placeholder { text-align: center; color: var(--text-muted); padding: 24px 0; font-size: 0.82rem; }
+        .empty-placeholder { text-align: center; color: var(--text-muted); padding: 32px 0; font-size: 0.88rem; font-weight: 500; }
 
         @keyframes spin {
             from { transform: rotate(0deg); }
@@ -911,7 +1040,7 @@
         <div class="filter-segmented">
             <button type="button" class="filter-chip active" onclick="setTimeFilter('today', this)">☀️ วันนี้</button>
             <button type="button" class="filter-chip" onclick="setTimeFilter('week', this)">📅 อาทิตย์นี้</button>
-            <button type="button" class="filter-chip" onclick="setTimeFilter('custom', this)">🗓️ เลือกเอง</button>
+            <button type="button" class="filter-chip" onclick="setTimeFilter('custom', this)">🗓️ เลือกเดือน</button>
             <button type="button" class="filter-chip" onclick="setTimeFilter('all', this)">📋 ทั้งหมด</button>
         </div>
 
@@ -935,35 +1064,37 @@
             </div>
         </div>
 
-        <!-- Revenue Showcase Card -->
-        <div class="revenue-hero-card">
-            <div class="revenue-label">
-                <i class="ph-bold ph-chart-line-up"></i> <span id="revenueTitleLabel">ยอดขายวันนี้</span>
-            </div>
-            <div class="revenue-display-amount" id="totalSales">0</div>
-            <div class="revenue-sub-count" id="totalSalesSub">ยอดขายรวม • 0 ชิ้น</div>
-            <div>
-                <button type="button" class="btn-expand-profit" id="btnToggleProfit" onclick="toggleProfitPanel()">
-                    <i class="ph-bold ph-eye"></i> สรุปผลประกอบการ
-                </button>
-            </div>
+        <!-- Revenue Showcase Card with Glow Wrapper -->
+        <div class="revenue-glow-wrapper">
+            <div class="revenue-hero-card">
+                <div class="revenue-label">
+                    <i class="ph-bold ph-chart-line-up"></i> <span id="revenueTitleLabel">ยอดขายวันนี้</span>
+                </div>
+                <div class="revenue-display-amount" id="totalSales">0</div>
+                <div class="revenue-sub-count" id="totalSalesSub">ยอดขายรวม • 0 ชิ้น</div>
+                <div>
+                    <button type="button" class="btn-expand-profit" id="btnToggleProfit" onclick="toggleProfitPanel()">
+                        <i class="ph-bold ph-eye"></i> สรุปผลประกอบการ
+                    </button>
+                </div>
 
-            <div class="profit-matrix-grid" id="secretProfitPanel">
-                <div class="matrix-cell">
-                    <div class="matrix-tag">รับเงินสด</div>
-                    <div class="matrix-digit cash" id="totalCash">0</div>
-                </div>
-                <div class="matrix-cell">
-                    <div class="matrix-tag">สแกนจ่าย</div>
-                    <div class="matrix-digit qr" id="totalQr">0</div>
-                </div>
-                <div class="matrix-cell">
-                    <div class="matrix-tag">ต้นทุนซื้อของ</div>
-                    <div class="matrix-digit cost" id="totalCost">0</div>
-                </div>
-                <div class="matrix-cell">
-                    <div class="matrix-tag">กำไรสุทธิ</div>
-                    <div class="matrix-digit profit" id="totalProfit">0</div>
+                <div class="profit-matrix-grid" id="secretProfitPanel">
+                    <div class="matrix-cell">
+                        <div class="matrix-tag">รับเงินสด</div>
+                        <div class="matrix-digit cash" id="totalCash">0</div>
+                    </div>
+                    <div class="matrix-cell">
+                        <div class="matrix-tag">สแกนจ่าย</div>
+                        <div class="matrix-digit qr" id="totalQr">0</div>
+                    </div>
+                    <div class="matrix-cell">
+                        <div class="matrix-tag">ต้นทุนซื้อของ</div>
+                        <div class="matrix-digit cost" id="totalCost">0</div>
+                    </div>
+                    <div class="matrix-cell">
+                        <div class="matrix-tag">กำไรสุทธิ</div>
+                        <div class="matrix-digit profit" id="totalProfit">0</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1023,7 +1154,7 @@
         <div class="bestseller-pos-section">
             <div class="pos-section-header">
                 <span><i class="ph-bold ph-flame" style="color:#f59e0b;"></i> 🔥 เมนูยอดฮิต ขายดีล่าสุด</span>
-                <span style="font-size:0.65rem; color:var(--text-muted);">แตะ = สั่ง 1</span>
+                <span style="font-size:0.7rem; color:var(--text-muted);">แตะ = สั่ง 1</span>
             </div>
             <div class="bestseller-grid" id="dynamicBestsellerGrid"></div>
         </div>
@@ -1037,7 +1168,7 @@
             <div id="suggestBox" class="live-suggest-box"></div>
 
             <div class="backdate-toggle-bar">
-                <span style="font-size:0.68rem; color:var(--text-secondary);">💡 พิมพ์สั่งหลายรายการพร้อมกันได้</span>
+                <span style="font-size:0.72rem; color:var(--text-secondary);">💡 พิมพ์สั่งหลายรายการพร้อมกันได้</span>
                 <button type="button" class="btn-backdate-trigger" id="btnToggleBackdate" onclick="toggleBackdateMode()">🕒 ย้อนหลัง</button>
             </div>
 
@@ -1071,8 +1202,8 @@
         </div>
 
         <div class="scrollable-feed" id="pricesView" style="display: none;">
-            <div style="background:var(--surface-hover); border:1px solid var(--surface-border); border-radius:14px; padding:12px; margin-bottom:10px;">
-                <div style="font-size:0.82rem; font-weight:700; color:var(--brand-accent); margin-bottom:8px;">➕ เพิ่มเมนูใหม่</div>
+            <div style="background:var(--surface-hover); border:1px solid var(--surface-border); border-radius:18px; padding:15px; margin-bottom:12px;">
+                <div style="font-size:0.88rem; font-weight:800; color:var(--brand-accent); margin-bottom:9px;">➕ เพิ่มเมนูใหม่</div>
                 <div class="input-row-grid" style="margin-bottom:6px;">
                     <input type="text" id="newMenuName" placeholder="ชื่อเมนู" style="flex:2;" oninput="toggleRecipeInputVisibility(this.value)">
                     <input type="number" id="newMenuPrice" placeholder="ราคา" min="1" style="flex:1;">
@@ -1084,14 +1215,14 @@
             </div>
 
             <div class="price-search-box" style="margin-bottom:10px;">
-                <input type="text" id="priceSearchInput" placeholder="🔍 ค้นหาเมนูเพื่อแก้ไขราคา/สูตร..." oninput="debouncePriceSearch()" style="width:100%; padding:8px 12px; border:1px solid var(--surface-border); border-radius:10px; background:var(--surface-hover); color:var(--text-primary); outline:none; font-size:0.82rem;">
+                <input type="text" id="priceSearchInput" placeholder="🔍 ค้นหาเมนูเพื่อแก้ไขราคา/สูตร..." oninput="debouncePriceSearch()" style="width:100%; padding:11px 16px; border:1px solid var(--surface-border); border-radius:14px; background:var(--surface-hover); color:var(--text-primary); outline:none; font-size:0.86rem;">
             </div>
             <div id="priceSettingList"></div>
 
             <div style="margin-top:14px; padding-top:10px; border-top:1px dashed var(--surface-border);">
-                <button type="button" class="btn-solid-action" style="width:100%; background:var(--success-color); margin-bottom:6px; font-size:0.78rem;" onclick="exportSalesToCSV()">📥 ดาวน์โหลดรายงานยอดขาย (CSV)</button>
-                <button type="button" class="btn-solid-action" style="width:100%; background:#6366f1; margin-bottom:6px; font-size:0.78rem;" onclick="exportExpensesToCSV()">📥 ดาวน์โหลดรายงานต้นทุน (CSV)</button>
-                <button type="button" class="btn-solid-action" style="width:100%; background:var(--danger-color); font-size:0.78rem;" onclick="clearOldDataCache()">🧹 ล้างแคชข้อมูลค้างในเครื่อง</button>
+                <button type="button" class="btn-solid-action" style="width:100%; background:var(--success-color); margin-bottom:7px; font-size:0.82rem;" onclick="exportSalesToCSV()">📥 ดาวน์โหลดรายงานยอดขาย (CSV)</button>
+                <button type="button" class="btn-solid-action" style="width:100%; background:#6366f1; margin-bottom:7px; font-size:0.82rem;" onclick="exportExpensesToCSV()">📥 ดาวน์โหลดรายงานต้นทุน (CSV)</button>
+                <button type="button" class="btn-solid-action" style="width:100%; background:var(--danger-color); font-size:0.82rem;" onclick="clearOldDataCache()">🧹 ล้างแคชข้อมูลค้างในเครื่อง</button>
             </div>
         </div>
 
@@ -1112,19 +1243,19 @@
 <!-- Modals -->
 <div class="glass-modal-backdrop" id="recipeModal" onclick="closeRecipeModal(event)">
     <div class="modal-body-card" onclick="event.stopPropagation()">
-        <div style="font-size:1.1rem; font-weight:700; color:var(--brand-accent); margin-bottom:10px;" id="recipeModalTitle">📖 สูตรชงเครื่องดื่ม</div>
+        <div style="font-size:1.2rem; font-weight:800; color:var(--brand-accent); margin-bottom:10px;" id="recipeModalTitle">📖 สูตรชงเครื่องดื่ม</div>
         <input type="hidden" id="recipeModalMenuName">
         <div id="recipeViewMode">
             <div class="recipe-preview-box" id="recipeModalBody">-</div>
             <div style="display:flex; gap:8px;">
-                <button type="button" style="flex:1; padding:10px; border-radius:12px; background:var(--surface-hover); border:1px solid var(--surface-border); color:var(--text-secondary); font-weight:600; cursor:pointer;" onclick="closeRecipeModal()">ปิดหน้าต่าง</button>
+                <button type="button" style="flex:1; padding:12px; border-radius:14px; background:var(--surface-hover); border:1px solid var(--surface-border); color:var(--text-secondary); font-weight:700; cursor:pointer;" onclick="closeRecipeModal()">ปิดหน้าต่าง</button>
                 <button type="button" class="btn-solid-action" style="flex:1;" onclick="switchToEditRecipeMode()">แก้ไขสูตร</button>
             </div>
         </div>
         <div id="recipeEditMode" style="display:none;">
-            <textarea id="recipeModalTextarea" rows="6" style="width:100%; padding:10px; border:1px solid var(--surface-border); border-radius:12px; background:var(--surface-hover); color:var(--text-primary); outline:none; font-size:0.88rem; line-height:1.5; margin-bottom:10px;"></textarea>
+            <textarea id="recipeModalTextarea" rows="6" style="width:100%; padding:12px; border:1px solid var(--surface-border); border-radius:14px; background:var(--surface-hover); color:var(--text-primary); outline:none; font-size:0.9rem; line-height:1.55; margin-bottom:10px;"></textarea>
             <div style="display:flex; gap:8px;">
-                <button type="button" style="flex:1; padding:10px; border-radius:12px; background:var(--surface-hover); border:1px solid var(--surface-border); color:var(--text-secondary); font-weight:600; cursor:pointer;" onclick="cancelEditRecipeMode()">ยกเลิก</button>
+                <button type="button" style="flex:1; padding:12px; border-radius:14px; background:var(--surface-hover); border:1px solid var(--surface-border); color:var(--text-secondary); font-weight:700; cursor:pointer;" onclick="cancelEditRecipeMode()">ยกเลิก</button>
                 <button type="button" class="btn-solid-action" style="flex:1; background:var(--success-color);" onclick="saveRecipeFromModal()">บันทึก</button>
             </div>
         </div>
@@ -1133,15 +1264,15 @@
 
 <div class="glass-modal-backdrop" id="editModal" onclick="closeEditModal(event)">
     <div class="modal-body-card" onclick="event.stopPropagation()">
-        <div style="font-size:1.05rem; font-weight:700; color:var(--brand-accent); margin-bottom:10px;">✏️ แก้ไขออเดอร์</div>
+        <div style="font-size:1.15rem; font-weight:800; color:var(--brand-accent); margin-bottom:12px;">✏️ แก้ไขออเดอร์</div>
         <input type="hidden" id="editItemId">
         <div style="margin-bottom:8px;">
-            <label style="font-size:0.7rem; color:var(--text-secondary);">ชื่อเมนู:</label>
-            <input type="text" id="editItemName" style="width:100%; padding:8px; border:1px solid var(--surface-border); border-radius:10px; background:var(--surface-hover); color:var(--text-primary); outline:none; font-size:0.85rem;">
+            <label style="font-size:0.74rem; color:var(--text-secondary); font-weight:700;">ชื่อเมนู:</label>
+            <input type="text" id="editItemName" style="width:100%; padding:11px; border:1px solid var(--surface-border); border-radius:14px; background:var(--surface-hover); color:var(--text-primary); outline:none; font-size:0.9rem;">
         </div>
         <div style="margin-bottom:8px;">
-            <label style="font-size:0.7rem; color:var(--text-secondary);">หมวดหมู่:</label>
-            <select id="editItemCategory" style="width:100%; padding:8px; border:1px solid var(--surface-border); border-radius:10px; background:var(--surface-hover); color:var(--text-primary); outline:none; font-size:0.85rem;">
+            <label style="font-size:0.74rem; color:var(--text-secondary); font-weight:700;">หมวดหมู่:</label>
+            <select id="editItemCategory" style="width:100%; padding:11px; border:1px solid var(--surface-border); border-radius:14px; background:var(--surface-hover); color:var(--text-primary); outline:none; font-size:0.9rem;">
                 <option value="เครื่องดื่ม">🧋 เครื่องดื่ม</option>
                 <option value="ของทอด/ทานเล่น">🍟 ของทอด/ทานเล่น</option>
                 <option value="ขนมปังปิ้ง">🍞 ขนมปังปิ้ง</option>
@@ -1150,16 +1281,16 @@
         </div>
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:14px;">
             <div>
-                <label style="font-size:0.7rem; color:var(--text-secondary);">ราคา/หน่วย:</label>
-                <input type="number" id="editItemUnitPrice" min="0" style="width:100%; padding:8px; border:1px solid var(--surface-border); border-radius:10px; background:var(--surface-hover); color:var(--text-primary); outline:none; font-size:0.85rem;">
+                <label style="font-size:0.74rem; color:var(--text-secondary); font-weight:700;">ราคา/หน่วย:</label>
+                <input type="number" id="editItemUnitPrice" min="0" style="width:100%; padding:11px; border:1px solid var(--surface-border); border-radius:14px; background:var(--surface-hover); color:var(--text-primary); outline:none; font-size:0.9rem;">
             </div>
             <div>
-                <label style="font-size:0.7rem; color:var(--text-secondary);">จำนวน:</label>
-                <input type="number" id="editItemQty" min="1" style="width:100%; padding:8px; border:1px solid var(--surface-border); border-radius:10px; background:var(--surface-hover); color:var(--text-primary); outline:none; font-size:0.85rem;">
+                <label style="font-size:0.74rem; color:var(--text-secondary); font-weight:700;">จำนวน:</label>
+                <input type="number" id="editItemQty" min="1" style="width:100%; padding:11px; border:1px solid var(--surface-border); border-radius:14px; background:var(--surface-hover); color:var(--text-primary); outline:none; font-size:0.9rem;">
             </div>
         </div>
-        <div style="display: flex; gap: 6px;">
-            <button type="button" style="flex:1; padding: 10px; border-radius: 10px; background: var(--surface-hover); border: 1px solid var(--surface-border); color:var(--text-secondary); font-weight:600; font-size:0.8rem; cursor:pointer;" onclick="closeEditModal()">ยกเลิก</button>
+        <div style="display: flex; gap: 8px;">
+            <button type="button" style="flex:1; padding: 12px; border-radius: 14px; background: var(--surface-hover); border: 1px solid var(--surface-border); color:var(--text-secondary); font-weight:700; font-size:0.88rem; cursor:pointer;" onclick="closeEditModal()">ยกเลิก</button>
             <button type="button" class="btn-solid-action" style="flex:1;" onclick="saveEditedItem()">บันทึก</button>
         </div>
     </div>
@@ -1167,26 +1298,26 @@
 
 <div class="glass-modal-backdrop" id="priceEditModal" onclick="closePriceModal(event)">
     <div class="modal-body-card" onclick="event.stopPropagation()">
-        <div style="font-size:1.1rem; font-weight:700; color:var(--brand-accent); margin-bottom:12px;">⚙️ แก้ไขราคาและสูตรชง</div>
+        <div style="font-size:1.2rem; font-weight:800; color:var(--brand-accent); margin-bottom:12px;">⚙️ แก้ไขราคาและสูตรชง</div>
         <input type="hidden" id="modalOldName">
         
         <div style="margin-bottom:10px;">
-            <label style="font-size:0.72rem; color:var(--text-secondary); margin-bottom:4px; display:block;">ชื่อเมนู:</label>
-            <input type="text" id="modalEditName" style="width:100%; padding:10px; border:1px solid var(--surface-border); border-radius:10px; background:var(--surface-hover); color:var(--text-primary); outline:none; font-size:0.9rem;">
+            <label style="font-size:0.76rem; color:var(--text-secondary); margin-bottom:4px; display:block; font-weight:700;">ชื่อเมนู:</label>
+            <input type="text" id="modalEditName" style="width:100%; padding:11px; border:1px solid var(--surface-border); border-radius:14px; background:var(--surface-hover); color:var(--text-primary); outline:none; font-size:0.92rem;">
         </div>
 
         <div style="margin-bottom:10px;">
-            <label style="font-size:0.72rem; color:var(--text-secondary); margin-bottom:4px; display:block;">ราคาขาย (บาท):</label>
-            <input type="number" id="modalEditPrice" min="1" style="width:100%; padding:10px; border:1px solid var(--surface-border); border-radius:10px; background:var(--surface-hover); color:var(--text-primary); outline:none; font-size:0.9rem; font-family:'Outfit',sans-serif; font-weight:700;">
+            <label style="font-size:0.76rem; color:var(--text-secondary); margin-bottom:4px; display:block; font-weight:700;">ราคาขาย (บาท):</label>
+            <input type="number" id="modalEditPrice" min="1" style="width:100%; padding:11px; border:1px solid var(--surface-border); border-radius:14px; background:var(--surface-hover); color:var(--text-primary); outline:none; font-size:0.98rem; font-family:'Outfit',sans-serif; font-weight:700;">
         </div>
 
         <div id="modalRecipeContainer" style="margin-bottom:14px; display:none;">
-            <label style="font-size:0.72rem; color:var(--text-secondary); margin-bottom:4px; display:block;">📖 สูตรชงเครื่องดื่ม:</label>
-            <textarea id="modalEditRecipe" rows="4" placeholder="ระบุสูตรชง..." style="width:100%; padding:10px; border:1px solid var(--surface-border); border-radius:10px; background:var(--surface-hover); color:var(--text-primary); outline:none; font-size:0.85rem; line-height:1.4;"></textarea>
+            <label style="font-size:0.76rem; color:var(--text-secondary); margin-bottom:4px; display:block; font-weight:700;">📖 สูตรชงเครื่องดื่ม:</label>
+            <textarea id="modalEditRecipe" rows="4" placeholder="ระบุสูตรชง..." style="width:100%; padding:11px; border:1px solid var(--surface-border); border-radius:14px; background:var(--surface-hover); color:var(--text-primary); outline:none; font-size:0.88rem; line-height:1.5;"></textarea>
         </div>
 
         <div style="display: flex; gap: 8px;">
-            <button type="button" style="flex:1; padding: 11px; border-radius: 12px; background: var(--surface-hover); border: 1px solid var(--surface-border); color:var(--text-secondary); font-weight:600; font-size:0.85rem; cursor:pointer;" onclick="closePriceModal()">ยกเลิก</button>
+            <button type="button" style="flex:1; padding: 12px; border-radius: 14px; background: var(--surface-hover); border: 1px solid var(--surface-border); color:var(--text-secondary); font-weight:700; font-size:0.88rem; cursor:pointer;" onclick="closePriceModal()">ยกเลิก</button>
             <button type="button" class="btn-solid-action" style="flex:1; background: var(--success-color);" onclick="savePriceModalData()">บันทึก</button>
         </div>
     </div>
@@ -2380,13 +2511,13 @@
                                     <div>
                                         <div class="item-name-heading" ${hasRecipe ? `onclick="showRecipe(decodeURIComponent('${safeName}'))" style="cursor:pointer;"` : ''}>
                                             ${escapeHtml(item.name)} <b style="color:var(--brand-accent);">x${item.qty}</b>
-                                            ${hasRecipe ? '<span style="font-size:0.6rem; color:var(--brand-accent); margin-left:2px; font-weight:600;">[สูตร]</span>' : ''}
+                                            ${hasRecipe ? '<span style="font-size:0.68rem; color:var(--brand-accent); margin-left:3px; font-weight:700;">[สูตร]</span>' : ''}
                                         </div>
-                                        <div style="font-size:0.68rem; color:var(--text-secondary);">(@${item.unitPrice} บ.)</div>
+                                        <div style="font-size:0.72rem; color:var(--text-secondary);">(@${item.unitPrice} บ.)</div>
                                     </div>
                                 </div>
                                 <div class="cluster-item-right">
-                                    <span style="font-family:'Outfit',sans-serif; font-weight:700; font-size:0.88rem; margin-right:3px;">${itPrice.toLocaleString()}</span>
+                                    <span style="font-family:'Outfit',sans-serif; font-weight:800; font-size:0.95rem; margin-right:3px;">${itPrice.toLocaleString()}</span>
                                     <button type="button" class="pay-switch-badge ${item.paymentMethod === 'promptpay' ? 'qr' : 'cash'}" onclick="togglePayMethod('${escapeHtml(item.id)}')">${item.paymentMethod === 'promptpay' ? '📱 สแกน' : '💵 สด'}</button>
                                     <button type="button" class="btn-item-ctrl" onclick="openEditModal('${escapeHtml(item.id)}')"><i class="ph-bold ph-pencil-simple"></i></button>
                                     <button type="button" class="btn-item-ctrl del" onclick="deleteItem('${escapeHtml(item.id)}')"><i class="ph-bold ph-trash"></i></button>
@@ -2402,11 +2533,11 @@
         expenseList.innerHTML = displayExpenses.map(item => `
             <div class="summary-tile-row">
                 <div>
-                    <div style="color:var(--danger-color); font-weight:600; font-size:0.85rem;">💸 ${escapeHtml(item.name)}</div>
-                    <div style="font-size:0.68rem; color:var(--text-secondary);">${escapeHtml(formatThaiDateTime(item.date, item.time))}</div>
+                    <div style="color:var(--danger-color); font-weight:700; font-size:0.9rem;">💸 ${escapeHtml(item.name)}</div>
+                    <div style="font-size:0.72rem; color:var(--text-secondary);">${escapeHtml(formatThaiDateTime(item.date, item.time))}</div>
                 </div>
                 <div style="display:flex; align-items:center; gap:6px;">
-                    <span style="font-family:'Outfit',sans-serif; color:var(--danger-color); font-weight:700; font-size:0.85rem;">-฿${(item.cost||0).toLocaleString()}</span>
+                    <span style="font-family:'Outfit',sans-serif; color:var(--danger-color); font-weight:800; font-size:0.92rem;">-฿${(item.cost||0).toLocaleString()}</span>
                     <button type="button" class="btn-item-ctrl del" onclick="deleteExpense('${escapeHtml(item.id)}')">ลบ</button>
                 </div>
             </div>
@@ -2417,7 +2548,7 @@
             summaryHtml += `<div class="summary-banner-title">📊 สรุปผลประกอบการรายเดือนย้อนหลัง</div>`;
             historySummary.forEach(h => {
                 summaryHtml += `
-                    <div class="summary-tile-row" style="font-size:0.8rem;">
+                    <div class="summary-tile-row" style="font-size:0.85rem;">
                         <span>🗓️ เดือน ${escapeHtml(h.month)} (${h.totalQty} ชิ้น)</span>
                         <span>ยอด <b>฿${h.sales.toLocaleString()}</b> (กำไร ฿${h.profit.toLocaleString()})</span>
                     </div>
@@ -2456,10 +2587,10 @@
             return `
             <div class="price-edit-unit">
                 <div class="price-unit-header">
-                    <span style="font-weight:600; font-size:0.85rem;">📝 ${escapeHtml(name)} ${isDrink ? '<span style="font-size:0.65rem; color:var(--brand-accent);">[เครื่องดื่ม]</span>' : ''}</span>
-                    <div style="display:flex; align-items:center; gap:6px;">
-                        <b style="font-family:'Outfit',sans-serif; color:var(--brand-accent); font-size:1rem;">฿${price}</b>
-                        <button type="button" class="btn-solid-action" style="padding:4px 10px; font-size:0.7rem;" onclick="openPriceModal(decodeURIComponent('${safeName}'), ${price})">แก้ไข</button>
+                    <span style="font-weight:700; font-size:0.9rem;">📝 ${escapeHtml(name)} ${isDrink ? '<span style="font-size:0.7rem; color:var(--brand-accent); font-weight:800;">[เครื่องดื่ม]</span>' : ''}</span>
+                    <div style="display:flex; align-items:center; gap:7px;">
+                        <b style="font-family:'Outfit',sans-serif; color:var(--brand-accent); font-size:1.1rem;">฿${price}</b>
+                        <button type="button" class="btn-solid-action" style="padding:6px 14px; font-size:0.75rem;" onclick="openPriceModal(decodeURIComponent('${safeName}'), ${price})">แก้ไข</button>
                         <button type="button" class="btn-item-ctrl del" onclick="deletePrice(decodeURIComponent('${safeName}'))"><i class="ph-bold ph-trash"></i></button>
                     </div>
                 </div>
