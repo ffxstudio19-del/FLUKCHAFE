@@ -300,7 +300,7 @@
             outline: none;
         }
 
-        /* Hero Card with Rotating Border Glow */
+        /* Hero Card */
         .revenue-glow-wrapper {
             position: relative;
             border-radius: 26px;
@@ -578,7 +578,7 @@
         }
         .quick-price::before { content: "฿ "; margin-right: 3px; }
 
-        /* Order Input Studio */
+        /* Order Input */
         .order-input-studio { margin-top: 8px; position: relative; }
         .studio-input-bar { display: flex; gap: 8px; }
         .studio-input-bar input {
@@ -918,7 +918,7 @@
             align-items: center;
         }
 
-        /* Footer System Dock & Liquid Beacon */
+        /* Footer Dock */
         .system-footer-dock {
             display: flex;
             align-items: center;
@@ -974,7 +974,7 @@
         }
         .btn-dock-sync:active { transform: scale(0.9); }
 
-        /* Modal Card Backdrop */
+        /* Modal Card */
         .glass-modal-backdrop {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -1076,7 +1076,7 @@
             </div>
         </div>
 
-        <!-- Revenue Showcase Card with Glow Wrapper -->
+        <!-- Revenue Hero Card -->
         <div class="revenue-glow-wrapper">
             <div class="revenue-hero-card">
                 <div class="revenue-label">
@@ -1171,7 +1171,7 @@
             <div class="bestseller-grid" id="dynamicBestsellerGrid"></div>
         </div>
 
-        <!-- Order Input -->
+        <!-- Order Input Studio -->
         <form id="quickForm" class="order-input-studio" onsubmit="return handleAdd(event)">
             <div class="studio-input-bar">
                 <input type="text" id="quickInput" placeholder="เช่น ชาไทย เย็น 2, โกโก้ เย็น" autocomplete="off" oninput="debounceSearchSuggest(this.value)">
@@ -1465,7 +1465,6 @@
     let isBackdateActive = false;
     let isSyncing = false;
     let lastDataSignature = '';
-    let isSubmittingOrder = false;
 
     if (localStorage.getItem('flukchafe_light_mode') === 'true') {
         document.body.classList.add('light-mode');
@@ -1758,6 +1757,34 @@
         } catch(e) {}
     }
 
+    // ซิงค์ฉบับย่อ: ดึงเฉพาะแถวล่าสุด (ทำงานทุก 7 วิ เพื่อให้เครื่องอื่นเห็นออเดอร์ทันที)
+    async function pollLatestOrders() {
+        if (document.hidden || isSyncing) return;
+        try {
+            const res = await fetch(`${SCRIPT_URL}?action=get_latest&_t=${Date.now()}`);
+            const data = await res.json();
+            if (data && data.status === 'success' && data.sales) {
+                let hasNew = false;
+                const currentIds = new Set(sales.map(s => String(s.id).trim()));
+                
+                data.sales.forEach(serverItem => {
+                    const sId = String(serverItem.id).trim();
+                    if (!currentIds.has(sId) && !localPendingSales.has(sId)) {
+                        sales.unshift(serverItem);
+                        hasNew = true;
+                    }
+                });
+                
+                if (hasNew) {
+                    saveLocalBackup();
+                    renderUI();
+                    playSound('order');
+                }
+            }
+        } catch(e) {}
+    }
+
+    // ซิงค์ชุดใหญ่: โหลดประวัติ ยอดสรุป และต้นทุนทั้งหมด
     async function syncData(manual = false) {
         if (isSyncing && !manual) return;
         isSyncing = true;
@@ -1853,13 +1880,18 @@
         }
     }
 
-    // ซิงค์ทุก 15 วินาทีเมื่อผู้ใช้เปิดจออยู่
+    // ซิงค์ฉบับย่อ ตรวจออเดอร์ใหม่ทุก 7 วินาที
+    setInterval(pollLatestOrders, 7000);
+
+    // ซิงค์ชุดใหญ่ ทุก 2 นาที
     setInterval(() => {
         if (!document.hidden) syncData(false);
-    }, 15000);
+    }, 120000);
 
     document.addEventListener('visibilitychange', () => {
-        if (!document.hidden) syncData(false);
+        if (!document.hidden) {
+            pollLatestOrders();
+        }
     });
 
     syncData(true);
@@ -2061,9 +2093,10 @@
         return 'เครื่องดื่ม';
     }
 
-    async function quickOrderPreset(encodedName) {
+    // แตะเมนูด่วน ไม่ต้องรอ await
+    function quickOrderPreset(encodedName) {
         quickInput.value = decodeURIComponent(encodedName);
-        await handleAdd();
+        handleAdd();
     }
 
     function parseSingleOrder(rawText) {
@@ -2109,9 +2142,9 @@
         return { name: text, unitPrice: 0, qty: qty };
     }
 
-    async function handleAdd(e) {
+    // รับออเดอร์ทันที (Optimistic UI) เคลียร์หน้าจอทันใจ
+    function handleAdd(e) {
         if (e) e.preventDefault();
-        if (isSubmittingOrder) return false;
         
         const rawVal = quickInput.value.trim();
         if (!rawVal) return false;
@@ -2129,8 +2162,6 @@
         }
         
         if (!parsedItems.length) return false;
-
-        isSubmittingOrder = true;
 
         let recordDate = getBangkokDateStr();
         let recordTime = getBangkokTimeStr();
@@ -2160,6 +2191,7 @@
             newItemsToPost.push(newItem);
         });
 
+        // เคลียร์ฟอร์มและอัปเดตหน้าจอทันที ไม่ติดค้าง
         quickInput.value = '';
         suggestBox.style.display = 'none';
         saveLocalBackup();
@@ -2167,21 +2199,20 @@
         playSound('order');
         quickInput.focus();
 
+        // ส่งข้อมูลเบื้องหลัง
         fetch(SCRIPT_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify({ action: 'add_sale', items: newItemsToPost })
         }).then(res => res.json()).then(data => {
             if (data && data.status === 'success') {
-                document.getElementById('syncStatus').innerText = 'บันทึกสำเร็จ';
                 newItemsToPost.forEach(item => localPendingSales.delete(item.id));
                 saveLocalBackup();
+                document.getElementById('syncStatus').innerText = 'พร้อมใช้งาน';
             }
         }).catch(err => {
-            document.getElementById('syncStatus').innerText = 'บันทึกในเครื่องแล้ว (รอส่งซ้ำ)';
+            document.getElementById('syncStatus').innerText = `บันทึกในเครื่องแล้ว (รอส่งซ้ำ)`;
             document.getElementById('syncBeaconDot').style.background = 'var(--warning-color)';
-        }).finally(() => {
-            isSubmittingOrder = false;
         });
 
         return false;
@@ -2522,8 +2553,7 @@
                                     <div class="checkbox-tick-square" onclick="fastToggle(event, '${escapeHtml(item.id)}')">${item.status === 'done' ? '✓' : ''}</div>
                                     <div>
                                         <div class="item-name-heading" ${hasRecipe ? `onclick="showRecipe(decodeURIComponent('${safeName}'))" style="cursor:pointer;"` : ''}>
-                                            ${escapeHtml(item.name)} <b style="color:var(--brand-accent);">x${item.qty}</b>
-                                            ${hasRecipe ? '<span style="font-size:0.68rem; color:var(--brand-accent); margin-left:3px; font-weight:700;">[สูตร]</span>' : ''}
+                                            ${escapeHtml(item.name)} <b style="color:var(--brand-accent);">x${item.qty}</b>${hasRecipe ? '<span style="font-size:0.68rem; color:var(--brand-accent); margin-left:3px; font-weight:700;">[สูตร]</span>' : ''}
                                         </div>
                                         <div style="font-size:0.72rem; color:var(--text-secondary);">(@${item.unitPrice} บ.)</div>
                                     </div>
@@ -2662,7 +2692,7 @@
             body: JSON.stringify({ 
                 action: 'update_price', 
                 name: newName, 
-                oldName: oldName,
+                oldName: oldName, 
                 price: newPrice, 
                 recipe: isDrinkItem(newName) ? newRecipe : "" 
             })
