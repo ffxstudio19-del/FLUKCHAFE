@@ -1764,7 +1764,6 @@
         } catch(e) {}
     }
 
-    // Fast-polling: ซิงค์เบาๆ ทุก 4 วินาที เพื่อให้เครื่องอื่นเห็นออเดอร์เกือบทันที
     async function pollLatestOrders() {
         if (document.hidden || isSyncing || isPolling) return;
         isPolling = true;
@@ -1783,7 +1782,6 @@
                         hasChanges = true;
                     } else if (localMap.has(sId)) {
                         const localItem = localMap.get(sId);
-                        // ถ้าสถานะหรือวิธีชำระจากเครื่องอื่นเปลี่ยน ให้อัปเดตตาม
                         if (localItem.status !== serverItem.status || localItem.paymentMethod !== serverItem.paymentMethod) {
                             localItem.status = serverItem.status;
                             localItem.paymentMethod = serverItem.paymentMethod;
@@ -1795,6 +1793,7 @@
                 if (hasChanges) {
                     saveLocalBackup();
                     renderUI();
+                    renderDynamicBestSellers();
                     playSound('order');
                 }
             }
@@ -1804,7 +1803,6 @@
         }
     }
 
-    // ซิงค์ฉบับสมบูรณ์ (ดึงทุกฐานข้อมูล)
     async function syncData(manual = false) {
         if (isSyncing && !manual) return;
         isSyncing = true;
@@ -1870,6 +1868,7 @@
                 if (manual || currentSig !== lastDataSignature) {
                     lastDataSignature = currentSig;
                     renderUI();
+                    renderDynamicBestSellers();
                     if (activeTab === 'prices') renderPriceSettingList();
                 }
                 
@@ -1900,10 +1899,15 @@
         }
     }
 
-    // เริ่มการทำงาน Fast-polling ทุก 4 วินาที
+    // เริ่มต้นแสดงผลทันทีจากแคชในเครื่อง
+    renderUI();
+    renderDynamicBestSellers();
+    syncData(true);
+
+    // ลูป Fast-polling ตรวจออเดอร์ใหม่ทุก 4 วินาที
     setInterval(pollLatestOrders, 4000);
 
-    // ซิงค์ชุดใหญ่ ทุก 60 วินาที
+    // ซิงค์ฉบับเต็มทุก 1 นาที
     setInterval(() => {
         if (!document.hidden) syncData(false);
     }, 60000);
@@ -1913,11 +1917,6 @@
             pollLatestOrders();
         }
     });
-
-    // เริ่มต้นแสดงผลทันทีจากแคชในเครื่อง
-    renderUI();
-    renderDynamicBestSellers();
-    syncData(true);
 
     function clearOldDataCache() {
         if (confirm('คุณต้องการล้างแคชข้อมูลค้างในเครื่องเพื่อรีเซ็ตหน้าจอใช่หรือไม่?')) {
@@ -1930,7 +1929,7 @@
             recipeBook = Object.assign({}, MASTER_RECIPES);
             sales = []; historySummary = []; localPendingSales.clear();
             lastDataSignature = '';
-            renderUI(); syncData(true);
+            renderUI(); renderDynamicBestSellers(); syncData(true);
             alert('ล้างแคชเรียบร้อยแล้ว');
         }
     }
@@ -2215,10 +2214,11 @@
         suggestBox.style.display = 'none';
         saveLocalBackup();
         renderUI();
+        renderDynamicBestSellers();
         playSound('order');
         quickInput.focus();
 
-        // ส่งขึ้นคลาวด์และเรียก Fast-polling ทันที
+        // ส่งเบื้องหลังพร้อมสั่ง Poll เช็คข้อมูล
         fetch(SCRIPT_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -2228,7 +2228,7 @@
                 newItemsToPost.forEach(item => localPendingSales.delete(item.id));
                 saveLocalBackup();
                 document.getElementById('syncStatus').innerText = 'พร้อมใช้งาน';
-                pollLatestOrders(); // ยิงเช็คความสอดคล้องทันที
+                pollLatestOrders();
             }
         }).catch(err => {
             document.getElementById('syncStatus').innerText = `บันทึกในเครื่องแล้ว (รอส่งซ้ำ)`;
@@ -2260,7 +2260,7 @@
         if (!confirm('ยืนยันการลบออเดอร์นี้?')) return;
         localPendingSales.delete(id);
         sales = sales.filter(s => String(s.id).trim() !== String(id).trim());
-        saveLocalBackup(); renderUI(); playSound('delete');
+        saveLocalBackup(); renderUI(); renderDynamicBestSellers(); playSound('delete');
         fetch(SCRIPT_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -2305,7 +2305,7 @@
         if (item) {
             item.name = name; item.category = category; item.unitPrice = unitPrice; item.qty = qty; item.totalPrice = unitPrice * qty;
             if (localPendingSales.has(id)) localPendingSales.set(id, item);
-            saveLocalBackup(); renderUI(); playSound('order');
+            saveLocalBackup(); renderUI(); renderDynamicBestSellers(); playSound('order');
             fetch(SCRIPT_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -2515,7 +2515,7 @@
 
         document.getElementById('catBreadSum').innerText = catStats['ขนมปังปิ้ง'].sum.toLocaleString();
         document.getElementById('catBreadCount').innerText = `${catStats['ขนมปังปิ้ง'].count} ชิ้น`;
-        document.getElementById('catBreadPay').innerHTML = `<span class="split-chip cash">${catStats['ขนมปังปิ้ง'].cash.toLocaleString()}</span><span class="split-chip qr">${catStats['ขนมปังปิ้ง'].qr.toLocaleString()}</span>`;
+        document.getElementById('catBreadPay').innerHTML = `<span class="split-chip cash">${catStats['ขนมปังปิ้ง'].cash.toLocaleString()}</span><span class="split-chip qr">${catStats['ขนปังปิ้ง'].qr.toLocaleString()}</span>`;
 
         document.getElementById('catFoodSum').innerText = catStats['อาหาร/กะเพรา'].sum.toLocaleString();
         document.getElementById('catFoodCount').innerText = `${catStats['อาหาร/กะเพรา'].count} จาน`;
