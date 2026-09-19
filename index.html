@@ -1006,12 +1006,14 @@
             white-space: pre-line;
             line-height: 1.6;
             margin: 12px 0;
+            word-break: break-word;
+            font-variant-numeric: tabular-nums;
         }
         .empty-placeholder { text-align: center; color: var(--text-muted); padding: 32px 0; font-size: 0.88rem; font-weight: 500; }
 
         @keyframes spin {
             from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+            to { rotate: 360deg; }
         }
         .ph-spin {
             animation: spin 0.8s linear infinite;
@@ -1349,7 +1351,8 @@
     }
 
     function handleLogoFallback() {
-        document.getElementById('mainShopLogo').style.display = 'none';
+        const logo = document.getElementById('mainShopLogo');
+        if (logo) logo.style.display = 'none';
         const fallback = document.getElementById('logoFallback');
         if (fallback) fallback.style.display = 'flex';
     }
@@ -1464,17 +1467,20 @@
     let isProfitShown = false;
     let isBackdateActive = false;
     let isSyncing = false;
+    let isPolling = false;
     let lastDataSignature = '';
 
     if (localStorage.getItem('flukchafe_light_mode') === 'true') {
         document.body.classList.add('light-mode');
-        document.getElementById('darkModeBtn').innerHTML = '<i class="ph-bold ph-sun"></i>';
+        const dmBtn = document.getElementById('darkModeBtn');
+        if (dmBtn) dmBtn.innerHTML = '<i class="ph-bold ph-sun"></i>';
     }
 
     function toggleDarkMode() {
         document.body.classList.toggle('light-mode');
         const isLight = document.body.classList.contains('light-mode');
-        document.getElementById('darkModeBtn').innerHTML = isLight ? '<i class="ph-bold ph-sun"></i>' : '<i class="ph-bold ph-moon-stars"></i>';
+        const dmBtn = document.getElementById('darkModeBtn');
+        if (dmBtn) dmBtn.innerHTML = isLight ? '<i class="ph-bold ph-sun"></i>' : '<i class="ph-bold ph-moon-stars"></i>';
         localStorage.setItem('flukchafe_light_mode', isLight);
     }
 
@@ -1585,6 +1591,7 @@
     function normalizeDateStr(raw) {
         if (!raw) return "";
         let str = String(raw).trim();
+        if (str.startsWith("'")) str = str.substring(1).trim();
         if (str.includes('T')) str = str.split('T')[0];
         if (str.includes('/')) {
             const parts = str.split('/');
@@ -1757,34 +1764,47 @@
         } catch(e) {}
     }
 
-    // ซิงค์ฉบับย่อ: ดึงเฉพาะแถวล่าสุด (ทำงานทุก 7 วิ เพื่อให้เครื่องอื่นเห็นออเดอร์ทันที)
+    // Fast-polling: ซิงค์เบาๆ ทุก 4 วินาที เพื่อให้เครื่องอื่นเห็นออเดอร์เกือบทันที
     async function pollLatestOrders() {
-        if (document.hidden || isSyncing) return;
+        if (document.hidden || isSyncing || isPolling) return;
+        isPolling = true;
         try {
-            const res = await fetch(`${SCRIPT_URL}?action=get_latest&_t=${Date.now()}`);
+            const res = await fetch(`${SCRIPT_URL}?action=get_latest&_t=${Date.now()}`, { cache: 'no-store' });
             const data = await res.json();
             if (data && data.status === 'success' && data.sales) {
-                let hasNew = false;
-                const currentIds = new Set(sales.map(s => String(s.id).trim()));
+                let hasChanges = false;
+                const localMap = new Map();
+                sales.forEach(s => localMap.set(String(s.id).trim(), s));
                 
                 data.sales.forEach(serverItem => {
                     const sId = String(serverItem.id).trim();
-                    if (!currentIds.has(sId) && !localPendingSales.has(sId)) {
+                    if (!localMap.has(sId) && !localPendingSales.has(sId)) {
                         sales.unshift(serverItem);
-                        hasNew = true;
+                        hasChanges = true;
+                    } else if (localMap.has(sId)) {
+                        const localItem = localMap.get(sId);
+                        // ถ้าสถานะหรือวิธีชำระจากเครื่องอื่นเปลี่ยน ให้อัปเดตตาม
+                        if (localItem.status !== serverItem.status || localItem.paymentMethod !== serverItem.paymentMethod) {
+                            localItem.status = serverItem.status;
+                            localItem.paymentMethod = serverItem.paymentMethod;
+                            hasChanges = true;
+                        }
                     }
                 });
                 
-                if (hasNew) {
+                if (hasChanges) {
                     saveLocalBackup();
                     renderUI();
                     playSound('order');
                 }
             }
-        } catch(e) {}
+        } catch(e) {
+        } finally {
+            isPolling = false;
+        }
     }
 
-    // ซิงค์ชุดใหญ่: โหลดประวัติ ยอดสรุป และต้นทุนทั้งหมด
+    // ซิงค์ฉบับสมบูรณ์ (ดึงทุกฐานข้อมูล)
     async function syncData(manual = false) {
         if (isSyncing && !manual) return;
         isSyncing = true;
@@ -1880,13 +1900,13 @@
         }
     }
 
-    // ซิงค์ฉบับย่อ ตรวจออเดอร์ใหม่ทุก 7 วินาที
-    setInterval(pollLatestOrders, 7000);
+    // เริ่มการทำงาน Fast-polling ทุก 4 วินาที
+    setInterval(pollLatestOrders, 4000);
 
-    // ซิงค์ชุดใหญ่ ทุก 2 นาที
+    // ซิงค์ชุดใหญ่ ทุก 60 วินาที
     setInterval(() => {
         if (!document.hidden) syncData(false);
-    }, 120000);
+    }, 60000);
 
     document.addEventListener('visibilitychange', () => {
         if (!document.hidden) {
@@ -1894,8 +1914,10 @@
         }
     });
 
-    syncData(true);
+    // เริ่มต้นแสดงผลทันทีจากแคชในเครื่อง
     renderUI();
+    renderDynamicBestSellers();
+    syncData(true);
 
     function clearOldDataCache() {
         if (confirm('คุณต้องการล้างแคชข้อมูลค้างในเครื่องเพื่อรีเซ็ตหน้าจอใช่หรือไม่?')) {
@@ -1956,7 +1978,7 @@
                 price: currentPrice, 
                 recipe: newRecipe 
             })
-        }).catch(e => {});
+        }).then(() => pollLatestOrders()).catch(e => {});
     }
 
     function closeRecipeModal(event) { 
@@ -1981,7 +2003,7 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify({ action: 'update_status', id: id, status: item.status })
-            }).catch(e => {});
+            }).then(() => pollLatestOrders()).catch(e => {});
         }
     }
 
@@ -1997,7 +2019,7 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify({ action: 'update_payment', id: id, paymentMethod: item.paymentMethod })
-            }).catch(e => {});
+            }).then(() => pollLatestOrders()).catch(e => {});
         }
     }
 
@@ -2093,7 +2115,6 @@
         return 'เครื่องดื่ม';
     }
 
-    // แตะเมนูด่วน ไม่ต้องรอ await
     function quickOrderPreset(encodedName) {
         quickInput.value = decodeURIComponent(encodedName);
         handleAdd();
@@ -2142,14 +2163,13 @@
         return { name: text, unitPrice: 0, qty: qty };
     }
 
-    // รับออเดอร์ทันที (Optimistic UI) เคลียร์หน้าจอทันใจ
     function handleAdd(e) {
         if (e) e.preventDefault();
         
         const rawVal = quickInput.value.trim();
         if (!rawVal) return false;
         
-        const segments = rawVal.split(/[,，\n+]/).map(s => s.trim()).filter(s => s.length > 0);
+        const segments = rawVal.split(/[,，\n+]+/).map(s => s.trim()).filter(s => s.length > 0);
         if (!segments.length) return false;
 
         let parsedItems = [];
@@ -2191,7 +2211,6 @@
             newItemsToPost.push(newItem);
         });
 
-        // เคลียร์ฟอร์มและอัปเดตหน้าจอทันที ไม่ติดค้าง
         quickInput.value = '';
         suggestBox.style.display = 'none';
         saveLocalBackup();
@@ -2199,7 +2218,7 @@
         playSound('order');
         quickInput.focus();
 
-        // ส่งข้อมูลเบื้องหลัง
+        // ส่งขึ้นคลาวด์และเรียก Fast-polling ทันที
         fetch(SCRIPT_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -2209,6 +2228,7 @@
                 newItemsToPost.forEach(item => localPendingSales.delete(item.id));
                 saveLocalBackup();
                 document.getElementById('syncStatus').innerText = 'พร้อมใช้งาน';
+                pollLatestOrders(); // ยิงเช็คความสอดคล้องทันที
             }
         }).catch(err => {
             document.getElementById('syncStatus').innerText = `บันทึกในเครื่องแล้ว (รอส่งซ้ำ)`;
@@ -2233,7 +2253,7 @@
             method: 'POST',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify({ action: 'add_expense', id: newId, name: name, cost: cost })
-        }).catch(e => {});
+        }).then(() => pollLatestOrders()).catch(e => {});
     }
 
     async function deleteItem(id) {
@@ -2245,7 +2265,7 @@
             method: 'POST',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify({ action: 'delete_sale', id: id })
-        }).catch(e => {});
+        }).then(() => pollLatestOrders()).catch(e => {});
     }
 
     async function deleteExpense(id) {
@@ -2256,7 +2276,7 @@
             method: 'POST',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify({ action: 'delete_expense', id: id })
-        }).catch(e => {});
+        }).then(() => pollLatestOrders()).catch(e => {});
     }
 
     function openEditModal(id) {
@@ -2290,7 +2310,7 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify({ action: 'edit_sale', id, name, category, unitPrice, qty, totalPrice: unitPrice * qty })
-            }).catch(e => {});
+            }).then(() => pollLatestOrders()).catch(e => {});
         }
         closeEditModal();
     }
@@ -2608,7 +2628,6 @@
         }).join('');
 
         menuSummaryList.innerHTML = summaryHtml || '<div class="empty-placeholder">ไม่มีข้อมูลสรุป</div>';
-        renderDynamicBestSellers();
     }
 
     let priceSearchTimer = null;
@@ -2696,7 +2715,7 @@
                 price: newPrice, 
                 recipe: isDrinkItem(newName) ? newRecipe : "" 
             })
-        }).catch(e => {});
+        }).then(() => pollLatestOrders()).catch(e => {});
     }
 
     async function addOrUpdatePrice(e) {
@@ -2720,7 +2739,7 @@
             method: 'POST',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify({ action: 'update_price', name, price, recipe })
-        }).catch(e => {});
+        }).then(() => pollLatestOrders()).catch(e => {});
     }
 
     async function deletePrice(name) {
@@ -2732,7 +2751,7 @@
             method: 'POST',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify({ action: 'delete_price', name })
-        }).catch(e => {});
+        }).then(() => pollLatestOrders()).catch(e => {});
     }
 
     function switchTab(tab) {
