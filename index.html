@@ -1193,10 +1193,10 @@
 </div>
 
 <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx8_1jfDOyxYUrJ10ZH3pC72-Rb2FmyVDmIfnLKiJnk7boZVzQIdG1AR1WllS6NfqVZ1A/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwuVtheTjpEPp33z7VswY70n-C22KfgvnmfzD7yUiyDr4VN_1XFT0zKCd4KMj4ctOMiYA/exec";
 
     function escapeHtml(str) {
-        if (!str) return '';
+        if (!str && str !== 0) return '';
         return String(str)
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
@@ -1206,7 +1206,8 @@
     }
 
     function handleLogoFallback() {
-        document.getElementById('mainShopLogo').style.display = 'none';
+        const mainLogo = document.getElementById('mainShopLogo');
+        if (mainLogo) mainLogo.style.display = 'none';
         const fallback = document.getElementById('logoFallback');
         if (fallback) fallback.style.display = 'flex';
     }
@@ -1325,13 +1326,15 @@
 
     if (localStorage.getItem('flukchafe_light_mode') === 'true') {
         document.body.classList.add('light-mode');
-        document.getElementById('darkModeBtn').innerHTML = '<i class="ph-bold ph-sun"></i>';
+        const darkModeBtn = document.getElementById('darkModeBtn');
+        if (darkModeBtn) darkModeBtn.innerHTML = '<i class="ph-bold ph-sun"></i>';
     }
 
     function toggleDarkMode() {
         document.body.classList.toggle('light-mode');
         const isLight = document.body.classList.contains('light-mode');
-        document.getElementById('darkModeBtn').innerHTML = isLight ? '<i class="ph-bold ph-sun"></i>' : '<i class="ph-bold ph-moon-stars"></i>';
+        const darkModeBtn = document.getElementById('darkModeBtn');
+        if (darkModeBtn) darkModeBtn.innerHTML = isLight ? '<i class="ph-bold ph-sun"></i>' : '<i class="ph-bold ph-moon-stars"></i>';
         localStorage.setItem('flukchafe_light_mode', isLight);
     }
 
@@ -1410,6 +1413,7 @@
     }
 
     function initThaiMonthSelector() {
+        if (!selectThaiMonth || !selectThaiYear) return;
         selectThaiMonth.innerHTML = THAI_MONTHS_FULL.map((m, idx) => `<option value="${String(idx + 1).padStart(2, '0')}">${m}</option>`).join('');
         const p = getBangkokDateParts();
         const curYear = parseInt(p.year, 10);
@@ -1510,9 +1514,9 @@
     }
 
     const initialBkkDate = getBangkokDateStr();
-    selectDateInput.value = initialBkkDate;
-    backdateDateInput.value = initialBkkDate;
-    backdateTimeInput.value = getBangkokTimeStr().substring(0, 5);
+    if (selectDateInput) selectDateInput.value = initialBkkDate;
+    if (backdateDateInput) backdateDateInput.value = initialBkkDate;
+    if (backdateTimeInput) backdateTimeInput.value = getBangkokTimeStr().substring(0, 5);
 
     function findRecipeText(name) {
         if (!name) return "";
@@ -1588,7 +1592,7 @@
             const icon = getMenuIcon(name);
             const safeParam = encodeURIComponent(name);
             return `
-                <button type="button" class="quick-order-btn" onclick="quickOrderPreset('${safeParam}')">
+                <button type="button" class="quick-order-btn" onclick="quickOrderPreset(event, '${safeParam}')">
                     <span class="quick-icon">${icon}</span>
                     <span class="quick-name" title="${escapeHtml(name)}">${escapeHtml(name)}</span>
                     <span class="quick-price">${price}</span>
@@ -1738,6 +1742,7 @@
     }
 
     function showRecipe(menuName) {
+        if (!recipeModalMenuName || !recipeModalTitle || !recipeModalBody || !recipeModalTextarea) return;
         recipeModalMenuName.value = menuName;
         recipeModalTitle.innerText = `📖 สูตรชง: ${menuName}`;
         const recipeText = findRecipeText(menuName) || "ยังไม่มีการบันทึกสูตรชงสำหรับเมนูนี้";
@@ -1785,7 +1790,7 @@
 
     function closeRecipeModal(event) { 
         if (event && event.target !== event.currentTarget) return;
-        recipeModal.style.display = 'none'; 
+        if (recipeModal) recipeModal.style.display = 'none'; 
     }
 
     async function fastToggle(event, id) {
@@ -1827,14 +1832,14 @@
 
     function toggleProfitPanel() {
         isProfitShown = !isProfitShown;
-        secretProfitPanel.style.display = isProfitShown ? 'grid' : 'none';
-        btnToggleProfit.innerHTML = isProfitShown ? '<i class="ph-bold ph-eye-slash"></i> ซ่อน' : '<i class="ph-bold ph-eye"></i> สรุปผลประกอบการ';
+        if (secretProfitPanel) secretProfitPanel.style.display = isProfitShown ? 'grid' : 'none';
+        if (btnToggleProfit) btnToggleProfit.innerHTML = isProfitShown ? '<i class="ph-bold ph-eye-slash"></i> ซ่อน' : '<i class="ph-bold ph-eye"></i> สรุปผลประกอบการ';
     }
 
     function toggleBackdateMode() {
         isBackdateActive = !isBackdateActive;
-        backdateBox.style.display = isBackdateActive ? 'block' : 'none';
-        btnToggleBackdate.classList.toggle('active', isBackdateActive);
+        if (backdateBox) backdateBox.style.display = isBackdateActive ? 'block' : 'none';
+        if (btnToggleBackdate) btnToggleBackdate.classList.toggle('active', isBackdateActive);
     }
 
     let suggestDebounceTimer = null;
@@ -1844,13 +1849,17 @@
     }
 
     function selectSuggestion(e, name) {
-        if (e) e.stopPropagation();
-        quickInput.value = name;
-        suggestBox.style.display = 'none';
-        quickInput.focus();
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        if (quickInput) quickInput.value = name;
+        if (suggestBox) suggestBox.style.display = 'none';
+        if (quickInput) quickInput.focus();
     }
 
     function handleSearchSuggest(val) {
+        if (!suggestBox) return;
         const query = (val || '').trim().toLowerCase().replace(/\s+/g, '');
         if (!query) { 
             suggestBox.style.display = 'none'; 
@@ -1880,8 +1889,8 @@
     }
 
     document.addEventListener('click', e => {
-        if (suggestBox.style.display === 'block') {
-            if (!quickInput.contains(e.target) && !suggestBox.contains(e.target)) {
+        if (suggestBox && suggestBox.style.display === 'block') {
+            if (quickInput && !quickInput.contains(e.target) && !suggestBox.contains(e.target)) {
                 suggestBox.style.display = 'none';
             }
         }
@@ -1890,17 +1899,22 @@
     function setTimeFilter(filter, btn) {
         currentFilter = filter;
         document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        customFilterBox.style.display = filter === 'custom' ? 'block' : 'none';
+        if (btn) btn.classList.add('active');
+        if (customFilterBox) customFilterBox.style.display = filter === 'custom' ? 'block' : 'none';
         renderUI();
     }
 
     function switchCustomSubMode(subType) {
         customFilterType = subType;
-        document.getElementById('btnSubDate').classList.toggle('active', subType === 'date');
-        document.getElementById('btnSubMonth').classList.toggle('active', subType === 'month');
-        document.getElementById('filterDateGroup').style.display = subType === 'date' ? 'block' : 'none';
-        document.getElementById('filterMonthGroup').style.display = subType === 'month' ? 'block' : 'none';
+        const btnSubDate = document.getElementById('btnSubDate');
+        const btnSubMonth = document.getElementById('btnSubMonth');
+        const filterDateGroup = document.getElementById('filterDateGroup');
+        const filterMonthGroup = document.getElementById('filterMonthGroup');
+        
+        if (btnSubDate) btnSubDate.classList.toggle('active', subType === 'date');
+        if (btnSubMonth) btnSubMonth.classList.toggle('active', subType === 'month');
+        if (filterDateGroup) filterDateGroup.style.display = subType === 'date' ? 'block' : 'none';
+        if (filterMonthGroup) filterMonthGroup.style.display = subType === 'month' ? 'block' : 'none';
         renderUI();
     }
 
@@ -1917,8 +1931,12 @@
         return 'เครื่องดื่ม';
     }
 
-    async function quickOrderPreset(encodedName) {
-        quickInput.value = decodeURIComponent(encodedName);
+    async function quickOrderPreset(e, encodedName) {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        if (quickInput) quickInput.value = decodeURIComponent(encodedName);
         await handleAdd();
     }
 
@@ -1967,6 +1985,7 @@
 
     async function handleAdd(e) {
         if (e) e.preventDefault();
+        if (!quickInput) return false;
         
         const rawVal = quickInput.value.trim();
         if (!rawVal) return false;
@@ -1987,7 +2006,7 @@
 
         let recordDate = getBangkokDateStr();
         let recordTime = getBangkokTimeStr();
-        if (isBackdateActive && backdateDateInput.value) {
+        if (isBackdateActive && backdateDateInput && backdateDateInput.value) {
             recordDate = backdateDateInput.value;
             recordTime = (backdateTimeInput.value || '12:00') + ':00';
         }
@@ -2014,7 +2033,7 @@
         });
 
         quickInput.value = '';
-        suggestBox.style.display = 'none';
+        if (suggestBox) suggestBox.style.display = 'none';
         saveLocalBackup();
         renderUI();
         playSound('order');
@@ -2026,27 +2045,35 @@
             body: JSON.stringify({ action: 'add_sale', items: newItemsToPost })
         }).then(res => res.json()).then(data => {
             if (data && data.status === 'success') {
-                document.getElementById('syncStatus').innerText = 'บันทึกสำเร็จ';
+                const syncStatusEl = document.getElementById('syncStatus');
+                if (syncStatusEl) syncStatusEl.innerText = 'บันทึกสำเร็จ';
                 newItemsToPost.forEach(item => localPendingSales.delete(item.id));
                 saveLocalBackup();
             }
         }).catch(err => {
-            document.getElementById('syncStatus').innerText = 'บันทึกในเครื่องแล้ว (รอส่งซ้ำ)';
-            document.getElementById('syncBeaconDot').style.background = 'var(--warning-color)';
+            const syncStatusEl = document.getElementById('syncStatus');
+            const syncDot = document.getElementById('syncBeaconDot');
+            if (syncStatusEl) syncStatusEl.innerText = 'บันทึกในเครื่องแล้ว (รอส่งซ้ำ)';
+            if (syncDot) syncDot.style.background = 'var(--warning-color)';
         });
 
         return false;
     }
 
     async function addExpense() {
-        const name = document.getElementById('newExpenseName').value.trim();
-        const cost = parseFloat(document.getElementById('newExpenseCost').value);
+        const nameInput = document.getElementById('newExpenseName');
+        const costInput = document.getElementById('newExpenseCost');
+        if (!nameInput || !costInput) return;
+        
+        const name = nameInput.value.trim();
+        const cost = parseFloat(costInput.value);
         if (!name || isNaN(cost) || cost <= 0) return alert('กรอกรายการและจำนวนเงินให้ถูกต้อง');
+        
         const baseTs = Date.now();
         const newId = 'EXP-' + baseTs;
         const newExp = { id: newId, date: getBangkokDateStr(), time: getBangkokTimeStr(), name: name, cost: cost };
-        document.getElementById('newExpenseName').value = '';
-        document.getElementById('newExpenseCost').value = '';
+        nameInput.value = '';
+        costInput.value = '';
         expenses.unshift(newExp);
         saveLocalBackup(); renderUI(); playSound('order');
         fetch(SCRIPT_URL, {
@@ -2081,7 +2108,7 @@
 
     function openEditModal(id) {
         const item = sales.find(s => String(s.id).trim() === String(id).trim());
-        if (!item) return;
+        if (!item || !editItemId || !editItemName || !editItemCategory || !editItemUnitPrice || !editItemQty || !editModal) return;
         editItemId.value = item.id;
         editItemName.value = item.name;
         editItemCategory.value = item.category || 'เครื่องดื่ม';
@@ -2089,18 +2116,21 @@
         editItemQty.value = item.qty;
         editModal.style.display = 'flex';
     }
+    
     function closeEditModal(event) { 
         if (event && event.target !== event.currentTarget) return;
-        editModal.style.display = 'none'; 
+        if (editModal) editModal.style.display = 'none'; 
     }
 
     async function saveEditedItem() {
+        if (!editItemId || !editItemName || !editItemCategory || !editItemUnitPrice || !editItemQty) return;
         const id = editItemId.value;
         const name = editItemName.value.trim();
         const category = editItemCategory.value;
         const unitPrice = parseFloat(editItemUnitPrice.value);
         const qty = parseInt(editItemQty.value, 10);
         if (!name || isNaN(unitPrice) || unitPrice < 0 || isNaN(qty) || qty <= 0) return alert('กรอกข้อมูลให้ถูกต้อง');
+        
         const item = sales.find(s => String(s.id).trim() === String(id).trim());
         if (item) {
             item.name = name; item.category = category; item.unitPrice = unitPrice; item.qty = qty; item.totalPrice = unitPrice * qty;
@@ -2129,10 +2159,10 @@
                 return d >= weekRange.start && d <= weekRange.end;
             };
         } else if (currentFilter === 'custom') {
-            if (customFilterType === 'date' && selectDateInput.value) {
+            if (customFilterType === 'date' && selectDateInput && selectDateInput.value) {
                 const targetD = normalizeDateStr(selectDateInput.value);
                 filterFn = it => normalizeDateStr(it.date) === targetD;
-            } else if (customFilterType === 'month' && selectThaiMonth.value && selectThaiYear.value) {
+            } else if (customFilterType === 'month' && selectThaiMonth && selectThaiYear && selectThaiMonth.value && selectThaiYear.value) {
                 const targetM = `${selectThaiYear.value}-${String(selectThaiMonth.value).padStart(2, '0')}`;
                 filterFn = it => normalizeDateStr(it.date).substring(0, 7) === targetM;
             }
@@ -2207,10 +2237,10 @@
         } else if (currentFilter === 'week') {
             currentHeaderTitle = "ยอดขายอาทิตย์นี้";
         } else if (currentFilter === 'custom') {
-            if (customFilterType === 'date' && selectDateInput.value) {
+            if (customFilterType === 'date' && selectDateInput && selectDateInput.value) {
                 const p = selectDateInput.value.split('-');
                 currentHeaderTitle = `ยอดขายวันที่ ${parseInt(p[2], 10)} ${THAI_MONTHS_SHORT[parseInt(p[1], 10)-1]}`;
-            } else if (customFilterType === 'month' && selectThaiMonth.value && selectThaiYear.value) {
+            } else if (customFilterType === 'month' && selectThaiMonth && selectThaiYear && selectThaiMonth.value && selectThaiYear.value) {
                 const mIndex = parseInt(selectThaiMonth.value, 10) - 1;
                 const yThai = parseInt(selectThaiYear.value, 10) + 543;
                 currentHeaderTitle = `ยอดขายเดือน ${THAI_MONTHS_FULL[mIndex]} ${yThai}`;
@@ -2289,8 +2319,8 @@
             }
         }
 
-        revenueTitleLabel.innerText = currentHeaderTitle;
-        totalSales.innerText = displayTotalSales.toLocaleString();
+        if (revenueTitleLabel) revenueTitleLabel.innerText = currentHeaderTitle;
+        if (totalSales) totalSales.innerText = displayTotalSales.toLocaleString();
         
         let subText = `ยอดขายรวม • ${displayTotalPieces} ชิ้น`;
         if (isHistoricalMonthSelected) {
@@ -2298,136 +2328,155 @@
         } else {
             subText += ` (${currentFilter === 'all' ? 'สะสมทั้งหมด' : displaySales.length + ' รายการ'})`;
         }
-        totalSalesSub.innerText = subText;
+        if (totalSalesSub) totalSalesSub.innerText = subText;
         
-        totalCash.innerText = displayTotalCash.toLocaleString();
-        totalQr.innerText = displayTotalQr.toLocaleString();
-        totalCost.innerText = displayTotalCost.toLocaleString();
-        totalProfit.innerText = (displayTotalSales - displayTotalCost).toLocaleString();
+        if (totalCash) totalCash.innerText = displayTotalCash.toLocaleString();
+        if (totalQr) totalQr.innerText = displayTotalQr.toLocaleString();
+        if (totalCost) totalCost.innerText = displayTotalCost.toLocaleString();
+        if (totalProfit) totalProfit.innerText = (displayTotalSales - displayTotalCost).toLocaleString();
 
-        document.getElementById('catDrinkSum').innerText = catStats['เครื่องดื่ม'].sum.toLocaleString();
-        document.getElementById('catDrinkCount').innerText = `${catStats['เครื่องดื่ม'].count} แก้ว`;
-        document.getElementById('catDrinkPay').innerHTML = `<span class="split-chip cash">${catStats['เครื่องดื่ม'].cash.toLocaleString()}</span><span class="split-chip qr">${catStats['เครื่องดื่ม'].qr.toLocaleString()}</span>`;
+        const catDrinkSum = document.getElementById('catDrinkSum');
+        const catDrinkCount = document.getElementById('catDrinkCount');
+        const catDrinkPay = document.getElementById('catDrinkPay');
+        if (catDrinkSum) catDrinkSum.innerText = catStats['เครื่องดื่ม'].sum.toLocaleString();
+        if (catDrinkCount) catDrinkCount.innerText = `${catStats['เครื่องดื่ม'].count} แก้ว`;
+        if (catDrinkPay) catDrinkPay.innerHTML = `<span class="split-chip cash">${catStats['เครื่องดื่ม'].cash.toLocaleString()}</span><span class="split-chip qr">${catStats['เครื่องดื่ม'].qr.toLocaleString()}</span>`;
 
-        document.getElementById('catSnackSum').innerText = catStats['ของทอด/ทานเล่น'].sum.toLocaleString();
-        document.getElementById('catSnackCount').innerText = `${catStats['ของทอด/ทานเล่น'].count} ชุด`;
-        document.getElementById('catSnackPay').innerHTML = `<span class="split-chip cash">${catStats['ของทอด/ทานเล่น'].cash.toLocaleString()}</span><span class="split-chip qr">${catStats['ของทอด/ทานเล่น'].qr.toLocaleString()}</span>`;
+        const catSnackSum = document.getElementById('catSnackSum');
+        const catSnackCount = document.getElementById('catSnackCount');
+        const catSnackPay = document.getElementById('catSnackPay');
+        if (catSnackSum) catSnackSum.innerText = catStats['ของทอด/ทานเล่น'].sum.toLocaleString();
+        if (catSnackCount) catSnackCount.innerText = `${catStats['ของทอด/ทานเล่น'].count} ชุด`;
+        if (catSnackPay) catSnackPay.innerHTML = `<span class="split-chip cash">${catStats['ของทอด/ทานเล่น'].cash.toLocaleString()}</span><span class="split-chip qr">${catStats['ของทอด/ทานเล่น'].qr.toLocaleString()}</span>`;
 
-        document.getElementById('catBreadSum').innerText = catStats['ขนมปังปิ้ง'].sum.toLocaleString();
-        document.getElementById('catBreadCount').innerText = `${catStats['ขนมปังปิ้ง'].count} ชิ้น`;
-        document.getElementById('catBreadPay').innerHTML = `<span class="split-chip cash">${catStats['ขนมปังปิ้ง'].cash.toLocaleString()}</span><span class="split-chip qr">${catStats['ขนมปังปิ้ง'].qr.toLocaleString()}</span>`;
+        const catBreadSum = document.getElementById('catBreadSum');
+        const catBreadCount = document.getElementById('catBreadCount');
+        const catBreadPay = document.getElementById('catBreadPay');
+        if (catBreadSum) catBreadSum.innerText = catStats['ขนมปังปิ้ง'].sum.toLocaleString();
+        if (catBreadCount) catBreadCount.innerText = `${catStats['ขนมปังปิ้ง'].count} ชิ้น`;
+        if (catBreadPay) catBreadPay.innerHTML = `<span class="split-chip cash">${catStats['ขนมปังปิ้ง'].cash.toLocaleString()}</span><span class="split-chip qr">${catStats['ขนมปังปิ้ง'].qr.toLocaleString()}</span>`;
 
-        document.getElementById('catFoodSum').innerText = catStats['อาหาร/กะเพรา'].sum.toLocaleString();
-        document.getElementById('catFoodCount').innerText = `${catStats['อาหาร/กะเพรา'].count} จาน`;
-        document.getElementById('catFoodPay').innerHTML = `<span class="split-chip cash">${catStats['อาหาร/กะเพรา'].cash.toLocaleString()}</span><span class="split-chip qr">${catStats['อาหาร/กะเพรา'].qr.toLocaleString()}</span>`;
+        const catFoodSum = document.getElementById('catFoodSum');
+        const catFoodCount = document.getElementById('catFoodCount');
+        const catFoodPay = document.getElementById('catFoodPay');
+        if (catFoodSum) catFoodSum.innerText = catStats['อาหาร/กะเพรา'].sum.toLocaleString();
+        if (catFoodCount) catFoodCount.innerText = `${catStats['อาหาร/กะเพรา'].count} จาน`;
+        if (catFoodPay) catFoodPay.innerHTML = `<span class="split-chip cash">${catStats['อาหาร/กะเพรา'].cash.toLocaleString()}</span><span class="split-chip qr">${catStats['อาหาร/กะเพรา'].qr.toLocaleString()}</span>`;
 
-        if (!displaySales.length) {
-            if (isHistoricalMonthSelected) {
-                itemList.innerHTML = '<div class="empty-placeholder">📁 ข้อมูลออเดอร์ของเดือนนี้ถูกจัดเก็บเข้า Archive เรียบร้อยแล้ว (ดูยอดสรุปได้ที่การ์ดด้านบน)</div>';
-            } else {
-                itemList.innerHTML = '<div class="empty-placeholder">ยังไม่มีรายการขายในช่วงนี้</div>';
-            }
-        } else {
-            const sorted = displaySales.slice().sort((a, b) => {
-                const dateA = normalizeDateStr(a.date); const dateB = normalizeDateStr(b.date);
-                if (dateA !== dateB) return dateB.localeCompare(dateA);
-                const timeA = normalizeTimeStr(a.time); const timeB = normalizeTimeStr(b.time);
-                if (timeB !== timeA) return timeB.localeCompare(timeA);
-                return String(b.id).localeCompare(String(a.id));
-            });
-
-            const batches = []; let currBatch = null;
-            sorted.forEach(item => {
-                const itemTimeKey = formatThaiDateTime(item.date, item.time);
-                if (!currBatch || currBatch.timeKey !== itemTimeKey) {
-                    if (currBatch) batches.push(currBatch);
-                    currBatch = { timeKey: itemTimeKey, items: [item] };
+        if (itemList) {
+            if (!displaySales.length) {
+                if (isHistoricalMonthSelected) {
+                    itemList.innerHTML = '<div class="empty-placeholder">📁 ข้อมูลออเดอร์ของเดือนนี้ถูกจัดเก็บเข้า Archive เรียบร้อยแล้ว (ดูยอดสรุปได้ที่การ์ดด้านบน)</div>';
                 } else {
-                    currBatch.items.push(item);
+                    itemList.innerHTML = '<div class="empty-placeholder">ยังไม่มีรายการขายในช่วงนี้</div>';
                 }
-            });
-            if (currBatch) batches.push(currBatch);
-
-            let allCardsHtml = '';
-            batches.forEach(b => {
-                let bTotal = 0, bQty = 0;
-                b.items.forEach(it => { 
-                    const uP = Number(it.unitPrice) || 0; const q = Number(it.qty) || 1;
-                    bTotal += Number(it.totalPrice) > 0 ? Number(it.totalPrice) : (uP * q);
-                    bQty += q; 
+            } else {
+                const sorted = displaySales.slice().sort((a, b) => {
+                    const dateA = normalizeDateStr(a.date); const dateB = normalizeDateStr(b.date);
+                    if (dateA !== dateB) return dateB.localeCompare(dateA);
+                    const timeA = normalizeTimeStr(a.time); const timeB = normalizeTimeStr(b.time);
+                    if (timeB !== timeA) return timeB.localeCompare(timeA);
+                    return String(b.id).localeCompare(String(a.id));
                 });
 
-                allCardsHtml += `
-                    <div class="order-cluster-card">
-                        <div class="cluster-header">
-                            <div class="cluster-time-badge"><i class="ph-bold ph-clock"></i> ${escapeHtml(b.timeKey)} (${bQty} ชิ้น)</div>
-                            <div class="cluster-total-tag">${bTotal.toLocaleString()}</div>
-                        </div>
-                        <div>${b.items.map(item => {
-                            const itPrice = Number(item.totalPrice) > 0 ? Number(item.totalPrice) : (Number(item.unitPrice||0) * Number(item.qty||1));
-                            const hasRecipe = Boolean(findRecipeText(item.name));
-                            const safeName = encodeURIComponent(item.name);
-                            return `
-                            <div class="cluster-item-row ${item.status === 'done' ? 'row-completed' : ''}">
-                                <div class="cluster-item-left">
-                                    <div class="checkbox-tick-square" onclick="fastToggle(event, '${escapeHtml(item.id)}')">${item.status === 'done' ? '✓' : ''}</div>
-                                    <div>
-                                        <div class="item-name-heading" ${hasRecipe ? `onclick="showRecipe(decodeURIComponent('${safeName}'))" style="cursor:pointer;"` : ''}>
-                                            ${escapeHtml(item.name)} <b style="color:var(--brand-accent);">x${item.qty}</b>${hasRecipe ? '<span style="font-size:0.6rem; color:var(--brand-accent); margin-left:2px; font-weight:600;">[สูตร]</span>' : ''}
+                const batches = []; let currBatch = null;
+                sorted.forEach(item => {
+                    const itemTimeKey = formatThaiDateTime(item.date, item.time);
+                    if (!currBatch || currBatch.timeKey !== itemTimeKey) {
+                        if (currBatch) batches.push(currBatch);
+                        currBatch = { timeKey: itemTimeKey, items: [item] };
+                    } else {
+                        currBatch.items.push(item);
+                    }
+                });
+                if (currBatch) batches.push(currBatch);
+
+                let allCardsHtml = '';
+                batches.forEach(b => {
+                    let bTotal = 0, bQty = 0;
+                    b.items.forEach(it => { 
+                        const uP = Number(it.unitPrice) || 0; const q = Number(it.qty) || 1;
+                        bTotal += Number(it.totalPrice) > 0 ? Number(it.totalPrice) : (uP * q);
+                        bQty += q; 
+                    });
+
+                    allCardsHtml += `
+                        <div class="order-cluster-card">
+                            <div class="cluster-header">
+                                <div class="cluster-time-badge"><i class="ph-bold ph-clock"></i> ${escapeHtml(b.timeKey)} (${bQty} ชิ้น)</div>
+                                <div class="cluster-total-tag">${bTotal.toLocaleString()}</div>
+                            </div>
+                            <div>${b.items.map(item => {
+                                const itPrice = Number(item.totalPrice) > 0 ? Number(item.totalPrice) : (Number(item.unitPrice||0) * Number(item.qty||1));
+                                const hasRecipe = Boolean(findRecipeText(item.name));
+                                const safeName = encodeURIComponent(item.name);
+                                return `
+                                <div class="cluster-item-row ${item.status === 'done' ? 'row-completed' : ''}">
+                                    <div class="cluster-item-left">
+                                        <div class="checkbox-tick-square" onclick="fastToggle(event, '${escapeHtml(item.id)}')">${item.status === 'done' ? '✓' : ''}</div>
+                                        <div>
+                                            <div class="item-name-heading" ${hasRecipe ? `onclick="showRecipe(decodeURIComponent('${safeName}'))" style="cursor:pointer;"` : ''}>
+                                                ${escapeHtml(item.name)} <b style="color:var(--brand-accent);">x${item.qty}</b>${hasRecipe ? '<span style="font-size:0.6rem; color:var(--brand-accent); margin-left:2px; font-weight:600;">[สูตร]</span>' : ''}
+                                            </div>
+                                            <div style="font-size:0.68rem; color:var(--text-secondary);">(@${item.unitPrice} บ.)</div>
                                         </div>
-                                        <div style="font-size:0.68rem; color:var(--text-secondary);">(@${item.unitPrice} บ.)</div>
+                                    </div>
+                                    <div class="cluster-item-right">
+                                        <span style="font-family:'Outfit',sans-serif; font-weight:700; font-size:0.88rem; margin-right:3px;">${itPrice.toLocaleString()}</span>
+                                        <button type="button" class="pay-switch-badge ${item.paymentMethod === 'promptpay' ? 'qr' : 'cash'}" onclick="togglePayMethod('${escapeHtml(item.id)}')">${item.paymentMethod === 'promptpay' ? '📱 สแกน' : '💵 สด'}</button>
+                                        <button type="button" class="btn-item-ctrl" onclick="openEditModal('${escapeHtml(item.id)}')"><i class="ph-bold ph-pencil-simple"></i></button>
+                                        <button type="button" class="btn-item-ctrl del" onclick="deleteItem('${escapeHtml(item.id)}')"><i class="ph-bold ph-trash"></i></button>
                                     </div>
                                 </div>
-                                <div class="cluster-item-right">
-                                    <span style="font-family:'Outfit',sans-serif; font-weight:700; font-size:0.88rem; margin-right:3px;">${itPrice.toLocaleString()}</span>
-                                    <button type="button" class="pay-switch-badge ${item.paymentMethod === 'promptpay' ? 'qr' : 'cash'}" onclick="togglePayMethod('${escapeHtml(item.id)}')">${item.paymentMethod === 'promptpay' ? '📱 สแกน' : '💵 สด'}</button>
-                                    <button type="button" class="btn-item-ctrl" onclick="openEditModal('${escapeHtml(item.id)}')"><i class="ph-bold ph-pencil-simple"></i></button>
-                                    <button type="button" class="btn-item-ctrl del" onclick="deleteItem('${escapeHtml(item.id)}')"><i class="ph-bold ph-trash"></i></button>
-                                </div>
-                            </div>
-                        `;}).join('')}</div>
-                    </div>
-                `;
-            });
-            itemList.innerHTML = allCardsHtml;
+                            `;}).join('')}</div>
+                        </div>
+                    `;
+                });
+                itemList.innerHTML = allCardsHtml;
+            }
         }
 
-        expenseList.innerHTML = displayExpenses.map(item => `
-            <div class="summary-tile-row">
-                <div>
-                    <div style="color:var(--danger-color); font-weight:600; font-size:0.85rem;">💸 ${escapeHtml(item.name)}</div>
-                    <div style="font-size:0.68rem; color:var(--text-secondary);">${escapeHtml(formatThaiDateTime(item.date, item.time))}</div>
-                </div>
-                <div style="display:flex; align-items:center; gap:6px;">
-                    <span style="font-family:'Outfit',sans-serif; color:var(--danger-color); font-weight:700; font-size:0.85rem;">-฿${(item.cost||0).toLocaleString()}</span>
-                    <button type="button" class="btn-item-ctrl del" onclick="deleteExpense('${escapeHtml(item.id)}')">ลบ</button>
-                </div>
-            </div>
-        `).join('') || '<div class="empty-placeholder">ไม่มีรายการต้นทุน</div>';
-
-        let summaryHtml = '';
-        if ((currentFilter === 'all' || isHistoricalMonthSelected) && historySummary.length > 0) {
-            summaryHtml += `<div class="summary-banner-title">📊 สรุปผลประกอบการรายเดือนย้อนหลัง</div>`;
-            historySummary.forEach(h => {
-                summaryHtml += `
-                    <div class="summary-tile-row" style="font-size:0.8rem;">
-                        <span>🗓️ เดือน ${escapeHtml(h.month)} (${h.totalQty} ชิ้น)</span>
-                        <span>ยอด <b>฿${h.sales.toLocaleString()}</b> (กำไร ฿${h.profit.toLocaleString()})</span>
+        if (expenseList) {
+            expenseList.innerHTML = displayExpenses.map(item => `
+                <div class="summary-tile-row">
+                    <div>
+                        <div style="color:var(--danger-color); font-weight:600; font-size:0.85rem;">💸 ${escapeHtml(item.name)}</div>
+                        <div style="font-size:0.68rem; color:var(--text-secondary);">${escapeHtml(formatThaiDateTime(item.date, item.time))}</div>
                     </div>
-                `;
-            });
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <span style="font-family:'Outfit',sans-serif; color:var(--danger-color); font-weight:700; font-size:0.85rem;">-฿${(item.cost||0).toLocaleString()}</span>
+                        <button type="button" class="btn-item-ctrl del" onclick="deleteExpense('${escapeHtml(item.id)}')">ลบ</button>
+                    </div>
+                </div>
+            `).join('') || '<div class="empty-placeholder">ไม่มีรายการต้นทุน</div>';
         }
 
-        summaryHtml += Object.entries(menuGrouped).map(([cat, items]) => {
-            const keys = Object.keys(items);
-            if (!keys.length) return '';
-            return `
-                <div class="summary-banner-title">${escapeHtml(cat)} (รวม ฿${catStats[cat].sum.toLocaleString()})</div>
-                ${keys.map(name => `<div class="summary-tile-row"><span>${escapeHtml(name)} (x${items[name].qty})</span><span><b style="font-family:'Outfit',sans-serif;">฿${items[name].sum.toLocaleString()}</b></span></div>`).join('')}
-            `;
-        }).join('');
+        if (menuSummaryList) {
+            let summaryHtml = '';
+            if ((currentFilter === 'all' || isHistoricalMonthSelected) && historySummary.length > 0) {
+                summaryHtml += `<div class="summary-banner-title">📊 สรุปผลประกอบการรายเดือนย้อนหลัง</div>`;
+                historySummary.forEach(h => {
+                    summaryHtml += `
+                        <div class="summary-tile-row" style="font-size:0.8rem;">
+                            <span>🗓️ เดือน ${escapeHtml(h.month)} (${h.totalQty} ชิ้น)</span>
+                            <span>ยอด <b>฿${Number(h.sales||0).toLocaleString()}</b> (กำไร ฿${Number(h.profit||0).toLocaleString()})</span>
+                        </div>
+                    `;
+                });
+            }
 
-        menuSummaryList.innerHTML = summaryHtml || '<div class="empty-placeholder">ไม่มีข้อมูลสรุป</div>';
+            summaryHtml += Object.entries(menuGrouped).map(([cat, items]) => {
+                const keys = Object.keys(items);
+                if (!keys.length) return '';
+                return `
+                    <div class="summary-banner-title">${escapeHtml(cat)} (รวม ฿${catStats[cat].sum.toLocaleString()})</div>
+                    ${keys.map(name => `<div class="summary-tile-row"><span>${escapeHtml(name)} (x${items[name].qty})</span><span><b style="font-family:'Outfit',sans-serif;">฿${items[name].sum.toLocaleString()}</b></span></div>`).join('')}
+                `;
+            }).join('');
+
+            menuSummaryList.innerHTML = summaryHtml || '<div class="empty-placeholder">ไม่มีข้อมูลสรุป</div>';
+        }
+
         renderDynamicBestSellers();
     }
 
@@ -2438,7 +2487,8 @@
     }
 
     function renderPriceSettingList() {
-        const kw = (priceSearchInput.value || '').trim().toLowerCase().replace(/\s+/g, '');
+        if (!priceSettingList) return;
+        const kw = (priceSearchInput && priceSearchInput.value ? priceSearchInput.value : '').trim().toLowerCase().replace(/\s+/g, '');
         const keys = Object.keys(priceBook).filter(k => k.toLowerCase().replace(/\s+/g, '').includes(kw)).sort();
         
         priceSettingList.innerHTML = keys.map(name => {
@@ -2461,26 +2511,30 @@
     }
 
     function openPriceModal(name, price) {
+        if (!modalOldName || !modalEditName || !modalEditPrice || !priceEditModal) return;
         modalOldName.value = name;
         modalEditName.value = name;
         modalEditPrice.value = price;
         const isDrink = isDrinkItem(name);
-        if (isDrink) {
-            modalRecipeContainer.style.display = 'block';
-            modalEditRecipe.value = findRecipeText(name);
-        } else {
-            modalRecipeContainer.style.display = 'none';
-            modalEditRecipe.value = '';
+        if (modalRecipeContainer && modalEditRecipe) {
+            if (isDrink) {
+                modalRecipeContainer.style.display = 'block';
+                modalEditRecipe.value = findRecipeText(name);
+            } else {
+                modalRecipeContainer.style.display = 'none';
+                modalEditRecipe.value = '';
+            }
         }
         priceEditModal.style.display = 'flex';
     }
 
     function closePriceModal(event) {
         if (event && event.target !== event.currentTarget) return;
-        priceEditModal.style.display = 'none';
+        if (priceEditModal) priceEditModal.style.display = 'none';
     }
 
     async function savePriceModalData() {
+        if (!modalOldName || !modalEditName || !modalEditPrice || !modalEditRecipe) return;
         const oldName = modalOldName.value.trim();
         const newName = modalEditName.value.trim();
         const newPrice = parseFloat(modalEditPrice.value);
@@ -2521,9 +2575,13 @@
 
     async function addOrUpdatePrice(e) {
         if (e) e.preventDefault();
-        const name = document.getElementById('newMenuName').value.trim();
-        const price = parseFloat(document.getElementById('newMenuPrice').value);
+        const nameInput = document.getElementById('newMenuName');
+        const priceInput = document.getElementById('newMenuPrice');
         const recipeEl = document.getElementById('newMenuRecipe');
+        
+        if (!nameInput || !priceInput) return;
+        const name = nameInput.value.trim();
+        const price = parseFloat(priceInput.value);
         const recipe = (isDrinkItem(name) && recipeEl) ? recipeEl.value.trim() : "";
         if (!name || isNaN(price) || price <= 0) return alert('กรอกชื่อและราคาให้ถูกต้อง');
 
@@ -2531,8 +2589,8 @@
         if (isDrinkItem(name) && recipe) recipeBook[name] = recipe; else delete recipeBook[name];
         saveLocalBackup();
         renderPriceSettingList(); renderDynamicBestSellers(); playSound('order');
-        document.getElementById('newMenuName').value = '';
-        document.getElementById('newMenuPrice').value = '';
+        nameInput.value = '';
+        priceInput.value = '';
         if (recipeEl) recipeEl.value = '';
         toggleRecipeInputVisibility('');
 
@@ -2558,8 +2616,10 @@
     function switchTab(tab) {
         activeTab = tab;
         ['history', 'summary', 'expenses', 'prices'].forEach(t => {
-            document.getElementById(`tab${t.charAt(0).toUpperCase() + t.slice(1)}`).classList.toggle('active', t === tab);
-            document.getElementById(`${t}View`).style.display = t === tab ? 'block' : 'none';
+            const btn = document.getElementById(`tab${t.charAt(0).toUpperCase() + t.slice(1)}`);
+            const view = document.getElementById(`${t}View`);
+            if (btn) btn.classList.toggle('active', t === tab);
+            if (view) view.style.display = t === tab ? 'block' : 'none';
         });
         if (tab === 'prices') renderPriceSettingList();
     }
