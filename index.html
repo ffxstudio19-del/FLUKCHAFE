@@ -2251,43 +2251,54 @@
                 }
             } else {
                 currentHeaderTitle = "ยอดขายประจำเดือน";
-            }
-        } else if (currentFilter === 'all') {
-            currentHeaderTitle = "ยอดขายทั้งหมด";
-            if (historySummary.length > 0) {
-                const activeMonthSet = new Set(sales.map(s => normalizeDateStr(s.date).substring(0, 7)));
-                historySummary.forEach(h => {
-                    const cleanHMonth = String(h.month || '').trim().substring(0, 7);
-                    if (!activeMonthSet.has(cleanHMonth)) {
-                        displayTotalSales += Number(h.sales) || 0;
-                        displayTotalCash += Number(h.cash) || 0;
-                        displayTotalQr += Number(h.qr) || 0;
-                        displayTotalCost += Number(h.cost) || 0;
-                        displayTotalPieces += Number(h.totalQty) || 0;
+           } else if (currentFilter === 'all') {
+    currentHeaderTitle = "ยอดขายทั้งหมด";
+    
+    // 1. ดึงยอดรวมจริงทั้งหมดจาก Archive ในชีต Monthly_Summary
+    let archiveSalesSum = 0;
+    let archiveCashSum = 0;
+    let archiveQrSum = 0;
+    let archiveCostSum = 0;
+    let archiveQtySum = 0;
 
-                        catStats['เครื่องดื่ม'].sum += Number(h.drinkSum) || 0;
-                        catStats['เครื่องดื่ม'].count += Number(h.drinkQty) || 0;
-                        catStats['เครื่องดื่ม'].cash += Number(h.drinkCash) || 0;
-                        catStats['เครื่องดื่ม'].qr += Number(h.drinkQR) || 0;
+    if (historySummary && historySummary.length > 0) {
+        historySummary.forEach(h => {
+            archiveSalesSum += Number(h.sales) || 0;
+            archiveCashSum += Number(h.cash) || 0;
+            archiveQrSum += Number(h.qr) || 0;
+            archiveCostSum += Number(h.cost) || 0;
+            archiveQtySum += Number(h.totalQty) || 0;
 
-                        catStats['ของทอด/ทานเล่น'].sum += Number(h.snackSum) || 0;
-                        catStats['ของทอด/ทานเล่น'].count += Number(h.snackQty) || 0;
-                        catStats['ของทอด/ทานเล่น'].cash += Number(h.snackCash) || 0;
-                        catStats['ของทอด/ทานเล่น'].qr += Number(h.snackQR) || 0;
+            // รวมสถิติตามหมวดหมู่ย้อนหลังจาก Archive
+            catStats['เครื่องดื่ม'].sum += Number(h.drinkSum) || 0;
+            catStats['เครื่องดื่ม'].count += Number(h.drinkQty) || 0;
+            catStats['เครื่องดื่ม'].cash += Number(h.drinkCash) || 0;
+            catStats['เครื่องดื่ม'].qr += Number(h.drinkQR) || 0;
 
-                        catStats['ขนมปังปิ้ง'].sum += Number(h.breadSum) || 0;
-                        catStats['ขนมปังปิ้ง'].count += Number(h.breadQty) || 0;
-                        catStats['ขนมปังปิ้ง'].cash += Number(h.breadCash) || 0;
-                        catStats['ขนมปังปิ้ง'].qr += Number(h.breadQR) || 0;
+            catStats['ของทอด/ทานเล่น'].sum += Number(h.snackSum) || 0;
+            catStats['ของทอด/ทานเล่น'].count += Number(h.snackQty) || 0;
+            catStats['ของทอด/ทานเล่น'].cash += Number(h.snackCash) || 0;
+            catStats['ของทอด/ทานเล่น'].qr += Number(h.snackQR) || 0;
 
-                        catStats['อาหาร/กะเพรา'].sum += Number(h.foodSum) || 0;
-                        catStats['อาหาร/กะเพรา'].count += Number(h.foodQty) || 0;
-                        catStats['อาหาร/กะเพรา'].cash += Number(h.foodCash) || 0;
-                        catStats['อาหาร/กะเพรา'].qr += Number(h.foodQR) || 0;
-                    }
-                });
-            }
-        }
+            catStats['ขนมปังปิ้ง'].sum += Number(h.breadSum) || 0;
+            catStats['ขนมปังปิ้ง'].count += Number(h.breadQty) || 0;
+            catStats['ขนมปังปิ้ง'].cash += Number(h.breadCash) || 0;
+            catStats['ขนมปังปิ้ง'].qr += Number(h.breadQR) || 0;
+
+            catStats['อาหาร/กะเพรา'].sum += Number(h.foodSum) || 0;
+            catStats['อาหาร/กะเพรา'].count += Number(h.foodQty) || 0;
+            catStats['อาหาร/กะเพรา'].cash += Number(h.foodCash) || 0;
+            catStats['อาหาร/กะเพรา'].qr += Number(h.foodQR) || 0;
+        });
+    }
+
+    // 2. นำยอดจริงจาก Archive บวกเข้ากับยอดขายในชีต Sales ปัจจุบัน
+    displayTotalSales = totalS + archiveSalesSum;
+    displayTotalCash = totalCashSum + archiveCashSum;
+    displayTotalQr = totalQrSum + archiveQrSum;
+    displayTotalCost = totalC + archiveCostSum;
+    displayTotalPieces = totalPieces + archiveQtySum;
+}
 
         revenueTitleLabel.innerText = currentHeaderTitle;
         totalSales.innerText = displayTotalSales.toLocaleString();
